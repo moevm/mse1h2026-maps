@@ -1,10 +1,10 @@
-from typing import Dict, Any
+from typing import Dict, Any, List
 
-def fetch_semantic_scholar(topic: str) -> Dict[str, Any]:
+def fetch_semantic_scholar(topic: str) -> List[Any]:
     """
     Получает данные из Semantic scholar по теме.
-    Возвращает словарь с ключами:
+    Возвращает Сырую информацию:
         source: "semantic_scholar"
-        entities: список сущностей (id, name, type, description)
-        relations: список связей (from, to, type)
+        id: "Q-1923"
+        ...
     """

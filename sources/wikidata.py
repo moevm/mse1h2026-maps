@@ -1,10 +1,10 @@
-from typing import Dict, Any
+from typing import Dict, Any, List
 
-def fetch_wikidata(topic: str) -> Dict[str, Any]:
+def fetch_wikidata(topic: str) -> List[Any]:
     """
     Получает данные из Wikidata по теме.
-    Возвращает словарь с ключами:
+    Возвращает Сырую информацию:
         source: "wikidata"
-        entities: список сущностей (id, name, type, description)
-        relations: список связей (from, to, type)
+        id: "Q-1922"
+        ...
     """
