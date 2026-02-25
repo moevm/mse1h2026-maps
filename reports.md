@@ -129,6 +129,6 @@
 
 
 ### Встреча с заказчиком
-[Протокол созвона №1](Итерация%201/Созвон_№1_19.02.md)
+[Протокол встречи №1](Итерация%201/Созвон_№1_19.02.md)
 
-[Запись созвона №1](https://drive.google.com/file/d/1F1Eya7_KoiJb0XaC5ZJmBJ9Fcsg79gn2/view?usp=drive_link)
+[Запись встречи №1](https://drive.google.com/file/d/1F1Eya7_KoiJb0XaC5ZJmBJ9Fcsg79gn2/view?usp=drive_link)
