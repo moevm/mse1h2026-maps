@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map with Sidebar</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="app-container">
+    
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3>Панель управления</h3>
+                <button class="sidebar-toggle" id="sidebarToggle">◀</button>
+            </div>
+            <div class="sidebar-content">
+                <div class="search-container">
+                    <div class="search-input">
+                        <input type="text" id="searchField" class="search-input" placeholder="Введите ключевые слова">
+                    </div>
+                    <button class="search-button">🔎</button>
+                </div>
+                
+                <div class="options">
+                    <h4>Источники для поиска</h4>
+                    <ul>
+                        <li>
+                            <input type="checkbox" id="source1"> 
+                            <label for="option1">Источник 1</label>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="source2"> 
+                            <label for="option2">Источник 2</label>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="source3"> 
+                            <label for="option3">Источник 3</label>
+                        </li>
+                    </ul>
+                    <h4>Опции поиска</h4>
+                    <ul>
+                        <li>
+                            <input type="checkbox" id="option1">
+                            <label for="option1">Опция 1</label>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="option2">
+                            <label for="option2">Опция 2</label>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="option3">
+                            <label for="option3">Опция 3</label>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <main class="main-content" id="mainContent">
+            <div class="graph-container">
+                <h3>Визуализация графа</h3>
+                <div class="graph-placeholder">
+                    ЗДЕСЬ БУДЕТ ГРАФ
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+
+    </script>
+    <script src="js/script.js"></script>
+</body>
+</html>
