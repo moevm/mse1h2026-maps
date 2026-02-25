@@ -41,7 +41,10 @@
 ### Презентация
 
 ### Макет интерфейса
-[Макет UI](Итерация%201/Макет%20UI.png)
+[Макет UI (png)](Итерация%201/Макет%20UI.png)
+
+[Макет UI (в конструкторе)](https://app.moqups.com/0jjCcLlanOwekmcxjphuGLpsRHTjHPh7/view/page/a7bc758b4)
+
 
 ### Запланированные задачи
 
