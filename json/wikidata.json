@@ -1,0 +1,135 @@
+{
+  "query": "Newton's method",
+  "sources": [
+    "wikidata"
+  ],
+  "nodes": [
+    {
+      "uid": "wikidata:Q374195",
+      "labels": [
+        "Entity",
+        "Concept"
+      ],
+      "properties": {
+        "label_en": "Newton's method",
+        "label_ru": "метод Ньютона",
+        "desc_en": "algorithm for finding a zero of a function",
+        "wiki_url": "https://www.wikidata.org/wiki/Q374195"
+      }
+    },
+    {
+      "uid": "wikidata:Q935",
+      "labels": [
+        "Entity",
+        "Concept"
+      ],
+      "properties": {
+        "label_en": "Isaac Newton"
+      }
+    },
+    {
+      "uid": "wikidata:Q569955",
+      "labels": [
+        "Entity",
+        "Concept"
+      ],
+      "properties": {
+        "label_en": "Joseph Raphson"
+      }
+    },
+    {
+      "uid": "wikidata:Q1085860",
+      "labels": [
+        "Entity",
+        "Concept"
+      ],
+      "properties": {
+        "label_en": "root-finding algorithm"
+      }
+    },
+    {
+      "uid": "wikidata:Q621751",
+      "labels": [
+        "Entity",
+        "Concept"
+      ],
+      "properties": {
+        "label_en": "approximation algorithm"
+      }
+    },
+    {
+      "uid": "wikidata:Q214604",
+      "labels": [
+        "Entity",
+        "Concept"
+      ],
+      "properties": {
+        "label_en": "zero of a function"
+      }
+    },
+    {
+      "uid": "wikidata:Q17086396",
+      "labels": [
+        "Entity",
+        "Concept"
+      ],
+      "properties": {
+        "label_en": "Newton's method in optimization"
+      }
+    },
+    {
+      "uid": "wikidata:Q8487137",
+      "labels": [
+        "Entity",
+        "Concept"
+      ],
+      "properties": {
+        "label_en": "WikiProject Mathematics"
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "from_uid": "wikidata:Q374195",
+      "to_uid": "wikidata:Q935",
+      "type": "NAMED_AFTER",
+      "properties": {}
+    },
+    {
+      "from_uid": "wikidata:Q374195",
+      "to_uid": "wikidata:Q569955",
+      "type": "NAMED_AFTER",
+      "properties": {}
+    },
+    {
+      "from_uid": "wikidata:Q374195",
+      "to_uid": "wikidata:Q1085860",
+      "type": "INSTANCE_OF",
+      "properties": {}
+    },
+    {
+      "from_uid": "wikidata:Q374195",
+      "to_uid": "wikidata:Q621751",
+      "type": "INSTANCE_OF",
+      "properties": {}
+    },
+    {
+      "from_uid": "wikidata:Q374195",
+      "to_uid": "wikidata:Q214604",
+      "type": "COMPUTES_SOLUTION_TO",
+      "properties": {}
+    },
+    {
+      "from_uid": "wikidata:Q374195",
+      "to_uid": "wikidata:Q17086396",
+      "type": "DIFFERENT_FROM",
+      "properties": {}
+    },
+    {
+      "from_uid": "wikidata:Q374195",
+      "to_uid": "wikidata:Q8487137",
+      "type": "MAINTAINED_BY_WIKIPROJECT",
+      "properties": {}
+    }
+  ]
+}

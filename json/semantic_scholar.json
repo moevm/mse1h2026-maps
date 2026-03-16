@@ -1,0 +1,307 @@
+[
+  {
+    "paperId": "b475626792d4ea51b7ceb306eaf82d998094c744",
+    "externalIds": {
+      "MAG": "2794665582",
+      "ArXiv": "1809.06795",
+      "DOI": "10.1109/TPWRS.2018.2820430",
+      "CorpusId": 52124814
+    },
+    "url": "https://www.semanticscholar.org/paper/b475626792d4ea51b7ceb306eaf82d998094c744",
+    "title": "On the Convergence of Newton's Method in Power Flow Studies for DC Microgrids",
+    "year": 2018,
+    "citationCount": 138,
+    "openAccessPdf": {
+      "url": "https://arxiv.org/pdf/1809.06795",
+      "status": "GREEN",
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://arxiv.org/abs/1809.06795, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "authors": [
+      {
+        "authorId": "144714697",
+        "name": "A. Garcés"
+      }
+    ],
+    "abstract": "The power flow is a nonlinear problem that requires a Newton's method to be solved in dc microgrids with constant power terminals. This paper presents sufficient conditions for the quadratic convergence of the Newton's method in this type of grids. The classic Newton's method as well as an approximated Newton's method are analyzed in both master–slave and island operation with droop controls. Requirements for the convergence as well as for the existence and uniqueness of the solution starting from voltages close to 1 pu are presented. Computational results complement this theoretical analysis."
+  },
+  {
+    "paperId": "a8eb5922800195cf39842d8c54e0ff855f0554ea",
+    "externalIds": {
+      "MAG": "2807215287",
+      "ArXiv": "1806.00413",
+      "DBLP": "journals/corr/abs-1806-00413",
+      "CorpusId": 44162627
+    },
+    "url": "https://www.semanticscholar.org/paper/a8eb5922800195cf39842d8c54e0ff855f0554ea",
+    "title": "Global linear convergence of Newton's method without strong-convexity or Lipschitz gradients",
+    "year": 2018,
+    "citationCount": 61,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://arxiv.org/abs/1806.00413, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "authors": [
+      {
+        "authorId": "40911632",
+        "name": "Sai Praneeth Karimireddy"
+      },
+      {
+        "authorId": "2127057",
+        "name": "Sebastian U. Stich"
+      },
+      {
+        "authorId": "2456863",
+        "name": "Martin Jaggi"
+      }
+    ],
+    "abstract": "We show that Newton's method converges globally at a linear rate for objective functions whose Hessians are stable. This class of problems includes many functions which are not strongly convex, such as logistic regression. Our linear convergence result is (i) affine-invariant, and holds even if an (ii) approximate Hessian is used, and if the subproblems are (iii) only solved approximately. Thus we theoretically demonstrate the superiority of Newton's method over first-order methods, which would only achieve a sublinear $O(1/t^2)$ rate under similar conditions."
+  },
+  {
+    "paperId": "f2bd1e88b8cea63a5f8922994cddb45cbea505ed",
+    "externalIds": {
+      "ArXiv": "1612.01789",
+      "MAG": "3100566623",
+      "DOI": "10.1088/1367-2630/ab2a9e",
+      "CorpusId": 119090868
+    },
+    "url": "https://www.semanticscholar.org/paper/f2bd1e88b8cea63a5f8922994cddb45cbea505ed",
+    "title": "Quantum gradient descent and Newton’s method for constrained polynomial optimization",
+    "year": 2016,
+    "citationCount": 161,
+    "openAccessPdf": {
+      "url": "https://doi.org/10.1088/1367-2630/ab2a9e",
+      "status": "GOLD",
+      "license": "CCBY",
+      "disclaimer": "Notice: Paper or abstract available at https://arxiv.org/abs/1612.01789, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "authors": [
+      {
+        "authorId": "3157522",
+        "name": "P. Rebentrost"
+      },
+      {
+        "authorId": "3048564",
+        "name": "M. Schuld"
+      },
+      {
+        "authorId": "3438240",
+        "name": "Leonard Wossnig"
+      },
+      {
+        "authorId": "2258749",
+        "name": "Francesco Petruccione"
+      },
+      {
+        "authorId": "145762777",
+        "name": "S. Lloyd"
+      }
+    ],
+    "abstract": "Optimization problems in disciplines such as machine learning are commonly solved with iterative methods. Gradient descent algorithms find local minima by moving along the direction of steepest descent while Newton’s method takes into account curvature information and thereby often improves convergence. Here, we develop quantum versions of these iterative optimization algorithms and apply them to polynomial optimization with a unit norm constraint. In each step, multiple copies of the current candidate are used to improve the candidate using quantum phase estimation, an adapted quantum state exponentiation scheme, as well as quantum matrix multiplications and inversions. The required operations perform polylogarithmically in the dimension of the solution vector and exponentially in the number of iterations. Therefore, the quantum algorithm can be useful for high-dimensional problems where a small number of iterations is sufficient."
+  },
+  {
+    "paperId": "b6bad936e1a6ca0a9cee44f68ad9064e43ad67e2",
+    "externalIds": {
+      "MAG": "2953099512",
+      "DBLP": "journals/siamsc/DoleanGKKM16",
+      "ArXiv": "1605.04419",
+      "DOI": "10.1137/15M102887X",
+      "CorpusId": 1338722
+    },
+    "url": "https://www.semanticscholar.org/paper/b6bad936e1a6ca0a9cee44f68ad9064e43ad67e2",
+    "title": "Nonlinear Preconditioning: How to Use a Nonlinear Schwarz Method to Precondition Newton's Method",
+    "year": 2016,
+    "citationCount": 77,
+    "openAccessPdf": {
+      "url": "https://strathprints.strath.ac.uk/59253/1/Dolean_etal_SJSC2016_Nuclear_preconditioning.pdf",
+      "status": "GREEN",
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://arxiv.org/abs/1605.04419, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "authors": [
+      {
+        "authorId": "1815537",
+        "name": "V. Dolean"
+      },
+      {
+        "authorId": "1731754",
+        "name": "M. Gander"
+      },
+      {
+        "authorId": "3288527",
+        "name": "W. Kheriji"
+      },
+      {
+        "authorId": "144001308",
+        "name": "Felix Kwok"
+      },
+      {
+        "authorId": "36208948",
+        "name": "R. Masson"
+      }
+    ],
+    "abstract": "For linear problems, domain decomposition methods can be used directly as iterative solvers, but also as preconditioners for Krylov methods. In practice, Krylov acceleration is almost always used, since the Krylov method finds a much better residual polynomial than the stationary iteration, and thus converges much faster. We show in this paper that also for non-linear problems, domain decomposition methods can either be used directly as iterative solvers, or one can use them as preconditioners for Newton's method. For the concrete case of the parallel Schwarz method, we show that we obtain a preconditioner we call RASPEN (Restricted Additive Schwarz Preconditioned Exact Newton) which is similar to ASPIN (Additive Schwarz Preconditioned Inexact Newton), but with all components directly defined by the iterative method. This has the advantage that RASPEN already converges when used as an iterative solver, in contrast to ASPIN, and we thus get a substantially better preconditioner for Newton's method. The iterative construction also allows us to naturally define a coarse correction using the multigrid full approximation scheme, which leads to a convergent two level non-linear iterative domain decomposition method and a two level RASPEN non-linear preconditioner. We illustrate our findings with numerical results on the Forchheimer equation and a non-linear diffusion problem."
+  },
+  {
+    "paperId": "32eaf30fac459e7c9f7faea1a4907f4cc085c29c",
+    "externalIds": {
+      "DBLP": "journals/siamnum/BrennerC17",
+      "MAG": "2475111691",
+      "ArXiv": "1607.01508",
+      "DOI": "10.1137/16M1083414",
+      "CorpusId": 30810676
+    },
+    "url": "https://www.semanticscholar.org/paper/32eaf30fac459e7c9f7faea1a4907f4cc085c29c",
+    "title": "Improving Newton's Method Performance by Parametrization: The Case of the Richards Equation",
+    "year": 2016,
+    "citationCount": 49,
+    "openAccessPdf": {
+      "url": "https://arxiv.org/pdf/1607.01508",
+      "status": "GREEN",
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://arxiv.org/abs/1607.01508, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "authors": [
+      {
+        "authorId": "39447859",
+        "name": "K. Brenner"
+      },
+      {
+        "authorId": "34928917",
+        "name": "C. Cancès"
+      }
+    ],
+    "abstract": "The nonlinear systems obtained by discretizing degenerate parabolic equations may be hard to solve, especially with Newton's method. In this paper, we apply to Richards equation a strategy that consists in defining a new primary unknown for the continuous equation in order to stabilize Newton's method by parametrizing the graph linking the pressure and the saturation. The resulting form of Richards equation is then discretized thanks to a monotone Finite Volume scheme. We prove the well-posedness of the numerical scheme. Then we show under appropriate non-degeneracy conditions on the parametrization that Newton\\^as method converges locally and quadratically. Finally, we provide numerical evidences of the efficiency of our approach."
+  },
+  {
+    "paperId": "3475fa4caf43c2b017057896fc75bec46bc48e52",
+    "externalIds": {
+      "ArXiv": "math/0408419",
+      "MAG": "2071860648",
+      "DBLP": "journals/tcs/LeykinVZ06",
+      "DOI": "10.1016/j.tcs.2006.02.018",
+      "CorpusId": 14424615
+    },
+    "url": "https://www.semanticscholar.org/paper/3475fa4caf43c2b017057896fc75bec46bc48e52",
+    "title": "Newton's method with deflation for isolated singularities of polynomial systems",
+    "year": 2004,
+    "citationCount": 165,
+    "openAccessPdf": {
+      "url": "https://doi.org/10.1016/j.tcs.2006.02.018",
+      "status": "BRONZE",
+      "license": "publisher-specific-oa",
+      "disclaimer": "Notice: Paper or abstract available at https://arxiv.org/abs/math/0408419, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "authors": [
+      {
+        "authorId": "2079072",
+        "name": "A. Leykin"
+      },
+      {
+        "authorId": "1703393",
+        "name": "J. Verschelde"
+      },
+      {
+        "authorId": "8056878",
+        "name": "Ailing Zhao"
+      }
+    ],
+    "abstract": "We present a modification of Newton's method to restore quadratic convergence for isolated singular solutions of polynomial systems. Our method is symbolic-numeric: we produce a new polynomial system which has the original multiple solution as a regular root. Using standard bases, a tool for the symbolic computation of multiplicities, we show that the number of deflation stages is bounded by the multiplicity of the isolated root. Our implementation performs well on a large class of applications."
+  },
+  {
+    "paperId": "a641960099ada84b2a0005be72f554e77695a276",
+    "externalIds": {
+      "MAG": "1982110324",
+      "DBLP": "journals/siamjo/AdlyCN15",
+      "DOI": "10.1137/130926730",
+      "CorpusId": 28852568
+    },
+    "url": "https://www.semanticscholar.org/paper/a641960099ada84b2a0005be72f554e77695a276",
+    "title": "Newton's Method for Solving Inclusions Using Set-Valued Approximations",
+    "year": 2015,
+    "citationCount": 48,
+    "openAccessPdf": {
+      "url": "https://hal.archives-ouvertes.fr/hal-01313138/file/OPE.pdf",
+      "status": "GREEN",
+      "license": "other-oa",
+      "disclaimer": "Notice: Paper or abstract available at https://core.ac.uk/download/pdf/52860330.pdf, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "authors": [
+      {
+        "authorId": "2881285",
+        "name": "S. Adly"
+      },
+      {
+        "authorId": "2129566",
+        "name": "R. Cibulka"
+      },
+      {
+        "authorId": "2168144",
+        "name": "H. Ngai"
+      }
+    ],
+    "abstract": "Results on stability of both local and global metric regularity under set-valued perturbations are presented. As an application, we study (super)linear convergence of a Newton- type iterative process for solving generalized equations. We investigate several iterative schemes such as the inexact Newton’s method, the nonsmooth Newton’s method for semismooth functions, the inexact proximal point algorithm, etc. Moreover, we also cover a forward-backward splitting algorithm for finding a zero of the sum of two multivalued (not necessarily monotone) operators. Finally, a globalization of the Newton’s method is discussed."
+  },
+  {
+    "paperId": "d62a4216e8070d3d9466a44493e3f8844ee575c1",
+    "externalIds": {
+      "MAG": "2066214692",
+      "DBLP": "journals/jc/FerreiraS02",
+      "DOI": "10.1006/JCOM.2001.0582",
+      "CorpusId": 19226645
+    },
+    "url": "https://www.semanticscholar.org/paper/d62a4216e8070d3d9466a44493e3f8844ee575c1",
+    "title": "Kantorovich's Theorem on Newton's Method in Riemannian Manifolds",
+    "year": 2002,
+    "citationCount": 133,
+    "openAccessPdf": {
+      "url": "https://doi.org/10.1006/jcom.2001.0582",
+      "status": "BRONZE",
+      "license": "publisher-specific-oa",
+      "disclaimer": "Notice: Paper or abstract available at https://core.ac.uk/download/pdf/82287961.pdf, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "authors": [
+      {
+        "authorId": "144697370",
+        "name": "O. P. Ferreira"
+      },
+      {
+        "authorId": "3164227",
+        "name": "B. Svaiter"
+      }
+    ],
+    "abstract": "Newton's method for finding a zero of a vectorial function is a powerful theoretical and practical tool. One of the drawbacks of the classical convergence proof is that closeness to a non-singular zero must be supposed a priori. Kantorovich's theorem on Newton's method has the advantage of proving existence of a solution and convergence to it under very mild conditions. This theorem holds in Banach spaces. Newton's method has been extended to the problem of finding a singularity of a vectorial field in Riemannian manifold. We extend Kantorovich's theorem on Newton's method to Riemannian manifolds."
+  },
+  {
+    "paperId": "40f4863985d7202cc2970405d9b478dd603f80b7",
+    "externalIds": {
+      "MAG": "2095039379",
+      "DBLP": "journals/appml/McDougallW14",
+      "DOI": "10.1016/j.aml.2013.10.008",
+      "CorpusId": 1794743
+    },
+    "url": "https://www.semanticscholar.org/paper/40f4863985d7202cc2970405d9b478dd603f80b7",
+    "title": "A simple modification of Newton's method to achieve convergence of order 1 + √2",
+    "year": 2014,
+    "citationCount": 96,
+    "openAccessPdf": {
+      "url": "https://doi.org/10.1016/j.aml.2013.10.008",
+      "status": "HYBRID",
+      "license": "CCBYNCND",
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1016/j.aml.2013.10.008?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1016/j.aml.2013.10.008, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "authors": [
+      {
+        "authorId": "2307575",
+        "name": "T. McDougall"
+      },
+      {
+        "authorId": "2395712",
+        "name": "S. Wotherspoon"
+      }
+    ],
+    "abstract": "Abstract A simple modification to the standard Newton method for approximating the root of a univariate function is described and analyzed. For the same number of function and derivative evaluations, the modified method converges faster, with the convergence order of the method being 1 + 2 ≈ 2.4 compared with 2 for the standard Newton method. Numerical examples demonstrate the faster convergence achieved with this modification of Newton’s method. This modified Newton–Raphson method is relatively simple and is robust; it is more likely to converge to a solution than are either the higher order (4th order and 6th order) schemes or Newton’s method itself."
+  }
+]
