@@ -1,0 +1,24 @@
+{
+  "nodes": [
+    { "uid": "wikidata:Q374195", "labels": ["Entity", "Concept"],
+      "properties": { "label_en": "Newton method",
+        "label_ru": "Метод Ньютона",
+        "wiki_url": "https://en.wikipedia.org/wiki/Newtons_method",
+        "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Methode_Newton.svg" } },
+    { "uid": "wikidata:Q935", "labels": ["Entity", "Person"],
+      "properties": { "label_en": "Isaac Newton",
+        "label_ru": "Исаак Ньютон",
+        "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/GodfreyKneller-IsaacNewton-1689.jpg" } },
+    { "uid": "semanticscholar:204837", "labels": ["Entity", "Paper"],
+      "properties": { "label_en": "An Efficient Newton Method",
+        "year": 1998, "doi": "10.1234/example", "citations": 142 } },
+    { "uid": "github:scipy/scipy", "labels": ["Entity", "Repository"],
+      "properties": { "label_en": "SciPy", "stars": 13000,
+        "language": "Python", "url": "https://github.com/scipy/scipy" } }
+  ],
+  "relationships": [
+    { "from_uid": "wikidata:Q374195", "to_uid": "wikidata:Q935", "type": "NAMED_AFTER" },
+    { "from_uid": "semanticscholar:204837", "to_uid": "wikidata:Q374195", "type": "ABOUT" },
+    { "from_uid": "github:scipy/scipy", "to_uid": "wikidata:Q374195", "type": "IMPLEMENTS" }
+  ]
+}
