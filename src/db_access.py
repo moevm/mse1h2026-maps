@@ -1,5 +1,6 @@
 from mainapp.models import TopicRequest
 
+
 def put_request(topic):
     if not topic or not isinstance(topic, str):
         raise ValueError("topic должна быть непустой строкой")
