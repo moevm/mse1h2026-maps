@@ -28,15 +28,15 @@
                     <ul>
                         <li>
                             <input type="checkbox" id="source1"> 
-                            <label for="option1">Источник 1</label>
+                            <label for="source1">Источник 1</label>
                         </li>
                         <li>
                             <input type="checkbox" id="source2"> 
-                            <label for="option2">Источник 2</label>
+                            <label for="source2">Источник 2</label>
                         </li>
                         <li>
                             <input type="checkbox" id="source3"> 
-                            <label for="option3">Источник 3</label>
+                            <label for="source3">Источник 3</label>
                         </li>
                     </ul>
                     <h4>Опции поиска</h4>
@@ -66,11 +66,42 @@
                 </div>
             </div>
         </main>
+        
+        <!-- Выдвигающаяся панель справа -->
+        <div class="info-panel" id="infoPanel">
+            <div class="info-panel-header">
+                <h3>Информация</h3>
+                <button class="info-panel-close" id="closeInfoPanel">✕</button>
+            </div>
+            <div class="info-panel-content">
+                <div class="info-section">
+                    <h4>Сущность</h4>
+                    <p id="entityName">Название сущности</p>
+                </div>
+                <div class="info-section">
+                    <h4>Информация</h4>
+                    <p id="entityInfo">Описание сущности, детали, характеристики...</p>
+                </div>
+                <div class="info-section">
+                    <h4>Связи</h4>
+                    <ul id="entityLinks">
+                        <li>Связь 1</li>
+                        <li>Связь 2</li>
+                        <li>Связь 3</li>
+                    </ul>
+                </div>
+                <div class="info-section">
+                    <h4>Ссылки на ресурсы</h4>
+                    <ul id="entityResources">
+                        <li><a href="#">Ресурс 1</a></li>
+                        <li><a href="#">Ресурс 2</a></li>
+                        <li><a href="#">Ресурс 3</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script>
-
-    </script>
     <script src="{% static 'js/script.js' %}"></script>
 </body>
 </html>
