@@ -7,5 +7,7 @@ urlpatterns = [
     path('test/',views.index),
     path('api/start/', starter.start),
     path('api/status/', starter.status),
+    path('api/graph-widget/', starter.get_widget),
+    path('api/node-info/', starter.node_info),
     path('',starter.home),
 ]

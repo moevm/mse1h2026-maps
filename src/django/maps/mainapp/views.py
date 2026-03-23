@@ -4,22 +4,19 @@ from neo4j import GraphDatabase
 import os
 
 from django.db import close_old_connections
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from src.db_access import get_request, put_request
-from src.from_neo4j import from_neo4j
-from src.neo4j_db import set_to_neo4j
+from src.neo4j_db import set_to_neo4j, get_from_neo4j
 from src.sources.collector import collect_all_sources
-
-# TmpStorage = None
 
 
 def home(request):
     return render(request, "index.html")
 
 
-def start(reqest):
-    topic = reqest.GET.get("topic")
+def start(request):
+    topic = request.GET.get("topic")
     print(topic)
     req_id = put_request(topic)
 
@@ -34,17 +31,16 @@ def start(reqest):
         r.status = "processing"
         r.save()
         data = collect_all_sources(topic, req_id)[1]
-        r.status = "completed"
-        r.save()
+
         print(data)
         uri = os.environ.get("NEO_URI")
         username = os.environ.get("NEO_USER")
         password = os.environ.get("NEO_PASSWORD")
-        # driver = GraphDatabase.driver(uri, auth=(username, password))
-        # set_to_neo4j(driver, data)
-        # mist = from_neo4j(driver)
-        # print(mist)
-        # driver.close()
+        driver = GraphDatabase.driver(uri, auth=(username, password))
+        set_to_neo4j(driver, data)
+        driver.close()
+        r.status = "completed"
+        r.save()
 
     thread = threading.Thread(target=task)
     thread.daemon = True  # поток завершится при остановке основного процесса
@@ -52,8 +48,63 @@ def start(reqest):
     return HttpResponse(f"{req_id}")
 
 
-def status(reqest):
-    id = reqest.GET.get("id")
+def get_widget(request):
+    request_id = request.GET.get('id')
+    topic = get_request(request_id).topic
+
+    uri = os.environ.get("NEO_URI")
+    username = os.environ.get("NEO_USER")
+    password = os.environ.get("NEO_PASSWORD")
+    driver = GraphDatabase.driver(uri, auth=(username, password))
+    vg = get_from_neo4j(driver, topic)
+    driver.close()
+
+    for node in vg.nodes:
+        node.caption = node.properties.get("name", node.id)
+        node.properties["panel_data"] = {
+            "name": node.properties.get("name"),
+            "info": node.properties.get("info", "Нет информации"),
+            "links": node.properties.get("links", []),
+            "resources": node.properties.get("resources", [])
+        }
+
+    for rel in vg.relationships:
+        rel.caption = rel.properties.get("type", "связь")
+
+    vg.color_nodes(property="name", color_space="discrete")
+
+    widget = vg.render_widget(
+        layout="force_directed",
+        renderer="canvas",
+        width="100%",
+        height="600px"
+    )
+
+    return JsonResponse({
+        'html': str(widget),
+        'nodes_count': len(vg.nodes)
+    })
+
+
+def node_info(request):
+    node_id = request.GET.get('id')
+
+    node_data = {
+        "name": f"Узел {node_id}",
+        "info": f"Подробная информация об узле {node_id}. Здесь могут быть любые данные из базы.",
+        "links": ["Связанная сущность A", "Связанная сущность B", "Связанная сущность C"],
+        "resources": [
+            {"name": "Википедия", "url": "https://ru.wikipedia.org"},
+            {"name": "Официальный сайт", "url": "https://example.com"},
+            {"name": "Документация", "url": "https://docs.example.com"}
+        ]
+    }
+
+    return JsonResponse(node_data)
+
+
+def status(request):
+    id = request.GET.get("id")
     req = get_request(id)
     return HttpResponse(f"{req.status}")
 
