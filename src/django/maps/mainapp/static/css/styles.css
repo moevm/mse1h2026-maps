@@ -247,3 +247,134 @@ html, body
     min-height: 0;
     padding: 20px;
 }
+
+
+.info-panel
+{
+    position: fixed;
+    top: 0;
+    right: -400px;
+    width: 400px;
+    height: 100vh;
+    background-color: #ffffff;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    transition: right 0.3s ease;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.info-panel.open 
+{
+    right: 0;
+}
+
+.info-panel-header 
+{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: #e0f0ff;
+    border-bottom: 2px solid #87cefa;
+}
+
+.info-panel-header h3 
+{
+    margin: 0;
+    color: #1e4a7a;
+    font-size: 18px;
+}
+
+.info-panel-close 
+{
+    width: 32px;
+    height: 32px;
+    background-color: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.info-panel-close:hover 
+{
+    background-color: #ff4444;
+}
+
+.info-panel-content 
+{
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.info-section 
+{
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.info-section h4 
+{
+    margin: 0 0 10px 0;
+    color: #1e4a7a;
+    font-size: 16px;
+}
+
+.info-section p 
+{
+    margin: 0;
+    color: #333;
+    line-height: 1.5;
+}
+
+.info-section ul 
+{
+    margin: 0;
+    padding-left: 20px;
+}
+
+.info-section li 
+{
+    margin-bottom: 8px;
+    color: #555;
+}
+
+.info-section a 
+{
+    color: #5f9ea0;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.info-section a:hover 
+{
+    color: #1e4a7a;
+    text-decoration: underline;
+}
+
+
+.info-panel-overlay 
+{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+}
+
+.info-panel-overlay.active 
+{
+    display: block;
+}
