@@ -13,6 +13,8 @@ from src.db_access import get_request, put_request
 from src.neo4j_db import set_to_neo4j, get_from_neo4j
 from src.sources.collector import collect_all_sources
 
+import json
+
 
 def home(request):
     return render(request, "index.html")
@@ -33,15 +35,24 @@ def start(request):
         r = get_request(req_id)
         r.status = "processing"
         r.save()
-        data = collect_all_sources(topic, req_id)[1]
+        _, data = collect_all_sources(topic, req_id)
+
 
         print(data)
         uri = os.environ.get("NEO_URI")
         username = os.environ.get("NEO_USER")
         password = os.environ.get("NEO_PASSWORD")
         driver = GraphDatabase.driver(uri, auth=(username, password))
+
         set_to_neo4j(driver, data)
+
+        with open("json/graph_example.json", "r", encoding="utf-8") as f:
+            data2 = json.load(f)
+
+        set_to_neo4j(driver, data2)
+
         driver.close()
+
         r.status = "completed"
         r.save()
 

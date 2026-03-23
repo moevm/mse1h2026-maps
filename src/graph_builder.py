@@ -144,4 +144,4 @@ def build_graph(json_file):
 
     export_to_custom_json(G, papers, "graph.json")
 
-    # visualize_graph(G, papers)
+    visualize_graph(G, papers)
