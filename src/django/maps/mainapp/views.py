@@ -6,6 +6,9 @@ import os
 from django.db import close_old_connections
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from neo4j_viz import Layout
+from neo4j_viz.colors import ColorSpace
+
 from src.db_access import get_request, put_request
 from src.neo4j_db import set_to_neo4j, get_from_neo4j
 from src.sources.collector import collect_all_sources
@@ -71,19 +74,29 @@ def get_widget(request):
     for rel in vg.relationships:
         rel.caption = rel.properties.get("type", "связь")
 
-    vg.color_nodes(property="name", color_space="discrete")
+    vg.color_nodes(property="name", color_space=ColorSpace.DISCRETE)
 
-    widget = vg.render_widget(
-        layout="force_directed",
+    """widget = vg.render_widget(
+        layout=Layout.FORCE_DIRECTED,
         renderer="canvas",
         width="100%",
         height="600px"
-    )
+    )"""
+
+    widget = vg.render(
+        layout=Layout.FORCE_DIRECTED,
+        renderer="canvas",
+        width="100%",
+        height="600px")
 
     return JsonResponse({
-        'html': str(widget),
-        'nodes_count': len(vg.nodes)
+        'nodes': vg.nodes,
+        'relationships': vg.relationships
     })
+
+    """return JsonResponse({
+        'html': widget.data
+    })"""
 
 
 def node_info(request):
