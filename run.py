@@ -19,20 +19,16 @@ def set_env(env):
     env["NEO_USER"] = "neo4j"
     env["NEO_PASSWORD"] = "12345678"
 
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    env["PYTHONPATH"] = base_dir
+
 
 def main():
     base_dir = os.path.dirname(os.path.abspath(__file__))
+
     print(base_dir)
     env = os.environ.copy()
     set_env(env)
-
-    if "PYTHONPATH" in env:
-        print(env["PYTHONPATH"])
-        env["PYTHONPATH"] = base_dir + os.pathsep + env["PYTHONPATH"]
-        print(env["PYTHONPATH"])
-    else:
-        print("FFFFF")
-        env["PYTHONPATH"] = base_dir
 
     if platform.system() == "Windows":
         python_exec = os.path.join(base_dir, "venv", "Scripts", "python.exe")

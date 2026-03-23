@@ -1,6 +1,7 @@
 import threading
 
 from neo4j import GraphDatabase
+import os
 
 from django.db import close_old_connections
 from django.http import HttpResponse
@@ -9,6 +10,8 @@ from src.db_access import get_request, put_request
 from src.from_neo4j import from_neo4j
 from src.neo4j_db import set_to_neo4j
 from src.sources.collector import collect_all_sources
+
+# TmpStorage = None
 
 
 def home(request):
@@ -34,19 +37,18 @@ def start(reqest):
         r.status = "completed"
         r.save()
         print(data)
-        uri = "bolt://localhost:7687"
-        username = "neo4j"
-        password = "12345678"
-        driver = GraphDatabase.driver(uri, auth=(username, password))
-        set_to_neo4j(driver, data)
-        mist = from_neo4j(driver)
-        print(mist)
-        driver.close()
+        uri = os.environ.get("NEO_URI")
+        username = os.environ.get("NEO_USER")
+        password = os.environ.get("NEO_PASSWORD")
+        # driver = GraphDatabase.driver(uri, auth=(username, password))
+        # set_to_neo4j(driver, data)
+        # mist = from_neo4j(driver)
+        # print(mist)
+        # driver.close()
 
     thread = threading.Thread(target=task)
     thread.daemon = True  # поток завершится при остановке основного процесса
     thread.start()
-    # Вызвать функцию Кати
     return HttpResponse(f"{req_id}")
 
 
