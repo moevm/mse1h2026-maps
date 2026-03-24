@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const nodes = data.nodes.map(node => ({
                     id: node.id,
-                    label: node.caption || node.properties?.name || node.id,
+                    label: node.properties?.label_en || node.caption || node.properties?.name || node.id,
                     title: node.properties?.info || 'Нет информации',
                     group: node.labels?.[0] || 'default',
                     font: { size: 14, color: '#000000' }
