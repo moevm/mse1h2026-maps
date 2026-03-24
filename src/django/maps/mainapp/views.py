@@ -1,19 +1,14 @@
-import threading
-
-from neo4j import GraphDatabase
 import os
+import threading
 
 from django.db import close_old_connections
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
-from neo4j_viz import Layout
-from neo4j_viz.colors import ColorSpace
+from neo4j import GraphDatabase
 
 from src.db_access import get_request, put_request
 from src.neo4j_db import set_to_neo4j, get_from_neo4j
 from src.sources.collector import collect_all_sources
-
-import json
 
 
 def home(request):
@@ -37,7 +32,6 @@ def start(request):
         r.save()
         _, data = collect_all_sources(topic, req_id)
 
-
         print(data)
         uri = os.environ.get("NEO_URI")
         username = os.environ.get("NEO_USER")
@@ -45,11 +39,6 @@ def start(request):
         driver = GraphDatabase.driver(uri, auth=(username, password))
 
         set_to_neo4j(driver, data)
-
-        with open("json/graph_example.json", "r", encoding="utf-8") as f:
-            data2 = json.load(f)
-
-        set_to_neo4j(driver, data2)
 
         driver.close()
 
@@ -70,10 +59,34 @@ def get_widget(request):
     username = os.environ.get("NEO_USER")
     password = os.environ.get("NEO_PASSWORD")
     driver = GraphDatabase.driver(uri, auth=(username, password))
-    vg = get_from_neo4j(driver, topic)
+    VG = get_from_neo4j(driver, topic)
     driver.close()
 
-    for node in vg.nodes:
+    nodes = []
+    for node in VG.nodes:
+        nodes.append({
+            "id": node.id,
+            "caption": node.caption,  # или ":".join(node.properties["labels"])
+            "labels": node.properties.get("labels", []),
+            "properties": node.properties
+        })
+
+    relationships = []
+    for rel in VG.relationships:
+        relationships.append({
+            "id": rel.id,
+            "from": rel.source,
+            "to": rel.target,
+            "caption": rel.properties.get("type", ""),
+            "properties": rel.properties
+        })
+
+    return JsonResponse({
+        "nodes": nodes,
+        "relationships": relationships
+    })
+
+    """for node in vg.nodes:
         node.caption = node.properties.get("name", node.id)
         node.properties["panel_data"] = {
             "name": node.properties.get("name"),
@@ -87,13 +100,6 @@ def get_widget(request):
 
     vg.color_nodes(property="name", color_space=ColorSpace.DISCRETE)
 
-    """widget = vg.render_widget(
-        layout=Layout.FORCE_DIRECTED,
-        renderer="canvas",
-        width="100%",
-        height="600px"
-    )"""
-
     widget = vg.render(
         layout=Layout.FORCE_DIRECTED,
         renderer="canvas",
@@ -101,11 +107,6 @@ def get_widget(request):
         height="600px")
 
     return JsonResponse({
-        'nodes': vg.nodes,
-        'relationships': vg.relationships
-    })
-
-    """return JsonResponse({
         'html': widget.data
     })"""
 

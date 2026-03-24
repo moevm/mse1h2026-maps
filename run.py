@@ -37,7 +37,7 @@ def main():
 
     manage_py = os.path.join(base_dir, "src", "django", "maps", "manage.py")
 
-    cmd = [python_exec, manage_py, "runserver"]
+    cmd = [python_exec, manage_py, "migrate"]
 
     try:
         subprocess.run(cmd, env=env, check=True)
