@@ -1,4 +1,8 @@
 {
+  "query": "Newton's method",
+  "sources": [
+    "semantic_scholar.json"
+  ],
   "nodes": [
     {
       "uid": "semanticscholar:b475626792d4ea51b7ceb306eaf82d998094c744",
