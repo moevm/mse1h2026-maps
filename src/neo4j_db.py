@@ -77,4 +77,4 @@ def get_from_neo4j(driver, query):
         """, {"q": query})
 
         vg = from_neo4j(result, row_limit=10000)
-        return  vg.__dict__
+        return  vg

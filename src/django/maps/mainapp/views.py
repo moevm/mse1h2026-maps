@@ -20,11 +20,6 @@ def start(request):
     print(topic)
     req_id = put_request(topic)
 
-    # создать JSON файл и положить его в модель (БД)
-    # в названии JSON можно добавить ID
-    # использовать функцию Глеба
-    # если возможно, то вернуть id сразу
-
     def task():
         close_old_connections()
         r = get_request(req_id)
@@ -66,7 +61,7 @@ def get_widget(request):
     for node in VG.nodes:
         nodes.append({
             "id": node.id,
-            "caption": node.caption,  # или ":".join(node.properties["labels"])
+            "caption": node.caption,
             "labels": node.properties.get("labels", []),
             "properties": node.properties
         })
@@ -85,30 +80,6 @@ def get_widget(request):
         "nodes": nodes,
         "relationships": relationships
     })
-
-    """for node in vg.nodes:
-        node.caption = node.properties.get("name", node.id)
-        node.properties["panel_data"] = {
-            "name": node.properties.get("name"),
-            "info": node.properties.get("info", "Нет информации"),
-            "links": node.properties.get("links", []),
-            "resources": node.properties.get("resources", [])
-        }
-
-    for rel in vg.relationships:
-        rel.caption = rel.properties.get("type", "связь")
-
-    vg.color_nodes(property="name", color_space=ColorSpace.DISCRETE)
-
-    widget = vg.render(
-        layout=Layout.FORCE_DIRECTED,
-        renderer="canvas",
-        width="100%",
-        height="600px")
-
-    return JsonResponse({
-        'html': widget.data
-    })"""
 
 
 def node_info(request):
