@@ -1,0 +1,356 @@
+{
+  "nodes": [
+    {
+      "uid": "semanticscholar:b475626792d4ea51b7ceb306eaf82d998094c744",
+      "labels": [
+        "Entity",
+        "Paper"
+      ],
+      "properties": {
+        "label_en": "On the Convergence of Newton's Method in Power Flow Studies for DC Microgrids",
+        "year": 2018,
+        "citations": 138,
+        "doi": "10.1109/TPWRS.2018.2820430",
+        "authors": "A. Garcés",
+        "abstract": "The power flow is a nonlinear problem that requires a Newton's method to be solved in dc microgrids with constant power terminals. This paper presents sufficient conditions for the quadratic convergence of the Newton's method in this type of grids. The classic Newton's method as well as an approximated Newton's method are analyzed in both master–slave and island operation with droop controls. Requirements for the convergence as well as for the existence and uniqueness of the solution starting from voltages close to 1 pu are presented. Computational results complement this theoretical analysis."
+      }
+    },
+    {
+      "uid": "semanticscholar:a8eb5922800195cf39842d8c54e0ff855f0554ea",
+      "labels": [
+        "Entity",
+        "Paper"
+      ],
+      "properties": {
+        "label_en": "Global linear convergence of Newton's method without strong-convexity or Lipschitz gradients",
+        "year": 2018,
+        "citations": 61,
+        "authors": "Sai Praneeth Karimireddy, Sebastian U. Stich, Martin Jaggi",
+        "abstract": "We show that Newton's method converges globally at a linear rate for objective functions whose Hessians are stable. This class of problems includes many functions which are not strongly convex, such as logistic regression. Our linear convergence result is (i) affine-invariant, and holds even if an (ii) approximate Hessian is used, and if the subproblems are (iii) only solved approximately. Thus we theoretically demonstrate the superiority of Newton's method over first-order methods, which would only achieve a sublinear $O(1/t^2)$ rate under similar conditions."
+      }
+    },
+    {
+      "uid": "semanticscholar:f2bd1e88b8cea63a5f8922994cddb45cbea505ed",
+      "labels": [
+        "Entity",
+        "Paper"
+      ],
+      "properties": {
+        "label_en": "Quantum gradient descent and Newton’s method for constrained polynomial optimization",
+        "year": 2016,
+        "citations": 161,
+        "doi": "10.1088/1367-2630/ab2a9e",
+        "authors": "P. Rebentrost, M. Schuld, Leonard Wossnig, Francesco Petruccione, S. Lloyd",
+        "abstract": "Optimization problems in disciplines such as machine learning are commonly solved with iterative methods. Gradient descent algorithms find local minima by moving along the direction of steepest descent while Newton’s method takes into account curvature information and thereby often improves convergence. Here, we develop quantum versions of these iterative optimization algorithms and apply them to polynomial optimization with a unit norm constraint. In each step, multiple copies of the current candidate are used to improve the candidate using quantum phase estimation, an adapted quantum state exponentiation scheme, as well as quantum matrix multiplications and inversions. The required operations perform polylogarithmically in the dimension of the solution vector and exponentially in the number of iterations. Therefore, the quantum algorithm can be useful for high-dimensional problems where a small number of iterations is sufficient."
+      }
+    },
+    {
+      "uid": "semanticscholar:b6bad936e1a6ca0a9cee44f68ad9064e43ad67e2",
+      "labels": [
+        "Entity",
+        "Paper"
+      ],
+      "properties": {
+        "label_en": "Nonlinear Preconditioning: How to Use a Nonlinear Schwarz Method to Precondition Newton's Method",
+        "year": 2016,
+        "citations": 77,
+        "doi": "10.1137/15M102887X",
+        "authors": "V. Dolean, M. Gander, W. Kheriji, Felix Kwok, R. Masson",
+        "abstract": "For linear problems, domain decomposition methods can be used directly as iterative solvers, but also as preconditioners for Krylov methods. In practice, Krylov acceleration is almost always used, since the Krylov method finds a much better residual polynomial than the stationary iteration, and thus converges much faster. We show in this paper that also for non-linear problems, domain decomposition methods can either be used directly as iterative solvers, or one can use them as preconditioners for Newton's method. For the concrete case of the parallel Schwarz method, we show that we obtain a preconditioner we call RASPEN (Restricted Additive Schwarz Preconditioned Exact Newton) which is similar to ASPIN (Additive Schwarz Preconditioned Inexact Newton), but with all components directly defined by the iterative method. This has the advantage that RASPEN already converges when used as an iterative solver, in contrast to ASPIN, and we thus get a substantially better preconditioner for Newton's method. The iterative construction also allows us to naturally define a coarse correction using the multigrid full approximation scheme, which leads to a convergent two level non-linear iterative domain decomposition method and a two level RASPEN non-linear preconditioner. We illustrate our findings with numerical results on the Forchheimer equation and a non-linear diffusion problem."
+      }
+    },
+    {
+      "uid": "semanticscholar:32eaf30fac459e7c9f7faea1a4907f4cc085c29c",
+      "labels": [
+        "Entity",
+        "Paper"
+      ],
+      "properties": {
+        "label_en": "Improving Newton's Method Performance by Parametrization: The Case of the Richards Equation",
+        "year": 2016,
+        "citations": 49,
+        "doi": "10.1137/16M1083414",
+        "authors": "K. Brenner, C. Cancès",
+        "abstract": "The nonlinear systems obtained by discretizing degenerate parabolic equations may be hard to solve, especially with Newton's method. In this paper, we apply to Richards equation a strategy that consists in defining a new primary unknown for the continuous equation in order to stabilize Newton's method by parametrizing the graph linking the pressure and the saturation. The resulting form of Richards equation is then discretized thanks to a monotone Finite Volume scheme. We prove the well-posedness of the numerical scheme. Then we show under appropriate non-degeneracy conditions on the parametrization that Newton\\^as method converges locally and quadratically. Finally, we provide numerical evidences of the efficiency of our approach."
+      }
+    },
+    {
+      "uid": "semanticscholar:3475fa4caf43c2b017057896fc75bec46bc48e52",
+      "labels": [
+        "Entity",
+        "Paper"
+      ],
+      "properties": {
+        "label_en": "Newton's method with deflation for isolated singularities of polynomial systems",
+        "year": 2004,
+        "citations": 165,
+        "doi": "10.1016/j.tcs.2006.02.018",
+        "authors": "A. Leykin, J. Verschelde, Ailing Zhao",
+        "abstract": "We present a modification of Newton's method to restore quadratic convergence for isolated singular solutions of polynomial systems. Our method is symbolic-numeric: we produce a new polynomial system which has the original multiple solution as a regular root. Using standard bases, a tool for the symbolic computation of multiplicities, we show that the number of deflation stages is bounded by the multiplicity of the isolated root. Our implementation performs well on a large class of applications."
+      }
+    },
+    {
+      "uid": "semanticscholar:a641960099ada84b2a0005be72f554e77695a276",
+      "labels": [
+        "Entity",
+        "Paper"
+      ],
+      "properties": {
+        "label_en": "Newton's Method for Solving Inclusions Using Set-Valued Approximations",
+        "year": 2015,
+        "citations": 48,
+        "doi": "10.1137/130926730",
+        "authors": "S. Adly, R. Cibulka, H. Ngai",
+        "abstract": "Results on stability of both local and global metric regularity under set-valued perturbations are presented. As an application, we study (super)linear convergence of a Newton- type iterative process for solving generalized equations. We investigate several iterative schemes such as the inexact Newton’s method, the nonsmooth Newton’s method for semismooth functions, the inexact proximal point algorithm, etc. Moreover, we also cover a forward-backward splitting algorithm for finding a zero of the sum of two multivalued (not necessarily monotone) operators. Finally, a globalization of the Newton’s method is discussed."
+      }
+    },
+    {
+      "uid": "semanticscholar:d62a4216e8070d3d9466a44493e3f8844ee575c1",
+      "labels": [
+        "Entity",
+        "Paper"
+      ],
+      "properties": {
+        "label_en": "Kantorovich's Theorem on Newton's Method in Riemannian Manifolds",
+        "year": 2002,
+        "citations": 133,
+        "doi": "10.1006/JCOM.2001.0582",
+        "authors": "O. P. Ferreira, B. Svaiter",
+        "abstract": "Newton's method for finding a zero of a vectorial function is a powerful theoretical and practical tool. One of the drawbacks of the classical convergence proof is that closeness to a non-singular zero must be supposed a priori. Kantorovich's theorem on Newton's method has the advantage of proving existence of a solution and convergence to it under very mild conditions. This theorem holds in Banach spaces. Newton's method has been extended to the problem of finding a singularity of a vectorial field in Riemannian manifold. We extend Kantorovich's theorem on Newton's method to Riemannian manifolds."
+      }
+    },
+    {
+      "uid": "semanticscholar:40f4863985d7202cc2970405d9b478dd603f80b7",
+      "labels": [
+        "Entity",
+        "Paper"
+      ],
+      "properties": {
+        "label_en": "A simple modification of Newton's method to achieve convergence of order 1 + √2",
+        "year": 2014,
+        "citations": 96,
+        "doi": "10.1016/j.aml.2013.10.008",
+        "authors": "T. McDougall, S. Wotherspoon",
+        "abstract": "Abstract A simple modification to the standard Newton method for approximating the root of a univariate function is described and analyzed. For the same number of function and derivative evaluations, the modified method converges faster, with the convergence order of the method being 1 + 2 ≈ 2.4 compared with 2 for the standard Newton method. Numerical examples demonstrate the faster convergence achieved with this modification of Newton’s method. This modified Newton–Raphson method is relatively simple and is robust; it is more likely to converge to a solution than are either the higher order (4th order and 6th order) schemes or Newton’s method itself."
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "from_uid": "semanticscholar:b475626792d4ea51b7ceb306eaf82d998094c744",
+      "to_uid": "semanticscholar:a8eb5922800195cf39842d8c54e0ff855f0554ea",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.358
+      }
+    },
+    {
+      "from_uid": "semanticscholar:b475626792d4ea51b7ceb306eaf82d998094c744",
+      "to_uid": "semanticscholar:b6bad936e1a6ca0a9cee44f68ad9064e43ad67e2",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.344
+      }
+    },
+    {
+      "from_uid": "semanticscholar:b475626792d4ea51b7ceb306eaf82d998094c744",
+      "to_uid": "semanticscholar:32eaf30fac459e7c9f7faea1a4907f4cc085c29c",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.335
+      }
+    },
+    {
+      "from_uid": "semanticscholar:b475626792d4ea51b7ceb306eaf82d998094c744",
+      "to_uid": "semanticscholar:3475fa4caf43c2b017057896fc75bec46bc48e52",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.371
+      }
+    },
+    {
+      "from_uid": "semanticscholar:b475626792d4ea51b7ceb306eaf82d998094c744",
+      "to_uid": "semanticscholar:a641960099ada84b2a0005be72f554e77695a276",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.38
+      }
+    },
+    {
+      "from_uid": "semanticscholar:b475626792d4ea51b7ceb306eaf82d998094c744",
+      "to_uid": "semanticscholar:40f4863985d7202cc2970405d9b478dd603f80b7",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.382
+      }
+    },
+    {
+      "from_uid": "semanticscholar:a8eb5922800195cf39842d8c54e0ff855f0554ea",
+      "to_uid": "semanticscholar:f2bd1e88b8cea63a5f8922994cddb45cbea505ed",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.382
+      }
+    },
+    {
+      "from_uid": "semanticscholar:a8eb5922800195cf39842d8c54e0ff855f0554ea",
+      "to_uid": "semanticscholar:b6bad936e1a6ca0a9cee44f68ad9064e43ad67e2",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.371
+      }
+    },
+    {
+      "from_uid": "semanticscholar:a8eb5922800195cf39842d8c54e0ff855f0554ea",
+      "to_uid": "semanticscholar:32eaf30fac459e7c9f7faea1a4907f4cc085c29c",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.341
+      }
+    },
+    {
+      "from_uid": "semanticscholar:a8eb5922800195cf39842d8c54e0ff855f0554ea",
+      "to_uid": "semanticscholar:3475fa4caf43c2b017057896fc75bec46bc48e52",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.393
+      }
+    },
+    {
+      "from_uid": "semanticscholar:a8eb5922800195cf39842d8c54e0ff855f0554ea",
+      "to_uid": "semanticscholar:a641960099ada84b2a0005be72f554e77695a276",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.527
+      }
+    },
+    {
+      "from_uid": "semanticscholar:a8eb5922800195cf39842d8c54e0ff855f0554ea",
+      "to_uid": "semanticscholar:d62a4216e8070d3d9466a44493e3f8844ee575c1",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.396
+      }
+    },
+    {
+      "from_uid": "semanticscholar:a8eb5922800195cf39842d8c54e0ff855f0554ea",
+      "to_uid": "semanticscholar:40f4863985d7202cc2970405d9b478dd603f80b7",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.371
+      }
+    },
+    {
+      "from_uid": "semanticscholar:f2bd1e88b8cea63a5f8922994cddb45cbea505ed",
+      "to_uid": "semanticscholar:3475fa4caf43c2b017057896fc75bec46bc48e52",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.385
+      }
+    },
+    {
+      "from_uid": "semanticscholar:b6bad936e1a6ca0a9cee44f68ad9064e43ad67e2",
+      "to_uid": "semanticscholar:32eaf30fac459e7c9f7faea1a4907f4cc085c29c",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.502
+      }
+    },
+    {
+      "from_uid": "semanticscholar:b6bad936e1a6ca0a9cee44f68ad9064e43ad67e2",
+      "to_uid": "semanticscholar:3475fa4caf43c2b017057896fc75bec46bc48e52",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.423
+      }
+    },
+    {
+      "from_uid": "semanticscholar:b6bad936e1a6ca0a9cee44f68ad9064e43ad67e2",
+      "to_uid": "semanticscholar:a641960099ada84b2a0005be72f554e77695a276",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.483
+      }
+    },
+    {
+      "from_uid": "semanticscholar:b6bad936e1a6ca0a9cee44f68ad9064e43ad67e2",
+      "to_uid": "semanticscholar:d62a4216e8070d3d9466a44493e3f8844ee575c1",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.365
+      }
+    },
+    {
+      "from_uid": "semanticscholar:b6bad936e1a6ca0a9cee44f68ad9064e43ad67e2",
+      "to_uid": "semanticscholar:40f4863985d7202cc2970405d9b478dd603f80b7",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.386
+      }
+    },
+    {
+      "from_uid": "semanticscholar:32eaf30fac459e7c9f7faea1a4907f4cc085c29c",
+      "to_uid": "semanticscholar:3475fa4caf43c2b017057896fc75bec46bc48e52",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.403
+      }
+    },
+    {
+      "from_uid": "semanticscholar:32eaf30fac459e7c9f7faea1a4907f4cc085c29c",
+      "to_uid": "semanticscholar:a641960099ada84b2a0005be72f554e77695a276",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.422
+      }
+    },
+    {
+      "from_uid": "semanticscholar:32eaf30fac459e7c9f7faea1a4907f4cc085c29c",
+      "to_uid": "semanticscholar:40f4863985d7202cc2970405d9b478dd603f80b7",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.352
+      }
+    },
+    {
+      "from_uid": "semanticscholar:3475fa4caf43c2b017057896fc75bec46bc48e52",
+      "to_uid": "semanticscholar:a641960099ada84b2a0005be72f554e77695a276",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.46
+      }
+    },
+    {
+      "from_uid": "semanticscholar:3475fa4caf43c2b017057896fc75bec46bc48e52",
+      "to_uid": "semanticscholar:d62a4216e8070d3d9466a44493e3f8844ee575c1",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.398
+      }
+    },
+    {
+      "from_uid": "semanticscholar:3475fa4caf43c2b017057896fc75bec46bc48e52",
+      "to_uid": "semanticscholar:40f4863985d7202cc2970405d9b478dd603f80b7",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.539
+      }
+    },
+    {
+      "from_uid": "semanticscholar:a641960099ada84b2a0005be72f554e77695a276",
+      "to_uid": "semanticscholar:d62a4216e8070d3d9466a44493e3f8844ee575c1",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.496
+      }
+    },
+    {
+      "from_uid": "semanticscholar:a641960099ada84b2a0005be72f554e77695a276",
+      "to_uid": "semanticscholar:40f4863985d7202cc2970405d9b478dd603f80b7",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.326
+      }
+    }
+  ]
+}
