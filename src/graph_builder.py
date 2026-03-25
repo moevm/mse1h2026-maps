@@ -1,5 +1,5 @@
 import json
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
 
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -18,6 +18,7 @@ def preprocess_text(text: Optional[str]) -> str:
         return ""
     return text.strip()
 
+
 # Алгоритм основан не ембеддинге(embedding)
 # Готовые модели преобразуют описание статей в вектора
 # Близость статей сравнивается с использованием косинусоидальной меры
@@ -25,13 +26,13 @@ def preprocess_text(text: Optional[str]) -> str:
 
 # all-mpnet-base-v2 (Показывает хорошие результаты, но работает не слишком быстро)
 # all-MiniLM-L6-v2 (Удовлетворительные результаты и быстрая скорость)
-# allenai-specter 
+# allenai-specter
 
 
 def build_similarity_graph(
     papers: List[Dict[str, Any]],
     model_name: str = "all-mpnet-base-v2",
-    threshold: float = 0.3
+    threshold: float = 0.3,
 ) -> nx.Graph:
     abstracts = [preprocess_text(p.get("abstract", "")) for p in papers]
 
@@ -79,10 +80,7 @@ def visualize_graph(G: nx.Graph, papers: List[Dict[str, Any]], figsize=(12, 8)):
 
 
 def create_graph_dict(
-    G: nx.Graph,
-    papers: List[Dict[str, Any]],
-    query: str,
-    sources: List[str]
+    G: nx.Graph, papers: List[Dict[str, Any]], query: str, sources: List[str]
 ) -> Dict[str, Any]:
     nodes = []
     relationships = []
@@ -117,7 +115,9 @@ def create_graph_dict(
         if abstract:
             properties["abstract"] = abstract
 
-        nodes.append({"uid": uid, "labels": ["Entity", "Paper"], "properties": properties})
+        nodes.append(
+            {"uid": uid, "labels": ["Entity", "Paper"], "properties": properties}
+        )
 
     for u, v, data in G.edges(data=True):
         weight = data.get("weight", 0.5)
@@ -133,7 +133,7 @@ def create_graph_dict(
         "query": query,
         "sources": sources,
         "nodes": nodes,
-        "relationships": relationships
+        "relationships": relationships,
     }
 
 
@@ -148,12 +148,10 @@ def build_graph(
     sources: List[str],
     model_name: str = "all-mpnet-base-v2",
     threshold: float = 0.4,
-    visualize: bool = False
+    visualize: bool = False,
 ) -> Dict[str, Any]:
     G = build_similarity_graph(papers, model_name=model_name, threshold=threshold)
     result = create_graph_dict(G, papers, query, sources)
     if visualize:
         visualize_graph(G, papers)
     return result
-
-

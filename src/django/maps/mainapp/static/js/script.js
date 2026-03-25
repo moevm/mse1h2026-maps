@@ -2,7 +2,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM загружен, инициализация...');
-    
+
     const sidebar = document.getElementById('sidebar');
     const toggleBtn = document.getElementById('sidebarToggle');
     const mainContent = document.getElementById('mainContent');
@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let statusPollInterval = null;
     let network = null;
-    
+
     if (typeof vis === 'undefined') {
         console.error('vis.js не загружена!');
         if (graphPlaceholder) {
@@ -25,9 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return;
     }
-    
+
     console.log('vis.js загружена успешно, версия:', vis.version);
-    
+
     // Toggle sidebar
     if (toggleBtn) {
         toggleBtn.addEventListener('click', function() {
@@ -41,15 +41,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    
+
     // ===== ФУНКЦИЯ ОПРОСА СТАТУСА =====
     async function checkRequestStatus(requestId) {
         try {
             const response = await fetch(`/api/status/?id=${requestId}`);
             const status = await response.text();
-            
+
             const graphPlaceholder = document.querySelector('.graph-placeholder');
-            
+
             switch(status) {
                 case 'pending':
                     graphPlaceholder.innerHTML = `
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     `;
                     break;
-                    
+
                 case 'processing':
                     graphPlaceholder.innerHTML = `
                         <div style="padding: 20px; text-align: center;">
@@ -70,12 +70,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     `;
                     break;
-                    
+
                 case 'completed':
                     await loadGraphWidget(requestId);
                     stopStatusPolling();
                     break;
-                    
+
                 case 'error':
                     graphPlaceholder.innerHTML = `
                         <div style="padding: 20px; text-align: center;">
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     `;
                     stopStatusPolling();
                     break;
-                    
+
                 default:
                     graphPlaceholder.innerHTML = `
                         <div style="padding: 20px; text-align: center;">
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     `;
             }
-            
+
         } catch (error) {
             console.error('Ошибка в checkRequestStatus:', error);
             const graphPlaceholder = document.querySelector('.graph-placeholder');
@@ -108,21 +108,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-    
+
     // ===== ЗАГРУЗКА ИНТЕРАКТИВНОГО ГРАФА =====
     async function loadGraphWidget(requestId) {
         try {
             const graphPlaceholder = document.querySelector('.graph-placeholder');
             graphPlaceholder.innerHTML = '<div style="text-align: center; padding: 20px;">Загрузка графа...</div>';
-            
+
             const response = await fetch(`/api/graph-widget/?id=${requestId}`);
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
-            
+
             const data = await response.json();
             console.log('Получены данные графа:', data);
-            
+
             if (data.nodes && data.relationships) {
                 if (data.nodes.length === 0) {
                     graphPlaceholder.innerHTML = `
@@ -133,9 +133,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     `;
                     return;
                 }
-                
+
                 graphPlaceholder.innerHTML = '';
-                
+
                 const graphContainer = document.createElement('div');
                 graphContainer.id = 'graph-container';
                 graphContainer.style.width = '100%';
@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 graphContainer.style.borderRadius = '4px';
                 graphContainer.style.backgroundColor = '#f5f5f5';
                 graphPlaceholder.appendChild(graphContainer);
-                
+
                 const nodes = data.nodes.map(node => ({
                     id: node.id,
                     label: node.properties?.label_en || node.caption || node.properties?.name || node.id,
@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     group: node.labels?.[0] || 'default',
                     font: { size: 14, color: '#000000' }
                 }));
-                
+
                 const edges = data.relationships.map(rel => ({
                     id: rel.id,
                     from: rel.from,
@@ -163,12 +163,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     arrows: 'to',
                     font: { size: 12, align: 'middle' }
                 }));
-                
+
                 console.log('Создание графа:', { nodesCount: nodes.length, edgesCount: edges.length });
-                
+
                 const nodesDataSet = new vis.DataSet(nodes);
                 const edgesDataSet = new vis.DataSet(edges);
-                
+
                 const options = {
                     nodes: {
                         shape: 'dot',
@@ -203,9 +203,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         keyboard: true
                     }
                 };
-                
+
                 network = new vis.Network(graphContainer, { nodes: nodesDataSet, edges: edgesDataSet }, options);
-                
+
                 network.on('click', function(params) {
                     if (params.nodes.length > 0) {
                         const nodeId = params.nodes[0];
@@ -231,18 +231,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                 });
-                
+
                 // Центрируем граф
                 setTimeout(() => {
                     if (network) {
                         network.fit();
                     }
                 }, 500);
-                
+
             } else {
                 throw new Error('Неверный формат данных графа');
             }
-            
+
         } catch (error) {
             console.error('Ошибка загрузки графа:', error);
             const graphPlaceholder = document.querySelector('.graph-placeholder');
@@ -255,20 +255,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-    
+
     function startStatusPolling(requestId) {
         if (statusPollInterval) clearInterval(statusPollInterval);
         checkRequestStatus(requestId);
         statusPollInterval = setInterval(() => checkRequestStatus(requestId), 2000);
     }
-    
+
     function stopStatusPolling() {
         if (statusPollInterval) {
             clearInterval(statusPollInterval);
             statusPollInterval = null;
         }
     }
-    
+
     // ===== ОТПРАВКА ЗАПРОСА =====
     async function sendToDjango(keyWords, options) {
         try {
@@ -277,7 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 network.destroy();
                 network = null;
             }
-            
+
             const graphPlaceholder = document.querySelector('.graph-placeholder');
             if (graphPlaceholder) {
                 graphPlaceholder.innerHTML = `
@@ -287,23 +287,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
             }
-            
+
             const params = new URLSearchParams();
             params.append('topic', keyWords);
-            
+
             for (let [key, value] of Object.entries(options)) {
                 params.append(key, value);
             }
-            
+
             const response = await fetch(`/api/start/?${params.toString()}`);
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
             }
-            
+
             const requestId = await response.text();
             console.log('Получен requestId:', requestId);
-            
+
             if (graphPlaceholder) {
                 graphPlaceholder.innerHTML = `
                     <div style="padding: 20px; text-align: center;">
@@ -313,9 +313,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
             }
-            
+
             startStatusPolling(requestId);
-            
+
         } catch (error) {
             console.error('Ошибка отправки запроса:', error);
             const graphPlaceholder = document.querySelector('.graph-placeholder');
@@ -328,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-    
+
     function drawGraph(keyWords, options) {
         if (!keyWords || keyWords.trim() === '') {
             alert('Пожалуйста, введите поисковый запрос');
@@ -337,29 +337,29 @@ document.addEventListener('DOMContentLoaded', () => {
         stopStatusPolling();
         sendToDjango(keyWords, options);
     }
-    
+
     function getOptions() {
         const checkboxes = document.querySelectorAll('.sidebar-content input[type="checkbox"]');
         const options = {};
-        
+
         checkboxes.forEach(checkbox => {
             const label = document.querySelector(`label[for="${checkbox.id}"]`);
             const key = label ? label.textContent.trim() : checkbox.id;
             options[key] = checkbox.checked;
         });
-        
+
         return options;
     }
-    
+
     // ===== ПОИСК =====
     if (searchButton && searchField) {
         console.log('Навешиваем обработчики на кнопку поиска');
-        
+
         const handleSearch = () => {
             console.log('Поиск:', searchField.value);
             drawGraph(searchField.value, getOptions());
         };
-        
+
         searchButton.addEventListener('click', handleSearch);
         searchField.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -370,11 +370,11 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('Кнопка или поле поиска не найдены!');
     }
-    
+
     // ===== ВЫДВИЖНАЯ ПАНЕЛЬ =====
     const infoPanel = document.getElementById('infoPanel');
     const closeInfoPanel = document.getElementById('closeInfoPanel');
-    
+
     const overlay = document.createElement('div');
     overlay.className = 'info-panel-overlay';
     overlay.style.cssText = `
@@ -388,18 +388,18 @@ document.addEventListener('DOMContentLoaded', () => {
         display: none;
     `;
     document.body.appendChild(overlay);
-    
+
     function openInfoPanel(entityData) {
         console.log('Открываем панель:', entityData);
-        
+
         const entityName = document.getElementById('entityName');
         const entityInfo = document.getElementById('entityInfo');
         const linksList = document.getElementById('entityLinks');
         const resourcesList = document.getElementById('entityResources');
-        
+
         if (entityName) entityName.textContent = entityData.name || 'Название не указано';
         if (entityInfo) entityInfo.textContent = entityData.info || 'Информация отсутствует';
-        
+
         if (linksList) {
             linksList.innerHTML = '';
             if (entityData.links && entityData.links.length > 0) {
@@ -412,7 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 linksList.innerHTML = '<li>Нет связей</li>';
             }
         }
-        
+
         if (resourcesList) {
             resourcesList.innerHTML = '';
             if (entityData.resources && entityData.resources.length > 0) {
@@ -429,14 +429,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 resourcesList.innerHTML = '<li>Нет ссылок</li>';
             }
         }
-        
+
         if (infoPanel) {
             infoPanel.classList.add('open');
             infoPanel.style.display = 'block';
         }
         if (overlay) overlay.style.display = 'block';
     }
-    
+
     function closeInfoPanelFunction() {
         if (infoPanel) {
             infoPanel.classList.remove('open');
@@ -444,20 +444,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (overlay) overlay.style.display = 'none';
     }
-    
+
     if (closeInfoPanel) {
         closeInfoPanel.addEventListener('click', closeInfoPanelFunction);
     }
-    
+
     if (overlay) {
         overlay.addEventListener('click', closeInfoPanelFunction);
     }
-    
+
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape' && infoPanel && infoPanel.classList.contains('open')) {
             closeInfoPanelFunction();
         }
     });
-    
+
     console.log('Приложение полностью инициализировано');
 });

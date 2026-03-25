@@ -3,7 +3,9 @@ from django.db import models
 
 class TopicRequest(models.Model):
     topic = models.CharField(max_length=200)
-    status = models.CharField(max_length=20, default='pending')  # pending, processing, completed, error
+    status = models.CharField(
+        max_length=20, default="pending"
+    )  # pending, processing, completed, error
     created_at = models.DateTimeField(auto_now_add=True)
 
 

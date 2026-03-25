@@ -31,13 +31,13 @@ def main():
     set_env(env)
 
     if platform.system() == "Windows":
-        python_exec = os.path.join(base_dir, "venv", "Scripts", "python.exe")
+        python_exec = os.path.join(base_dir, ".venv", "Scripts", "python.exe")
     else:
-        python_exec = os.path.join(base_dir, "venv", "bin", "python")
+        python_exec = os.path.join(base_dir, ".venv", "bin", "python")
 
     manage_py = os.path.join(base_dir, "src", "django", "maps", "manage.py")
 
-    cmd = [python_exec, manage_py, "migrate"]
+    cmd = [python_exec, manage_py, "runserver"]
 
     try:
         subprocess.run(cmd, env=env, check=True)
