@@ -1,5 +1,5 @@
 services:
-  web:
+  server:
     build: .
     ports:
       - "8000:8000"
@@ -34,7 +34,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
 
   neo4j:
     image: neo4j:5.26.23-community-ubi10
