@@ -14,9 +14,9 @@ def clean_rel_type(rel_type):
     cleaned = cleaned.strip('_')
     return cleaned
 
-
-def create_nodes(tx, nodes, query_name):
+def create_nodes(tx, nodes, query):
     uid_map = {}
+
     for node in nodes:
         labels = ':'.join(node['labels'])
         props = node.get('properties', {})
@@ -26,17 +26,17 @@ def create_nodes(tx, nodes, query_name):
             new_uid = f"{normalize_name(props['label_en'])}"
         else:
             new_uid = old_uid
-        props['query'] = query_name
+        props['query'] = query
 
         uid_map[old_uid] = new_uid
         tx.run(
             f"MERGE (n:{labels} {{uid: $uid, query: $query_param}}) SET n += $props",
             uid=new_uid,
-            query_param=query_name,
+            query_param=query,
             props=props,
         )
-    return uid_map
 
+    return uid_map
 
 def create_relationships(tx, relationships, uid_map, query):
     for rel in relationships:
@@ -69,10 +69,12 @@ def set_to_neo4j(driver, data):
 def get_from_neo4j(driver, query):
     with driver.session() as session:
         result = session.run("""
-            MATCH (n)-[r]->(m)
-            WHERE n.query = $q AND m.query = $q
+            MATCH (n)
+            WHERE n.query = $q
+            OPTIONAL MATCH (n)-[r]->(m)
+            WHERE m.query = $q
             RETURN n, r, m
         """, {"q": query})
 
         vg = from_neo4j(result, row_limit=10000)
-        return vg
+        return  vg.__dict__

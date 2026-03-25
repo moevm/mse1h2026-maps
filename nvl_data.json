@@ -1,0 +1,406 @@
+{
+  "nodes": [
+    {
+      "id": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:8",
+      "caption": "Concept:Entity",
+      "properties": {
+        "uid": "wikidata:Q374195",
+        "wiki_url": "https://www.wikidata.org/wiki/Q374195",
+        "label_ru": "метод Ньютона",
+        "label_en": "Newton's method",
+        "desc_en": "algorithm for finding a zero of a function",
+        "labels": [
+          "Concept",
+          "Entity"
+        ]
+      },
+      "color": "#ffdf81"
+    },
+    {
+      "id": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:189",
+      "caption": "Concept:Entity",
+      "properties": {
+        "uid": "wikidata:Q1085860",
+        "label_en": "root-finding algorithm",
+        "labels": [
+          "Concept",
+          "Entity"
+        ]
+      },
+      "color": "#ffdf81"
+    },
+    {
+      "id": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:190",
+      "caption": "Concept:Entity",
+      "properties": {
+        "uid": "wikidata:Q621751",
+        "label_en": "approximation algorithm",
+        "labels": [
+          "Concept",
+          "Entity"
+        ]
+      },
+      "color": "#ffdf81"
+    },
+    {
+      "id": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:187",
+      "caption": "Concept:Entity",
+      "properties": {
+        "uid": "wikidata:Q935",
+        "label_en": "Isaac Newton",
+        "labels": [
+          "Concept",
+          "Entity"
+        ]
+      },
+      "color": "#ffdf81"
+    },
+    {
+      "id": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:188",
+      "caption": "Concept:Entity",
+      "properties": {
+        "uid": "wikidata:Q569955",
+        "label_en": "Joseph Raphson",
+        "labels": [
+          "Concept",
+          "Entity"
+        ]
+      },
+      "color": "#ffdf81"
+    },
+    {
+      "id": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:191",
+      "caption": "Concept:Entity",
+      "properties": {
+        "uid": "wikidata:Q214604",
+        "label_en": "zero of a function",
+        "labels": [
+          "Concept",
+          "Entity"
+        ]
+      },
+      "color": "#ffdf81"
+    },
+    {
+      "id": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:192",
+      "caption": "Concept:Entity",
+      "properties": {
+        "uid": "wikidata:Q17086396",
+        "label_en": "Newton's method in optimization",
+        "labels": [
+          "Concept",
+          "Entity"
+        ]
+      },
+      "color": "#ffdf81"
+    },
+    {
+      "id": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:2",
+      "caption": "Concept:Entity",
+      "properties": {
+        "uid": "wikidata:Q8487137",
+        "label_en": "WikiProject Mathematics",
+        "labels": [
+          "Concept",
+          "Entity"
+        ]
+      },
+      "color": "#ffdf81"
+    },
+    {
+      "id": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:194",
+      "caption": "Concept:Entity",
+      "properties": {
+        "uid": "wikidata:Q6113138",
+        "wiki_url": "https://www.wikidata.org/wiki/Q6113138",
+        "label_ru": "Приянка Котари",
+        "label_en": "Priyanka Kothari",
+        "desc_en": "Indian actress",
+        "labels": [
+          "Concept",
+          "Entity"
+        ]
+      },
+      "color": "#ffdf81"
+    },
+    {
+      "id": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:195",
+      "caption": "Concept:Entity",
+      "properties": {
+        "uid": "wikidata:Q5",
+        "label_en": "human",
+        "labels": [
+          "Concept",
+          "Entity"
+        ]
+      },
+      "color": "#ffdf81"
+    },
+    {
+      "id": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:196",
+      "caption": "Concept:Entity",
+      "properties": {
+        "uid": "wikidata:Q1348",
+        "label_en": "Kolkata",
+        "labels": [
+          "Concept",
+          "Entity"
+        ]
+      },
+      "color": "#ffdf81"
+    },
+    {
+      "id": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:197",
+      "caption": "Concept:Entity",
+      "properties": {
+        "uid": "wikidata:Q33999",
+        "label_en": "actor",
+        "labels": [
+          "Concept",
+          "Entity"
+        ]
+      },
+      "color": "#ffdf81"
+    },
+    {
+      "id": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:198",
+      "caption": "Concept:Entity",
+      "properties": {
+        "uid": "wikidata:Q4610556",
+        "label_en": "model",
+        "labels": [
+          "Concept",
+          "Entity"
+        ]
+      },
+      "color": "#ffdf81"
+    },
+    {
+      "id": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:199",
+      "caption": "Concept:Entity",
+      "properties": {
+        "uid": "wikidata:Q668",
+        "label_en": "India",
+        "labels": [
+          "Concept",
+          "Entity"
+        ]
+      },
+      "color": "#ffdf81"
+    },
+    {
+      "id": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:200",
+      "caption": "Concept:Entity",
+      "properties": {
+        "uid": "wikidata:Q6581072",
+        "label_en": "female",
+        "labels": [
+          "Concept",
+          "Entity"
+        ]
+      },
+      "color": "#ffdf81"
+    },
+    {
+      "id": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:201",
+      "caption": "Concept:Entity",
+      "properties": {
+        "uid": "wikidata:Q62976254",
+        "label_en": "Priyanka",
+        "labels": [
+          "Concept",
+          "Entity"
+        ]
+      },
+      "color": "#ffdf81"
+    },
+    {
+      "id": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:202",
+      "caption": "Concept:Entity",
+      "properties": {
+        "uid": "wikidata:Q665105",
+        "label_en": "University of Delhi",
+        "labels": [
+          "Concept",
+          "Entity"
+        ]
+      },
+      "color": "#ffdf81"
+    },
+    {
+      "id": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:203",
+      "caption": "Concept:Entity",
+      "properties": {
+        "uid": "wikidata:Q5318408",
+        "label_en": "Dyal Singh College, Delhi",
+        "labels": [
+          "Concept",
+          "Entity"
+        ]
+      },
+      "color": "#ffdf81"
+    }
+  ],
+  "relationships": [
+    {
+      "id": "5:0cacecb6-9b08-4973-8dda-03b2db184dee:1152921504606846984",
+      "from": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:8",
+      "to": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:189",
+      "type": "INSTANCE_OF",
+      "caption": "INSTANCE_OF",
+      "properties": {
+        "type": "INSTANCE_OF"
+      }
+    },
+    {
+      "id": "5:0cacecb6-9b08-4973-8dda-03b2db184dee:1155173304420532232",
+      "from": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:8",
+      "to": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:190",
+      "type": "INSTANCE_OF",
+      "caption": "INSTANCE_OF",
+      "properties": {
+        "type": "INSTANCE_OF"
+      }
+    },
+    {
+      "id": "5:0cacecb6-9b08-4973-8dda-03b2db184dee:1152933599234752520",
+      "from": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:8",
+      "to": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:187",
+      "type": "NAMED_AFTER",
+      "caption": "NAMED_AFTER",
+      "properties": {
+        "type": "NAMED_AFTER"
+      }
+    },
+    {
+      "id": "5:0cacecb6-9b08-4973-8dda-03b2db184dee:1155185399048437768",
+      "from": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:8",
+      "to": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:188",
+      "type": "NAMED_AFTER",
+      "caption": "NAMED_AFTER",
+      "properties": {
+        "type": "NAMED_AFTER"
+      }
+    },
+    {
+      "id": "5:0cacecb6-9b08-4973-8dda-03b2db184dee:1152934698746380296",
+      "from": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:8",
+      "to": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:191",
+      "type": "COMPUTES_SOLUTION_TO",
+      "caption": "COMPUTES_SOLUTION_TO",
+      "properties": {
+        "type": "COMPUTES_SOLUTION_TO"
+      }
+    },
+    {
+      "id": "5:0cacecb6-9b08-4973-8dda-03b2db184dee:1152935798258008072",
+      "from": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:8",
+      "to": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:192",
+      "type": "DIFFERENT_FROM",
+      "caption": "DIFFERENT_FROM",
+      "properties": {
+        "type": "DIFFERENT_FROM"
+      }
+    },
+    {
+      "id": "5:0cacecb6-9b08-4973-8dda-03b2db184dee:1152936897769635848",
+      "from": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:8",
+      "to": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:2",
+      "type": "MAINTAINED_BY_WIKIPROJECT",
+      "caption": "MAINTAINED_BY_WIKIPROJECT",
+      "properties": {
+        "type": "MAINTAINED_BY_WIKIPROJECT"
+      }
+    },
+    {
+      "id": "5:0cacecb6-9b08-4973-8dda-03b2db184dee:1152921504606847170",
+      "from": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:194",
+      "to": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:195",
+      "type": "INSTANCE_OF",
+      "caption": "INSTANCE_OF",
+      "properties": {
+        "type": "INSTANCE_OF"
+      }
+    },
+    {
+      "id": "5:0cacecb6-9b08-4973-8dda-03b2db184dee:1152922604118474946",
+      "from": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:194",
+      "to": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:196",
+      "type": "PLACE_OF_BIRTH",
+      "caption": "PLACE_OF_BIRTH",
+      "properties": {
+        "type": "PLACE_OF_BIRTH"
+      }
+    },
+    {
+      "id": "5:0cacecb6-9b08-4973-8dda-03b2db184dee:1152923703630102722",
+      "from": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:194",
+      "to": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:197",
+      "type": "OCCUPATION",
+      "caption": "OCCUPATION",
+      "properties": {
+        "type": "OCCUPATION"
+      }
+    },
+    {
+      "id": "5:0cacecb6-9b08-4973-8dda-03b2db184dee:1155175503443787970",
+      "from": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:194",
+      "to": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:198",
+      "type": "OCCUPATION",
+      "caption": "OCCUPATION",
+      "properties": {
+        "type": "OCCUPATION"
+      }
+    },
+    {
+      "id": "5:0cacecb6-9b08-4973-8dda-03b2db184dee:1152924803141730498",
+      "from": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:194",
+      "to": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:199",
+      "type": "COUNTRY_OF_CITIZENSHIP",
+      "caption": "COUNTRY_OF_CITIZENSHIP",
+      "properties": {
+        "type": "COUNTRY_OF_CITIZENSHIP"
+      }
+    },
+    {
+      "id": "5:0cacecb6-9b08-4973-8dda-03b2db184dee:1152925902653358274",
+      "from": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:194",
+      "to": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:200",
+      "type": "SEX_OR_GENDER",
+      "caption": "SEX_OR_GENDER",
+      "properties": {
+        "type": "SEX_OR_GENDER"
+      }
+    },
+    {
+      "id": "5:0cacecb6-9b08-4973-8dda-03b2db184dee:1152927002164986050",
+      "from": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:194",
+      "to": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:201",
+      "type": "GIVEN_NAME",
+      "caption": "GIVEN_NAME",
+      "properties": {
+        "type": "GIVEN_NAME"
+      }
+    },
+    {
+      "id": "5:0cacecb6-9b08-4973-8dda-03b2db184dee:1152928101676613826",
+      "from": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:194",
+      "to": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:202",
+      "type": "EDUCATED_AT",
+      "caption": "EDUCATED_AT",
+      "properties": {
+        "type": "EDUCATED_AT"
+      }
+    },
+    {
+      "id": "5:0cacecb6-9b08-4973-8dda-03b2db184dee:1155179901490299074",
+      "from": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:194",
+      "to": "4:0cacecb6-9b08-4973-8dda-03b2db184dee:203",
+      "type": "EDUCATED_AT",
+      "caption": "EDUCATED_AT",
+      "properties": {
+        "type": "EDUCATED_AT"
+      }
+    }
+  ]
+}

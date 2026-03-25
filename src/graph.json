@@ -1,8 +1,4 @@
 {
-  "query": "Newton's method",
-  "sources": [
-    "semantic_scholar.json"
-  ],
   "nodes": [
     {
       "uid": "semanticscholar:b475626792d4ea51b7ceb306eaf82d998094c744",
@@ -141,11 +137,115 @@
   ],
   "relationships": [
     {
+      "from_uid": "semanticscholar:b475626792d4ea51b7ceb306eaf82d998094c744",
+      "to_uid": "semanticscholar:a8eb5922800195cf39842d8c54e0ff855f0554ea",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.358
+      }
+    },
+    {
+      "from_uid": "semanticscholar:b475626792d4ea51b7ceb306eaf82d998094c744",
+      "to_uid": "semanticscholar:b6bad936e1a6ca0a9cee44f68ad9064e43ad67e2",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.344
+      }
+    },
+    {
+      "from_uid": "semanticscholar:b475626792d4ea51b7ceb306eaf82d998094c744",
+      "to_uid": "semanticscholar:32eaf30fac459e7c9f7faea1a4907f4cc085c29c",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.335
+      }
+    },
+    {
+      "from_uid": "semanticscholar:b475626792d4ea51b7ceb306eaf82d998094c744",
+      "to_uid": "semanticscholar:3475fa4caf43c2b017057896fc75bec46bc48e52",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.371
+      }
+    },
+    {
+      "from_uid": "semanticscholar:b475626792d4ea51b7ceb306eaf82d998094c744",
+      "to_uid": "semanticscholar:a641960099ada84b2a0005be72f554e77695a276",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.38
+      }
+    },
+    {
+      "from_uid": "semanticscholar:b475626792d4ea51b7ceb306eaf82d998094c744",
+      "to_uid": "semanticscholar:40f4863985d7202cc2970405d9b478dd603f80b7",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.382
+      }
+    },
+    {
+      "from_uid": "semanticscholar:a8eb5922800195cf39842d8c54e0ff855f0554ea",
+      "to_uid": "semanticscholar:f2bd1e88b8cea63a5f8922994cddb45cbea505ed",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.382
+      }
+    },
+    {
+      "from_uid": "semanticscholar:a8eb5922800195cf39842d8c54e0ff855f0554ea",
+      "to_uid": "semanticscholar:b6bad936e1a6ca0a9cee44f68ad9064e43ad67e2",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.371
+      }
+    },
+    {
+      "from_uid": "semanticscholar:a8eb5922800195cf39842d8c54e0ff855f0554ea",
+      "to_uid": "semanticscholar:32eaf30fac459e7c9f7faea1a4907f4cc085c29c",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.341
+      }
+    },
+    {
+      "from_uid": "semanticscholar:a8eb5922800195cf39842d8c54e0ff855f0554ea",
+      "to_uid": "semanticscholar:3475fa4caf43c2b017057896fc75bec46bc48e52",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.393
+      }
+    },
+    {
       "from_uid": "semanticscholar:a8eb5922800195cf39842d8c54e0ff855f0554ea",
       "to_uid": "semanticscholar:a641960099ada84b2a0005be72f554e77695a276",
       "type": "SIMILAR_TO",
       "properties": {
         "similarity": 0.527
+      }
+    },
+    {
+      "from_uid": "semanticscholar:a8eb5922800195cf39842d8c54e0ff855f0554ea",
+      "to_uid": "semanticscholar:d62a4216e8070d3d9466a44493e3f8844ee575c1",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.396
+      }
+    },
+    {
+      "from_uid": "semanticscholar:a8eb5922800195cf39842d8c54e0ff855f0554ea",
+      "to_uid": "semanticscholar:40f4863985d7202cc2970405d9b478dd603f80b7",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.371
+      }
+    },
+    {
+      "from_uid": "semanticscholar:f2bd1e88b8cea63a5f8922994cddb45cbea505ed",
+      "to_uid": "semanticscholar:3475fa4caf43c2b017057896fc75bec46bc48e52",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.385
       }
     },
     {
@@ -173,6 +273,22 @@
       }
     },
     {
+      "from_uid": "semanticscholar:b6bad936e1a6ca0a9cee44f68ad9064e43ad67e2",
+      "to_uid": "semanticscholar:d62a4216e8070d3d9466a44493e3f8844ee575c1",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.365
+      }
+    },
+    {
+      "from_uid": "semanticscholar:b6bad936e1a6ca0a9cee44f68ad9064e43ad67e2",
+      "to_uid": "semanticscholar:40f4863985d7202cc2970405d9b478dd603f80b7",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.386
+      }
+    },
+    {
       "from_uid": "semanticscholar:32eaf30fac459e7c9f7faea1a4907f4cc085c29c",
       "to_uid": "semanticscholar:3475fa4caf43c2b017057896fc75bec46bc48e52",
       "type": "SIMILAR_TO",
@@ -189,11 +305,27 @@
       }
     },
     {
+      "from_uid": "semanticscholar:32eaf30fac459e7c9f7faea1a4907f4cc085c29c",
+      "to_uid": "semanticscholar:40f4863985d7202cc2970405d9b478dd603f80b7",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.352
+      }
+    },
+    {
       "from_uid": "semanticscholar:3475fa4caf43c2b017057896fc75bec46bc48e52",
       "to_uid": "semanticscholar:a641960099ada84b2a0005be72f554e77695a276",
       "type": "SIMILAR_TO",
       "properties": {
         "similarity": 0.46
+      }
+    },
+    {
+      "from_uid": "semanticscholar:3475fa4caf43c2b017057896fc75bec46bc48e52",
+      "to_uid": "semanticscholar:d62a4216e8070d3d9466a44493e3f8844ee575c1",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.398
       }
     },
     {
@@ -210,6 +342,14 @@
       "type": "SIMILAR_TO",
       "properties": {
         "similarity": 0.496
+      }
+    },
+    {
+      "from_uid": "semanticscholar:a641960099ada84b2a0005be72f554e77695a276",
+      "to_uid": "semanticscholar:40f4863985d7202cc2970405d9b478dd603f80b7",
+      "type": "SIMILAR_TO",
+      "properties": {
+        "similarity": 0.326
       }
     }
   ]
