@@ -8,27 +8,48 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='TopicRequest',
+            name="TopicRequest",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('topic', models.CharField(max_length=200)),
-                ('status', models.CharField(default='pending', max_length=20)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("topic", models.CharField(max_length=200)),
+                ("status", models.CharField(default="pending", max_length=20)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
         ),
         migrations.CreateModel(
-            name='RawData',
+            name="RawData",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('source', models.CharField(max_length=50)),
-                ('data', models.JSONField()),
-                ('collected_at', models.DateTimeField(auto_now_add=True)),
-                ('topic_request', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='mainapp.topicrequest')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("source", models.CharField(max_length=50)),
+                ("data", models.JSONField()),
+                ("collected_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "topic_request",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="mainapp.topicrequest",
+                    ),
+                ),
             ],
         ),
     ]

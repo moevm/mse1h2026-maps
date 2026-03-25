@@ -1,5 +1,7 @@
-from neo4j_viz.neo4j import from_neo4j
 import re
+
+from neo4j_viz.neo4j import from_neo4j
+
 
 def normalize_name(name):
     words = name.lower().strip().split()
@@ -7,26 +9,28 @@ def normalize_name(name):
     words = [re.sub(r"[^a-z0-9]", "", w) for w in words]
     return "_".join(words)
 
+
 def clean_rel_type(rel_type):
-    rel_type = re.sub(r'\([^)]*\)$', '', rel_type)
-    cleaned = re.sub(r'[^a-zA-Z0-9_]', '_', rel_type)
-    cleaned = re.sub(r'_+', '_', cleaned)
-    cleaned = cleaned.strip('_')
+    rel_type = re.sub(r"\([^)]*\)$", "", rel_type)
+    cleaned = re.sub(r"[^a-zA-Z0-9_]", "_", rel_type)
+    cleaned = re.sub(r"_+", "_", cleaned)
+    cleaned = cleaned.strip("_")
     return cleaned
+
 
 def create_nodes(tx, nodes, query):
     uid_map = {}
 
     for node in nodes:
-        labels = ':'.join(node['labels'])
-        props = node.get('properties', {})
-        old_uid = node['uid']
+        labels = ":".join(node["labels"])
+        props = node.get("properties", {})
+        old_uid = node["uid"]
 
-        if 'label_en' in props:
+        if "label_en" in props:
             new_uid = f"{normalize_name(props['label_en'])}"
         else:
             new_uid = old_uid
-        props['query'] = query
+        props["query"] = query
 
         uid_map[old_uid] = new_uid
         tx.run(
@@ -38,11 +42,12 @@ def create_nodes(tx, nodes, query):
 
     return uid_map
 
+
 def create_relationships(tx, relationships, uid_map, query):
     for rel in relationships:
-        from_uid = uid_map.get(rel['from_uid'], rel['from_uid'])
-        to_uid = uid_map.get(rel['to_uid'], rel['to_uid'])
-        clean_type = clean_rel_type(rel['type'])
+        from_uid = uid_map.get(rel["from_uid"], rel["from_uid"])
+        to_uid = uid_map.get(rel["to_uid"], rel["to_uid"])
+        clean_type = clean_rel_type(rel["type"])
 
         tx.run(
             f"""
@@ -54,27 +59,33 @@ def create_relationships(tx, relationships, uid_map, query):
             from_uid=from_uid,
             to_uid=to_uid,
             query_param=query,
-            props=rel.get('properties', {}),
+            props=rel.get("properties", {}),
         )
 
+
 def set_to_neo4j(driver, data):
-    query = data['query']
+    query = data["query"]
+
     def _execute(tx, data):
-        uid_map = create_nodes(tx, data['nodes'], query)
-        create_relationships(tx, data['relationships'], uid_map, query)
+        uid_map = create_nodes(tx, data["nodes"], query)
+        create_relationships(tx, data["relationships"], uid_map, query)
 
     with driver.session() as session:
         session.execute_write(_execute, data)
 
+
 def get_from_neo4j(driver, query):
     with driver.session() as session:
-        result = session.run("""
+        result = session.run(
+            """
             MATCH (n)
             WHERE n.query = $q
             OPTIONAL MATCH (n)-[r]->(m)
             WHERE m.query = $q
             RETURN n, r, m
-        """, {"q": query})
+        """,
+            {"q": query},
+        )
 
         vg = from_neo4j(result, row_limit=10000)
-        return  vg
+        return vg

@@ -1,13 +1,13 @@
 import os
 import threading
 
+from neo4j import GraphDatabase
+
 from django.db import close_old_connections
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
-from neo4j import GraphDatabase
-
 from src.db_access import get_request, put_request
-from src.neo4j_db import set_to_neo4j, get_from_neo4j
+from src.neo4j_db import get_from_neo4j, set_to_neo4j
 from src.sources.collector import collect_all_sources
 
 
@@ -47,7 +47,7 @@ def start(request):
 
 
 def get_widget(request):
-    request_id = request.GET.get('id')
+    request_id = request.GET.get("id")
     topic = get_request(request_id).topic
 
     uri = os.environ.get("NEO_URI")
@@ -59,41 +59,46 @@ def get_widget(request):
 
     nodes = []
     for node in VG.nodes:
-        nodes.append({
-            "id": node.id,
-            "caption": node.caption,
-            "labels": node.properties.get("labels", []),
-            "properties": node.properties
-        })
+        nodes.append(
+            {
+                "id": node.id,
+                "caption": node.caption,
+                "labels": node.properties.get("labels", []),
+                "properties": node.properties,
+            }
+        )
 
     relationships = []
     for rel in VG.relationships:
-        relationships.append({
-            "id": rel.id,
-            "from": rel.source,
-            "to": rel.target,
-            "caption": rel.properties.get("type", ""),
-            "properties": rel.properties
-        })
+        relationships.append(
+            {
+                "id": rel.id,
+                "from": rel.source,
+                "to": rel.target,
+                "caption": rel.properties.get("type", ""),
+                "properties": rel.properties,
+            }
+        )
 
-    return JsonResponse({
-        "nodes": nodes,
-        "relationships": relationships
-    })
+    return JsonResponse({"nodes": nodes, "relationships": relationships})
 
 
 def node_info(request):
-    node_id = request.GET.get('id')
+    node_id = request.GET.get("id")
 
     node_data = {
         "name": f"Узел {node_id}",
         "info": f"Подробная информация об узле {node_id}. Здесь могут быть любые данные из базы.",
-        "links": ["Связанная сущность A", "Связанная сущность B", "Связанная сущность C"],
+        "links": [
+            "Связанная сущность A",
+            "Связанная сущность B",
+            "Связанная сущность C",
+        ],
         "resources": [
             {"name": "Википедия", "url": "https://ru.wikipedia.org"},
             {"name": "Официальный сайт", "url": "https://example.com"},
-            {"name": "Документация", "url": "https://docs.example.com"}
-        ]
+            {"name": "Документация", "url": "https://docs.example.com"},
+        ],
     }
 
     return JsonResponse(node_data)

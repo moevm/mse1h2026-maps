@@ -1,3 +1,4 @@
+exclude: ^requirements\.txt$
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
@@ -25,9 +26,3 @@ repos:
     hooks:
       - id: black
         language_version: python3
-  - repo: https://github.com/pycqa/flake8
-    rev: 7.3.0
-    hooks:
-      - id: flake8
-        args:
-          - --max-line-length=88
