@@ -26,7 +26,7 @@ services:
       - neo4j
 
   postgres:
-    image: postgres:16
+    image: postgres:18-bookworm
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
@@ -37,7 +37,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   neo4j:
-    image: neo4j:5
+    image: neo4j:5.26.23-community-ubi10
     environment:
       NEO4J_AUTH: ${NEO_USER}/${NEO_PASSWORD}
     ports:
