@@ -11,6 +11,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent))
 
 
 def main():
+
+
     load_dotenv()
     """Run administrative tasks."""
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "maps.settings")

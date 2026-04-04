@@ -15,6 +15,10 @@ def home(request):
     return render(request, "index.html")
 
 
+def logout(request):
+    return render(request, "registration/logout.html")
+
+
 def start(request):
     topic = request.GET.get("topic")
     print(topic)
@@ -57,30 +61,7 @@ def get_widget(request):
     VG = get_from_neo4j(driver, topic)
     driver.close()
 
-    nodes = []
-    for node in VG.nodes:
-        nodes.append(
-            {
-                "id": node.id,
-                "caption": node.caption,
-                "labels": node.properties.get("labels", []),
-                "properties": node.properties,
-            }
-        )
-
-    relationships = []
-    for rel in VG.relationships:
-        relationships.append(
-            {
-                "id": rel.id,
-                "from": rel.source,
-                "to": rel.target,
-                "caption": rel.properties.get("type", ""),
-                "properties": rel.properties,
-            }
-        )
-
-    return JsonResponse({"nodes": nodes, "relationships": relationships})
+    return JsonResponse(VG)
 
 
 def node_info(request):

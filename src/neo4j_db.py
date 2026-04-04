@@ -88,4 +88,30 @@ def get_from_neo4j(driver, query):
         )
 
         vg = from_neo4j(result, row_limit=10000)
-        return vg
+        return serlialize(vg)
+
+
+def serlialize(VG):
+    nodes = []
+    for node in VG.nodes:
+        nodes.append(
+            {
+                "id": node.id,
+                "caption": node.caption,
+                "labels": node.properties.get("labels", []),
+                "properties": node.properties,
+            }
+        )
+
+    relationships = []
+    for rel in VG.relationships:
+        relationships.append(
+            {
+                "id": rel.id,
+                "from": rel.source,
+                "to": rel.target,
+                "caption": rel.properties.get("type", ""),
+                "properties": rel.properties,
+            }
+        )
+    return {'nodes': nodes, 'relationships': relationships}
