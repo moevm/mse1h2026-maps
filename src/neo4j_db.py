@@ -114,4 +114,4 @@ def serlialize(VG):
                 "properties": rel.properties,
             }
         )
-    return {'nodes': nodes, 'relationships': relationships}
+    return {"nodes": nodes, "relationships": relationships}

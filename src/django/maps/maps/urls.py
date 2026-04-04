@@ -1,12 +1,11 @@
 from django.contrib import admin
-from django.urls import include
-from django.urls import path
+from django.urls import include, path
 from src.django.maps.example import views
 from src.django.maps.mainapp import views as starter
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('accounts/', include('django.contrib.auth.urls')),
+    path("admin/", admin.site.urls),
+    path("accounts/", include("django.contrib.auth.urls")),
     path("test/", views.index),
     path("api/start/", starter.start),
     path("api/status/", starter.status),

@@ -1,9 +1,8 @@
-from django.http import HttpResponse
 from django.contrib.auth.models import User
+from django.http import HttpResponse
 
 
 def index(request):
-
     """
     user = User.objects.create_user(
         username='TEST_USER',
