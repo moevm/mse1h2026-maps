@@ -7,6 +7,7 @@ from django.db import close_old_connections
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from src.db_access import get_request, put_request
+from src.django.maps.mainapp.tasks import process_topic
 from src.neo4j_db import get_from_neo4j, set_to_neo4j
 from src.sources.collector import collect_all_sources
 
@@ -21,32 +22,10 @@ def logout(request):
 
 def start(request):
     topic = request.GET.get("topic")
-    print(topic)
+
     req_id = put_request(topic)
-
-    def task():
-        close_old_connections()
-        r = get_request(req_id)
-        r.status = "processing"
-        r.save()
-        _, data = collect_all_sources(topic, req_id)
-
-        print(data)
-        uri = os.environ.get("NEO_URI")
-        username = os.environ.get("NEO_USER")
-        password = os.environ.get("NEO_PASSWORD")
-        driver = GraphDatabase.driver(uri, auth=(username, password))
-
-        set_to_neo4j(driver, data)
-
-        driver.close()
-
-        r.status = "completed"
-        r.save()
-
-    thread = threading.Thread(target=task)
-    thread.daemon = True  # поток завершится при остановке основного процесса
-    thread.start()
+    print(topic)
+    process_topic.delay(req_id, topic)
     return HttpResponse(f"{req_id}")
 
 
