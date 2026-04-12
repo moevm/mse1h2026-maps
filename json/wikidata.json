@@ -1,135 +1,149 @@
 {
-  "query": "Newton's method",
-  "sources": [
-    "wikidata"
-  ],
-  "nodes": [
-    {
-      "uid": "wikidata:Q374195",
-      "labels": [
-        "Entity",
-        "Concept"
-      ],
-      "properties": {
-        "label_en": "Newton's method",
-        "label_ru": "метод Ньютона",
-        "desc_en": "algorithm for finding a zero of a function",
-        "wiki_url": "https://www.wikidata.org/wiki/Q374195"
-      }
-    },
-    {
-      "uid": "wikidata:Q935",
-      "labels": [
-        "Entity",
-        "Concept"
-      ],
-      "properties": {
-        "label_en": "Isaac Newton"
-      }
-    },
-    {
-      "uid": "wikidata:Q569955",
-      "labels": [
-        "Entity",
-        "Concept"
-      ],
-      "properties": {
-        "label_en": "Joseph Raphson"
-      }
-    },
-    {
-      "uid": "wikidata:Q1085860",
-      "labels": [
-        "Entity",
-        "Concept"
-      ],
-      "properties": {
-        "label_en": "root-finding algorithm"
-      }
-    },
-    {
-      "uid": "wikidata:Q621751",
-      "labels": [
-        "Entity",
-        "Concept"
-      ],
-      "properties": {
-        "label_en": "approximation algorithm"
-      }
-    },
-    {
-      "uid": "wikidata:Q214604",
-      "labels": [
-        "Entity",
-        "Concept"
-      ],
-      "properties": {
-        "label_en": "zero of a function"
-      }
-    },
-    {
-      "uid": "wikidata:Q17086396",
-      "labels": [
-        "Entity",
-        "Concept"
-      ],
-      "properties": {
-        "label_en": "Newton's method in optimization"
-      }
-    },
-    {
-      "uid": "wikidata:Q8487137",
-      "labels": [
-        "Entity",
-        "Concept"
-      ],
-      "properties": {
-        "label_en": "WikiProject Mathematics"
-      }
-    }
-  ],
-  "relationships": [
-    {
-      "from_uid": "wikidata:Q374195",
-      "to_uid": "wikidata:Q935",
-      "type": "NAMED_AFTER",
-      "properties": {}
-    },
-    {
-      "from_uid": "wikidata:Q374195",
-      "to_uid": "wikidata:Q569955",
-      "type": "NAMED_AFTER",
-      "properties": {}
-    },
-    {
-      "from_uid": "wikidata:Q374195",
-      "to_uid": "wikidata:Q1085860",
-      "type": "INSTANCE_OF",
-      "properties": {}
-    },
-    {
-      "from_uid": "wikidata:Q374195",
-      "to_uid": "wikidata:Q621751",
-      "type": "INSTANCE_OF",
-      "properties": {}
-    },
-    {
-      "from_uid": "wikidata:Q374195",
-      "to_uid": "wikidata:Q214604",
-      "type": "COMPUTES_SOLUTION_TO",
-      "properties": {}
-    },
-    {
-      "from_uid": "wikidata:Q374195",
-      "to_uid": "wikidata:Q17086396",
-      "type": "DIFFERENT_FROM",
-      "properties": {}
-    },
-    {
-      "from_uid": "wikidata:Q374195",
-      "to_uid": "wikidata:Q8487137",
-      "type": "MAINTAINED_BY_WIKIPROJECT",
-      "properties": {}
-    }
-  ]
+    "query": "Newton's method",
+    "sources": [
+        "wikidata"
+    ],
+    "nodes": [
+        {
+            "uid": "wikidata:Q374195",
+            "labels": [
+                "Entity",
+                "Concept"
+            ],
+            "properties": {
+                "label_en": "Newton's method",
+                "label_ru": "метод Ньютона",
+                "desc_en": "algorithm for finding a zero of a function",
+                "wiki_url": "https://www.wikidata.org/wiki/Q374195"
+            }
+        },
+        {
+            "uid": "wikidata:Q935",
+            "labels": [
+                "Entity",
+                "Concept"
+            ],
+            "properties": {
+                "label_en": "Isaac Newton"
+            },
+            "descriptions": "English mathematician and physicist (1642-1727)"
+        },
+        {
+            "uid": "wikidata:Q569955",
+            "labels": [
+                "Entity",
+                "Concept"
+            ],
+            "properties": {
+                "label_en": "Joseph Raphson"
+            },
+            "descriptions": "British mathematician"
+        },
+        {
+            "uid": "wikidata:Q1085860",
+            "labels": [
+                "Entity",
+                "Concept"
+            ],
+            "properties": {
+                "label_en": "root-finding algorithm"
+            },
+            "descriptions": "type of algorithms for finding zeros of functions"
+        },
+        {
+            "uid": "wikidata:Q621751",
+            "labels": [
+                "Entity",
+                "Concept"
+            ],
+            "properties": {
+                "label_en": "approximation algorithm"
+            },
+            "descriptions": "class of algorithms that find approximate solutions to optimization problems"
+        },
+        {
+            "uid": "wikidata:Q214604",
+            "labels": [
+                "Entity",
+                "Concept"
+            ],
+            "properties": {
+                "label_en": "zero of a function"
+            },
+            "descriptions": "element of the domain where function's value is zero"
+        },
+        {
+            "uid": "wikidata:Q17086396",
+            "labels": [
+                "Entity",
+                "Concept"
+            ],
+            "properties": {
+                "label_en": "Newton's method in optimization"
+            },
+            "descriptions": "Method for finding stationary points of a function"
+        },
+        {
+            "uid": "wikidata:Q8487137",
+            "labels": [
+                "Entity",
+                "Concept"
+            ],
+            "properties": {
+                "label_en": "WikiProject Mathematics"
+            },
+            "descriptions": "Wikimedia subject-area collaboration"
+        }
+    ],
+    "relationships": [
+        {
+            "from_uid": "wikidata:Q374195",
+            "to_uid": "wikidata:Q935",
+            "type": "NAMED_AFTER",
+            "properties": {},
+            "descriptions": "entity or event that inspired the subject's name, or namesake (in at least one language). Qualifier \"applies to name\" (P5168) can be used to indicate which one"
+        },
+        {
+            "from_uid": "wikidata:Q374195",
+            "to_uid": "wikidata:Q569955",
+            "type": "NAMED_AFTER",
+            "properties": {},
+            "descriptions": "entity or event that inspired the subject's name, or namesake (in at least one language). Qualifier \"applies to name\" (P5168) can be used to indicate which one"
+        },
+        {
+            "from_uid": "wikidata:Q374195",
+            "to_uid": "wikidata:Q1085860",
+            "type": "INSTANCE_OF",
+            "properties": {},
+            "descriptions": "type to which this subject corresponds/belongs. Different from P279 (subclass of); for example: K2 is an instance of mountain; volcano is a subclass of mountain"
+        },
+        {
+            "from_uid": "wikidata:Q374195",
+            "to_uid": "wikidata:Q621751",
+            "type": "INSTANCE_OF",
+            "properties": {},
+            "descriptions": "type to which this subject corresponds/belongs. Different from P279 (subclass of); for example: K2 is an instance of mountain; volcano is a subclass of mountain"
+        },
+        {
+            "from_uid": "wikidata:Q374195",
+            "to_uid": "wikidata:Q214604",
+            "type": "COMPUTES_SOLUTION_TO",
+            "properties": {},
+            "descriptions": "problem that this algorithm or method solves"
+        },
+        {
+            "from_uid": "wikidata:Q374195",
+            "to_uid": "wikidata:Q17086396",
+            "type": "DIFFERENT_FROM",
+            "properties": {},
+            "descriptions": "item that is different from another item, with which it may be confused"
+        },
+        {
+            "from_uid": "wikidata:Q374195",
+            "to_uid": "wikidata:Q8487137",
+            "type": "MAINTAINED_BY_WIKIPROJECT",
+            "properties": {},
+            "descriptions": "WikiProject that maintains this property, item, or linked pages. If the WikiProject is hosted outside of Wikidata, identify the hosting project using the qualifier \"part of\" (P361)"
+        }
+    ]
 }

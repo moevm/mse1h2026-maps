@@ -1,8 +1,9 @@
 from typing import Any, Dict, List
 
-from src.sources.semantic_scholar import fetch_semantic_scholar
-from src.sources.wikidata import fetch_wikidata
+from open_alex import fetch_open_alex
+from wikidata import fetch_wikidata
 
+import json
 
 def collect_all_sources(topic: str, request_id: int) -> List[Dict[str, Any]]:
     """
@@ -10,7 +11,7 @@ def collect_all_sources(topic: str, request_id: int) -> List[Dict[str, Any]]:
     Возвращает список сырых данных (словарей) для дальнейшей обработки.
     """
 
-    semantic_scholar_json = fetch_semantic_scholar(topic)
+    open_alex_json = fetch_open_alex(topic)
     wikidata_json = fetch_wikidata(topic)
 
-    return [semantic_scholar_json, wikidata_json]
+    return [open_alex_json, wikidata_json]  
