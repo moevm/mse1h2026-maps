@@ -16,10 +16,6 @@ def home(request):
     return render(request, "index.html")
 
 
-def logout(request):
-    return render(request, "registration/logout.html")
-
-
 def start(request):
     topic = request.GET.get("topic")
 
