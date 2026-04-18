@@ -34,7 +34,9 @@ def build_similarity_graph(
     model_name: str = "all-mpnet-base-v2",
     threshold: float = 0.3,
 ) -> nx.Graph:
-    abstracts = [preprocess_text(p.get("abstract", "")) for p in papers]
+    print("PAPER")
+    [print(p) for p in papers]
+    abstracts = [preprocess_text(p.get("abstract_inverted_index", "")) for p in papers]
 
     model = SentenceTransformer(model_name)
     embeddings = model.encode(abstracts, convert_to_tensor=False)
