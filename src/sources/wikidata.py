@@ -233,8 +233,4 @@ def fetch_wikidata(topic: str) -> List[Any]:
 
     # 3. Трансформируем структуру
     result = enrich_structure(raw_data, labels_dictionary)
-    import json
-
-    with open('response.json', 'w', encoding='utf-8') as f:
-        json.dump(result, f, ensure_ascii=False, indent=4)
     return transform_to_neo4j_format(result, topic)
