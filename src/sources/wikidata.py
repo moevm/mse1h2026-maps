@@ -162,16 +162,29 @@ def transform_to_neo4j_format(wikidata_data: dict, query: str) -> dict:
             mainsnak = statement.get("mainsnak", {})
             datavalue = mainsnak.get("datavalue", {})
 
+            wierd = False
+
             # Нас интересуют только связи с другими сущностями (Q-кодами)
             if datavalue.get("type") == "wikibase-entityid":
                 target_id = datavalue["value"]["id"]
+
+                if  "id" in datavalue["value"]["id"]:
+                    target_id = datavalue["value"]["id"]["id"]
+                    wierd = True
+                
                 target_uid = f"wikidata:{target_id}"
 
                 # Извлекаем метку из обогащенных данных
                 prop_label = mainsnak.get("property_label", prop_id)
-                target_label = datavalue["value"].get("label", target_id)
-                descriptions = datavalue["value"].get("descriptions", target_id)
 
+                if wierd:
+                    target_label = datavalue["value"]["id"].get("label", target_id)
+                    descriptions = datavalue["value"]["id"].get("descriptions", target_id)
+                else:
+                    target_label = datavalue["value"].get("label", target_id)
+                    descriptions = datavalue["value"].get("descriptions", target_id)
+                
+                    
                 # Создаем тип связи (ЗАГЛАВНЫМИ, через подчеркивание) [cite: 69]
                 rel_type = prop_label.upper().replace(" ", "_")
 
@@ -233,8 +246,4 @@ def fetch_wikidata(topic: str) -> List[Any]:
 
     # 3. Трансформируем структуру
     result = enrich_structure(raw_data, labels_dictionary)
-    import json
-
-    with open('response.json', 'w', encoding='utf-8') as f:
-        json.dump(result, f, ensure_ascii=False, indent=4)
     return transform_to_neo4j_format(result, topic)
