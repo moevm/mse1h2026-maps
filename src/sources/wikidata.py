@@ -63,7 +63,7 @@ def fetch_labels_map(
         params = {
             "action": "wbgetentities",
             "ids": "|".join(batch),
-            "props": "labels",
+            "props": "info|labels|descriptions|claims|aliases",
             "languages": lang,
             "format": "json",
         }
@@ -73,9 +73,12 @@ def fetch_labels_map(
 
         for eid, content in entities.items():
             labels = content.get("labels", {})
+            descriptions = content.get("descriptions", {})
+            descriptions_val = descriptions.get(lang, descriptions.get("en", {})).get("value", "")
             # Берем целевой язык, иначе английский, иначе сам ID
             label_val = labels.get(lang, labels.get("en", {})).get("value", eid)
-            labels_map[eid] = label_val
+            labels_map[eid] = [label_val, descriptions_val]
+
 
     return labels_map
 
@@ -91,14 +94,16 @@ def enrich_structure(data: any, labels: dict) -> any:
             qid = data["id"]
             return {
                 "id": qid,
-                "label": labels.get(qid, qid),
+                "label": labels.get(qid, qid)[0],
+                "descriptions": labels.get(qid, qid)[1],
                 "url": f"https://www.wikidata.org/wiki/{qid}",
             }
 
         # Если это свойство (P-код)
         if "property" in data:
             pid = data["property"]
-            new_dict["property_label"] = labels.get(pid, pid)
+            new_dict["property_label"] = labels.get(pid, pid)[0]
+            new_dict["property_descriptions"] = labels.get(pid, pid)[1]
             new_dict["property_url"] = f"https://www.wikidata.org/wiki/Property:{pid}"
 
         return new_dict
@@ -107,11 +112,21 @@ def enrich_structure(data: any, labels: dict) -> any:
         return [enrich_structure(item, labels) for item in data]
 
     if isinstance(data, str) and data.startswith(("Q", "P")) and data[1:].isdigit():
-        return {
-            "id": data,
-            "label": labels.get(data, data),
-            "url": f"https://www.wikidata.org/wiki/{data}",
-        }
+        answ = labels.get(data)
+        if (answ != None):
+            return {
+                "id": data,
+                "label": answ[0],
+                "descriptions": answ[1],
+                "url": f"https://www.wikidata.org/wiki/{data}",
+            }
+        else:
+            return {
+                "id": data,
+                "label": data,
+                "descriptions": data,
+                "url": f"https://www.wikidata.org/wiki/{data}",
+            }
 
     return data
 
@@ -147,15 +162,29 @@ def transform_to_neo4j_format(wikidata_data: dict, query: str) -> dict:
             mainsnak = statement.get("mainsnak", {})
             datavalue = mainsnak.get("datavalue", {})
 
+            wierd = False
+
             # Нас интересуют только связи с другими сущностями (Q-кодами)
             if datavalue.get("type") == "wikibase-entityid":
                 target_id = datavalue["value"]["id"]
+
+                if  "id" in datavalue["value"]["id"]:
+                    target_id = datavalue["value"]["id"]["id"]
+                    wierd = True
+                
                 target_uid = f"wikidata:{target_id}"
 
                 # Извлекаем метку из обогащенных данных
                 prop_label = mainsnak.get("property_label", prop_id)
-                target_label = datavalue["value"].get("label", target_id)
 
+                if wierd:
+                    target_label = datavalue["value"]["id"].get("label", target_id)
+                    descriptions = datavalue["value"]["id"].get("descriptions", target_id)
+                else:
+                    target_label = datavalue["value"].get("label", target_id)
+                    descriptions = datavalue["value"].get("descriptions", target_id)
+                
+                    
                 # Создаем тип связи (ЗАГЛАВНЫМИ, через подчеркивание) [cite: 69]
                 rel_type = prop_label.upper().replace(" ", "_")
 
@@ -165,8 +194,11 @@ def transform_to_neo4j_format(wikidata_data: dict, query: str) -> dict:
                         "uid": target_uid,
                         "labels": ["Entity", "Concept"],
                         "properties": {"label_en": target_label},
+                        "descriptions": descriptions
                     }
                 )
+
+                prop_desc = mainsnak.get("property", "").get("descriptions", "")
 
                 # Добавляем связь [cite: 26]
                 relationships.append(
@@ -174,7 +206,8 @@ def transform_to_neo4j_format(wikidata_data: dict, query: str) -> dict:
                         "from_uid": main_node_uid,
                         "to_uid": target_uid,
                         "type": rel_type,
-                        "properties": {},  # Обязательно передаем пустой объект
+                        "properties": {},  # Обязательно передаем пустой объект,
+                        "descriptions": prop_desc
                     }
                 )
 
