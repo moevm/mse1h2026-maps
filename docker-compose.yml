@@ -1,8 +1,10 @@
 services:
   server:
     build: .
+    image: mse1h2026-maps-server:latest
+    restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     environment:
       DJANGO_SECRET: ${DJANGO_SECRET}
 
@@ -20,33 +22,47 @@ services:
       TRANSFORMERS_CACHE: /cache/hf
     volumes:
       - .:/app
-      - hf_cache:/cache/hf
+      - huggingface_cache:/cache/hf
     depends_on:
-      - postgres
-      - neo4j
+      postgres:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
 
   postgres:
     image: postgres:18-bookworm
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5433:5432"
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 3s
 
   neo4j:
     image: neo4j:5.26.23-community-ubi10
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:7474:7474"
+      - "127.0.0.1:7687:7687"
     environment:
       NEO4J_AUTH: ${NEO_USER}/${NEO_PASSWORD}
-    ports:
-      - "7474:7474"
-      - "7687:7687"
+      NEO_USER: ${NEO_USER}
+      NEO_PASSWORD: ${NEO_PASSWORD}
     volumes:
       - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u $${NEO_USER} -p $${NEO_PASSWORD} 'RETURN 1'"]
+      interval: 5s
+      timeout: 5s
 
 volumes:
   postgres_data:
   neo4j_data:
-  hf_cache:
+  huggingface_cache:

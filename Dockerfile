@@ -1,21 +1,38 @@
-FROM python:3.11-slim
+FROM python:3.11-slim AS builder
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /build
+
+COPY requirements.txt .
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        gcc \
+        build-essential \
+        libpq-dev \
+    && pip install --upgrade --no-cache-dir pip setuptools wheel \
+    && pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt \
+    && rm -rf /var/lib/apt/lists/*
+
+
+FROM python:3.11-slim AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    build-essential \
-    libglib2.0-0 \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /wheels /wheels
+COPY requirements.txt .
 
-COPY requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir --timeout 5 --retries 2 -r /app/requirements.txt \
- || pip install --no-cache-dir --timeout 5 --retries 2 -i https://pypi.tuna.tsinghua.edu.cn/simple --trusted-host pypi.tuna.tsinghua.edu.cn -r /app/requirements.txt \
- || pip install --no-cache-dir --timeout 5 --retries 2 -i https://mirrors.aliyun.com/pypi/simple --trusted-host mirrors.aliyun.com -r /app/requirements.txt
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libpq5 \
+        libglib2.0-0 \
+    && pip install --no-cache-dir --no-index --find-links=/wheels -r requirements.txt \
+    && rm -rf /wheels /var/lib/apt/lists/*
 
 COPY . /app
 
