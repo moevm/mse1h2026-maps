@@ -3,26 +3,18 @@ services:
     build: .
     image: mse1h2026-maps-server:latest
     restart: unless-stopped
+    env_file:
+      - .env
     ports:
       - "127.0.0.1:8000:8000"
     environment:
-      DJANGO_SECRET: ${DJANGO_SECRET}
-
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_HOST: postgres
-      DB_PORT: 5432
-
-      NEO_URI: bolt://neo4j:7687
-      NEO_USER: ${NEO_USER}
-      NEO_PASSWORD: ${NEO_PASSWORD}
-
-      HF_HOME: /cache/hf
-      TRANSFORMERS_CACHE: /cache/hf
+      DB_HOST: ${DOCKER_DB_HOST:-postgres}
+      DB_PORT: ${DOCKER_DB_PORT:-5432}
+      NEO_URI: ${DOCKER_NEO_URI:-bolt://neo4j:7687}
+      HF_HOME: ${DOCKER_HF_HOME:-/cache/hf}
+      TRANSFORMERS_CACHE: ${DOCKER_TRANSFORMERS_CACHE:-/cache/hf}
     volumes:
-      - .:/app
-      - huggingface_cache:/cache/hf
+      - huggingface_cache:${DOCKER_HF_HOME:-/cache/hf}
     depends_on:
       postgres:
         condition: service_healthy
@@ -32,12 +24,12 @@ services:
   postgres:
     image: postgres:18-bookworm
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:5433:5432"
+    env_file:
+      - .env
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-mapsdb}
+      POSTGRES_USER: ${DB_USER:-admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-CHANGETHAT}
     volumes:
       - postgres_data:/var/lib/postgresql
     healthcheck:
@@ -48,13 +40,14 @@ services:
   neo4j:
     image: neo4j:5.26.23-community-ubi10
     restart: unless-stopped
+    env_file:
+      - .env
     ports:
       - "127.0.0.1:7474:7474"
-      - "127.0.0.1:7687:7687"
     environment:
-      NEO4J_AUTH: ${NEO_USER}/${NEO_PASSWORD}
-      NEO_USER: ${NEO_USER}
-      NEO_PASSWORD: ${NEO_PASSWORD}
+      NEO4J_AUTH: ${NEO_USER:-neo4j}/${NEO_PASSWORD:-12345678}
+      NEO_USER: ${NEO_USER:-neo4j}
+      NEO_PASSWORD: ${NEO_PASSWORD:-12345678}
     volumes:
       - neo4j_data:/data
     healthcheck:

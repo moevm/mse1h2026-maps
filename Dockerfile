@@ -38,4 +38,4 @@ COPY . /app
 
 EXPOSE 8000
 
-CMD ["python", "src/django/maps/manage.py", "runserver", "0.0.0.0:8000"]
+ENTRYPOINT ["python", "src/django/maps/manage.py", "runserver", "0.0.0.0:8000"]
