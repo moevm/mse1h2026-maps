@@ -55,8 +55,8 @@ def get_widget(request):
     request_id = request.GET.get("id")
     topic = get_request(request_id).topic
 
-    uri = os.environ.get("NEO_URI")
     username = f"user{request.user.id}"
+    uri = os.environ.get("NEO_URI")
     password = request.user.password.split("$")[2]
 
     driver = GraphDatabase.driver(uri, auth=(username, password))
