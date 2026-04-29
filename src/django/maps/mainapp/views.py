@@ -82,7 +82,10 @@ def node_info(request):
 def status(request):
     id = request.GET.get("id")
     req = get_request(id)
-    return HttpResponse(f"{req.status}")
+    res = {}
+    res["Status"] = req.status
+    res["Info"] = req.source_info
+    return JsonResponse(res)
 
 
 def result(reqest):
