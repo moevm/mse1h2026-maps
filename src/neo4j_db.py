@@ -220,7 +220,7 @@ def create_relationships(tx, relationships, uid_map, query):
                 f"Ошибка при создании связи {rel.get('from_uid', '?')} → {rel.get('to_uid', '?')}: {e}") from e
 
 
-def set_to_neo4j(driver, data):
+def set_to_neo4j(driver, db_name, data):
 
     if "query" not in data:
         raise ValueError("data должна содержать поле query")
@@ -240,7 +240,7 @@ def set_to_neo4j(driver, data):
         create_relationships(tx, data["relationships"], uid_map, query)
 
     try:
-        with driver.session() as session:
+        with driver.session(database=db_name) as session:
             session.execute_write(_execute, data)
 
     except ServiceUnavailable as e:
@@ -255,7 +255,7 @@ def set_to_neo4j(driver, data):
     except Exception as e:
         raise RuntimeError(f"Ошибка при записи графа '{query}': {e}") from e
 
-def get_from_neo4j(driver, query):
+def get_from_neo4j(driver, db_name, query):
 
     if not query or not query.strip():
         raise ValueError("query не может быть пустым")
@@ -263,7 +263,7 @@ def get_from_neo4j(driver, query):
     query = query.strip().lower()
 
     try:
-        with driver.session() as session:
+        with driver.session(database=db_name) as session:
             result = session.run(
                 """
                 MATCH (n)
