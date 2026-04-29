@@ -12,10 +12,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let statusPollInterval = null;
     let network = null;
     let isAuthenticated = false;
+    let currentRequestId = null;
+    let lastInfoState = {};
 
     // ===== АУТЕНТИФИКАЦИЯ =====
 
-    // Получение CSRF токена из cookie
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -31,7 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return cookieValue;
     }
 
-    // Проверка статуса аутентификации
     async function checkAuthStatus() {
         try {
             const response = await fetch('/accounts/user-status/');
@@ -54,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Показать модальное окно входа
     function showLoginModal() {
         const modal = document.getElementById('loginModal');
         const registerModal = document.getElementById('registerModal');
@@ -71,7 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Скрыть модальное окно входа
     function hideLoginModal() {
         const modal = document.getElementById('loginModal');
         const registerModal = document.getElementById('registerModal');
@@ -85,7 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (appContainer) appContainer.classList.remove('blurred');
     }
 
-    // Показать модальное окно регистрации
     function showRegisterModal() {
         const modal = document.getElementById('registerModal');
         const loginModal = document.getElementById('loginModal');
@@ -99,7 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (appContainer) {
                 appContainer.classList.add('blurred');
             }
-            // Очищаем сообщения
             const errorDiv = document.getElementById('registerError');
             const successDiv = document.getElementById('registerSuccess');
             if (errorDiv) errorDiv.style.display = 'none';
@@ -107,7 +103,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Скрыть модальное окно регистрации
     function hideRegisterModal() {
         const modal = document.getElementById('registerModal');
         const loginModal = document.getElementById('loginModal');
@@ -121,7 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (appContainer) appContainer.classList.remove('blurred');
     }
 
-    // Показать информацию о пользователе
     function showUserInfo(username) {
         const userInfo = document.getElementById('userInfo');
         const usernameDisplay = document.getElementById('usernameDisplay');
@@ -131,7 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Скрыть информацию о пользователе
     function hideUserInfo() {
         const userInfo = document.getElementById('userInfo');
         if (userInfo) {
@@ -139,7 +132,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Показать ошибку входа
     function showLoginError(message) {
         const errorDiv = document.getElementById('loginError');
         if (errorDiv) {
@@ -151,7 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Показать ошибку регистрации
     function showRegisterError(message) {
         const errorDiv = document.getElementById('registerError');
         const successDiv = document.getElementById('registerSuccess');
@@ -165,7 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Показать успех регистрации
     function showRegisterSuccess(message) {
         const successDiv = document.getElementById('registerSuccess');
         const errorDiv = document.getElementById('registerError');
@@ -176,7 +166,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Обработка входа
     async function handleLogin(event) {
         event.preventDefault();
         
@@ -218,7 +207,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Обработка регистрации
     async function handleRegister(event) {
         event.preventDefault();
         
@@ -226,23 +214,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const password = document.getElementById('regPassword').value;
         const passwordConfirm = document.getElementById('regPasswordConfirm').value;
         
-        // Проверка совпадения паролей
         if (password !== passwordConfirm) {
             showRegisterError('Пароли не совпадают');
             return;
         }
-        
-        // // Проверка длины пароля
-        // if (password.length < 4) {
-        //     showRegisterError('Пароль должен содержать минимум 4 символа');
-        //     return;
-        // }
-        
-        // // Проверка длины логина
-        // if (username.length < 3) {
-        //     showRegisterError('Логин должен содержать минимум 3 символа');
-        //     return;
-        // }
         
         try {
             const formData = new URLSearchParams();
@@ -279,7 +254,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Обработка выхода
     async function handleLogout() {
         try {
             const response = await fetch('/logout/', {
@@ -307,7 +281,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Проверка аутентификации перед запросами
     function requireAuth() {
         if (!isAuthenticated) {
             showLoginModal();
@@ -322,15 +295,27 @@ document.addEventListener('DOMContentLoaded', () => {
         
         try {
             const response = await fetch(`/api/status/?id=${requestId}`);
-            const status = await response.text();
-
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const data = await response.json();
+            const status = data.Status;
+            const info = data.Info || {};
+            
+            console.log('Статус запроса:', status, 'Info:', info);
+            
             const graphPlaceholder = document.querySelector('.graph-placeholder');
-
+            
+            // Проверяем, изменился ли Info (добавился новый источник или изменился статус)
+            const infoChanged = hasInfoChanged(info);
+            
             switch(status) {
                 case 'pending':
                     graphPlaceholder.innerHTML = `
                         <div style="padding: 20px; text-align: center;">
-                            <div style="color: #FF9800;">Запрос в очереди (pending)</div>
+                            <div style="color: #FF9800;">⏳ Запрос в очереди (pending)</div>
                             <div>ID: ${requestId}</div>
                             <div>Ожидание начала обработки...</div>
                         </div>
@@ -338,13 +323,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     break;
 
                 case 'processing':
+                    // Показываем прогресс по источникам
+                    const sourcesList = Object.entries(info).map(([source, state]) => 
+                        `<li style="color: ${state === 'Done' ? '#4CAF50' : '#FF9800'}">
+                            ${source}: ${state === 'Done' ? '✓ Готово' : '⏳ Обработка...'}
+                        </li>`
+                    ).join('');
+                    
                     graphPlaceholder.innerHTML = `
                         <div style="padding: 20px; text-align: center;">
-                            <div style="color: #2196F3;">Запрос обрабатывается (processing)</div>
+                            <div style="color: #2196F3;">🔄 Запрос обрабатывается</div>
                             <div>ID: ${requestId}</div>
-                            <div>Идет построение графа...</div>
+                            <div style="margin-top: 10px;">
+                                <div>Прогресс:</div>
+                                <ul style="text-align: left; display: inline-block;">${sourcesList}</ul>
+                            </div>
                         </div>
                     `;
+                    
+                    // Если Info изменился (добавился новый источник или завершился источник), обновляем граф
+                    if (infoChanged) {
+                        console.log('Info изменился, обновляем граф...');
+                        await loadGraphWidget(requestId);
+                    }
                     break;
 
                 case 'completed':
@@ -355,7 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'error':
                     graphPlaceholder.innerHTML = `
                         <div style="padding: 20px; text-align: center;">
-                            <div style="color: #f44336;">Ошибка выполнения запроса (error)</div>
+                            <div style="color: #f44336;">❌ Ошибка выполнения запроса</div>
                             <div>ID: ${requestId}</div>
                             <div>Что-то пошло не так</div>
                         </div>
@@ -371,6 +372,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     `;
             }
+            
+            // Сохраняем текущее состояние Info для следующего сравнения
+            lastInfoState = { ...info };
 
         } catch (error) {
             console.error('Ошибка в checkRequestStatus:', error);
@@ -385,14 +389,232 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Функция проверки изменения Info
+    function hasInfoChanged(newInfo) {
+        const newSources = Object.keys(newInfo);
+        const oldSources = Object.keys(lastInfoState);
+        
+        if (newSources.length !== oldSources.length) {
+            return true;
+        }
+        
+        for (const source of newSources) {
+            if (newInfo[source] !== lastInfoState[source]) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    // ===== ОБНОВЛЕНИЕ ГРАФА =====
+    function updateGraph(data) {
+        if (!network) {
+            createNewGraph(data);
+            return;
+        }
+        
+        try {
+            const nodesDataSet = network.body.data.nodes;
+            const edgesDataSet = network.body.data.edges;
+            
+            // Обновляем узлы
+            const nodes = data.nodes.map(node => ({
+                id: node.id,
+                label: node.properties?.label_en || node.caption || node.properties?.name || node.id,
+                title: node.properties?.desc_en || node.properties?.info || 'Нет информации',
+                group: node.labels?.[0] || 'default',
+                font: { size: 14, color: '#000000' }
+            }));
+            
+            // Обновляем ребра
+            const edges = data.relationships.map(rel => ({
+                id: rel.id,
+                from: rel.from,
+                to: rel.to,
+                label: rel.caption || rel.properties?.type || 'связь',
+                arrows: 'to',
+                font: { size: 12, align: 'middle' }
+            }));
+            
+            // Получаем текущие ID
+            const existingNodeIds = new Set(nodesDataSet.getIds());
+            const existingEdgeIds = new Set(edgesDataSet.getIds());
+            
+            const newNodeIds = new Set(nodes.map(n => n.id));
+            const newEdgeIds = new Set(edges.map(e => e.id));
+            
+            // Удаляем отсутствующие узлы и ребра
+            const nodesToRemove = [...existingNodeIds].filter(id => !newNodeIds.has(id));
+            const edgesToRemove = [...existingEdgeIds].filter(id => !newEdgeIds.has(id));
+            
+            if (nodesToRemove.length) {
+                nodesDataSet.remove(nodesToRemove);
+            }
+            if (edgesToRemove.length) {
+                edgesDataSet.remove(edgesToRemove);
+            }
+            
+            // Добавляем новые узлы
+            const nodesToAdd = nodes.filter(node => !existingNodeIds.has(node.id));
+            if (nodesToAdd.length) {
+                nodesDataSet.add(nodesToAdd);
+            }
+            
+            // Обновляем существующие узлы
+            const nodesToUpdate = nodes.filter(node => existingNodeIds.has(node.id));
+            if (nodesToUpdate.length) {
+                nodesDataSet.update(nodesToUpdate);
+            }
+            
+            // Добавляем новые ребра
+            const edgesToAdd = edges.filter(edge => !existingEdgeIds.has(edge.id));
+            if (edgesToAdd.length) {
+                edgesDataSet.add(edgesToAdd);
+            }
+            
+            // Обновляем существующие ребра
+            const edgesToUpdate = edges.filter(edge => existingEdgeIds.has(edge.id));
+            if (edgesToUpdate.length) {
+                edgesDataSet.update(edgesToUpdate);
+            }
+            
+            console.log('Граф обновлен:', {
+                nodesAdded: nodesToAdd.length,
+                nodesUpdated: nodesToUpdate.length,
+                nodesRemoved: nodesToRemove.length,
+                edgesAdded: edgesToAdd.length,
+                edgesUpdated: edgesToUpdate.length,
+                edgesRemoved: edgesToRemove.length
+            });
+            
+            // Центрируем граф при первом появлении узлов
+            if (existingNodeIds.size === 0 && nodes.length > 0) {
+                setTimeout(() => {
+                    if (network) {
+                        network.fit();
+                    }
+                }, 500);
+            }
+            
+        } catch (error) {
+            console.error('Ошибка обновления графа:', error);
+            createNewGraph(data);
+        }
+    }
+
+    function createNewGraph(data) {
+        const graphPlaceholder = document.querySelector('.graph-placeholder');
+        graphPlaceholder.innerHTML = '';
+        
+        const graphContainer = document.createElement('div');
+        graphContainer.id = 'graph-container';
+        graphContainer.style.width = '100%';
+        graphContainer.style.height = '100%';
+        graphContainer.style.minHeight = '600px';
+        graphContainer.style.position = 'relative';
+        graphContainer.style.border = '1px solid #ddd';
+        graphContainer.style.borderRadius = '4px';
+        graphContainer.style.backgroundColor = '#f5f5f5';
+        graphPlaceholder.appendChild(graphContainer);
+        
+        const nodes = data.nodes.map(node => ({
+            id: node.id,
+            label: node.properties?.label_en || node.caption || node.properties?.name || node.id,
+            title: node.properties?.desc_en || node.properties?.info || 'Нет информации',
+            group: node.labels?.[0] || 'default',
+            font: { size: 14, color: '#000000' }
+        }));
+        
+        const edges = data.relationships.map(rel => ({
+            id: rel.id,
+            from: rel.from,
+            to: rel.to,
+            label: rel.caption || rel.properties?.type || 'связь',
+            arrows: 'to',
+            font: { size: 12, align: 'middle' }
+        }));
+        
+        console.log('Создание графа:', { nodesCount: nodes.length, edgesCount: edges.length });
+        
+        const nodesDataSet = new vis.DataSet(nodes);
+        const edgesDataSet = new vis.DataSet(edges);
+        
+        const options = {
+            nodes: {
+                shape: 'dot',
+                size: 25,
+                borderWidth: 2,
+                borderWidthSelected: 3,
+                shadow: true,
+                font: { size: 14, color: '#000000' }
+            },
+            edges: {
+                width: 2,
+                shadow: true,
+                smooth: {
+                    type: 'continuous',
+                    roundness: 0.5
+                },
+                font: { size: 12, align: 'middle' }
+            },
+            physics: {
+                enabled: true,
+                stabilization: true,
+                barnesHut: {
+                    gravitationalConstant: -8000,
+                    springConstant: 0.001,
+                    springLength: 200
+                }
+            },
+            interaction: {
+                hover: true,
+                tooltipDelay: 200,
+                navigationButtons: true,
+                keyboard: true
+            }
+        };
+        
+        network = new vis.Network(graphContainer, { nodes: nodesDataSet, edges: edgesDataSet }, options);
+        
+        network.on('click', function(params) {
+            if (params.nodes.length > 0) {
+                const nodeId = params.nodes[0];
+                const originalNode = data.nodes.find(n => n.id === nodeId);
+                if (originalNode) {
+                    openInfoPanel({
+                        name: originalNode.properties?.label_en || originalNode.caption || nodeId,
+                        info: originalNode.properties?.desc_en || originalNode.properties?.info || 'Нет дополнительной информации',
+                        links: originalNode.properties?.links || [],
+                        resources: originalNode.properties?.resources || []
+                    });
+                }
+            } else if (params.edges.length > 0) {
+                const edgeId = params.edges[0];
+                const edge = edges.find(e => e.id === edgeId);
+                if (edge) {
+                    openInfoPanel({
+                        name: `Связь: ${edge.label}`,
+                        info: `Связь между узлами`,
+                        links: [],
+                        resources: []
+                    });
+                }
+            }
+        });
+        
+        setTimeout(() => {
+            if (network) {
+                network.fit();
+            }
+        }, 500);
+    }
+
     // ===== ЗАГРУЗКА ИНТЕРАКТИВНОГО ГРАФА =====
     async function loadGraphWidget(requestId) {
         if (!requireAuth()) return;
         
         try {
-            const graphPlaceholder = document.querySelector('.graph-placeholder');
-            graphPlaceholder.innerHTML = '<div style="text-align: center; padding: 20px;">Загрузка графа...</div>';
-
             const response = await fetch(`/api/graph-widget/?id=${requestId}`);
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -403,6 +625,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (data.nodes && data.relationships) {
                 if (data.nodes.length === 0) {
+                    const graphPlaceholder = document.querySelector('.graph-placeholder');
                     graphPlaceholder.innerHTML = `
                         <div style="padding: 20px; text-align: center; color: #FF9800;">
                             <div>Граф не содержит узлов</div>
@@ -412,110 +635,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                graphPlaceholder.innerHTML = '';
-
-                const graphContainer = document.createElement('div');
-                graphContainer.id = 'graph-container';
-                graphContainer.style.width = '100%';
-                graphContainer.style.height = '100%';
-                graphContainer.style.minHeight = '600px';
-                graphContainer.style.position = 'relative';
-                graphContainer.style.border = '1px solid #ddd';
-                graphContainer.style.borderRadius = '4px';
-                graphContainer.style.backgroundColor = '#f5f5f5';
-                graphPlaceholder.appendChild(graphContainer);
-
-                const nodes = data.nodes.map(node => ({
-                    id: node.id,
-                    label: node.properties?.label_en || node.caption || node.properties?.name || node.id,
-                    title: node.properties?.desc_en || node.properties?.info || 'Нет информации',
-                    group: node.labels?.[0] || 'default',
-                    font: { size: 14, color: '#000000' }
-                }));
-
-                const edges = data.relationships.map(rel => ({
-                    id: rel.id,
-                    from: rel.from,
-                    to: rel.to,
-                    label: rel.caption || rel.properties?.type || 'связь',
-                    arrows: 'to',
-                    font: { size: 12, align: 'middle' }
-                }));
-
-                console.log('Создание графа:', { nodesCount: nodes.length, edgesCount: edges.length });
-
-                const nodesDataSet = new vis.DataSet(nodes);
-                const edgesDataSet = new vis.DataSet(edges);
-
-                const options = {
-                    nodes: {
-                        shape: 'dot',
-                        size: 25,
-                        borderWidth: 2,
-                        borderWidthSelected: 3,
-                        shadow: true,
-                        font: { size: 14, color: '#000000' }
-                    },
-                    edges: {
-                        width: 2,
-                        shadow: true,
-                        smooth: {
-                            type: 'continuous',
-                            roundness: 0.5
-                        },
-                        font: { size: 12, align: 'middle' }
-                    },
-                    physics: {
-                        enabled: true,
-                        stabilization: true,
-                        barnesHut: {
-                            gravitationalConstant: -8000,
-                            springConstant: 0.001,
-                            springLength: 200
-                        }
-                    },
-                    interaction: {
-                        hover: true,
-                        tooltipDelay: 200,
-                        navigationButtons: true,
-                        keyboard: true
-                    }
-                };
-
-                network = new vis.Network(graphContainer, { nodes: nodesDataSet, edges: edgesDataSet }, options);
-
-                network.on('click', function(params) {
-                    if (params.nodes.length > 0) {
-                        const nodeId = params.nodes[0];
-                        const originalNode = data.nodes.find(n => n.id === nodeId);
-                        if (originalNode) {
-                            openInfoPanel({
-                                name: originalNode.properties?.label_en || originalNode.caption || nodeId,
-                                info: originalNode.properties?.desc_en || originalNode.properties?.info || 'Нет дополнительной информации',
-                                links: originalNode.properties?.links || [],
-                                resources: originalNode.properties?.resources || []
-                            });
-                        }
-                    } else if (params.edges.length > 0) {
-                        const edgeId = params.edges[0];
-                        const edge = edges.find(e => e.id === edgeId);
-                        if (edge) {
-                            openInfoPanel({
-                                name: `Связь: ${edge.label}`,
-                                info: `Связь между узлами`,
-                                links: [],
-                                resources: []
-                            });
-                        }
-                    }
-                });
-
-                setTimeout(() => {
-                    if (network) {
-                        network.fit();
-                    }
-                }, 500);
-
+                if (network) {
+                    updateGraph(data);
+                } else {
+                    createNewGraph(data);
+                }
             } else {
                 throw new Error('Неверный формат данных графа');
             }
@@ -535,6 +659,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function startStatusPolling(requestId) {
         if (statusPollInterval) clearInterval(statusPollInterval);
+        
+        currentRequestId = requestId;
+        lastInfoState = {};
+        
         checkRequestStatus(requestId);
         statusPollInterval = setInterval(() => checkRequestStatus(requestId), 2000);
     }
@@ -544,6 +672,8 @@ document.addEventListener('DOMContentLoaded', () => {
             clearInterval(statusPollInterval);
             statusPollInterval = null;
         }
+        currentRequestId = null;
+        lastInfoState = {};
     }
 
     // ===== ОТПРАВКА ЗАПРОСА =====
@@ -600,7 +730,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (graphPlaceholder) {
                 graphPlaceholder.innerHTML = `
                     <div style="padding: 20px; text-align: center; color: #ff6b6b;">
-                        <div>❌ Ошибка: ${error.message}</div>
+                        <div>Ошибка: ${error.message}</div>
                     </div>
                 `;
             }
@@ -756,7 +886,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log('vis.js загружена успешно, версия:', vis.version);
 
-    // Toggle sidebar
     if (toggleBtn) {
         toggleBtn.addEventListener('click', function() {
             sidebar.classList.toggle('collapsed');
@@ -770,7 +899,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Настройка обработчиков аутентификации
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);
@@ -817,7 +945,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Закрытие модальных окон по клику на оверлей
     const modalOverlay = document.getElementById('modalOverlay');
     if (modalOverlay) {
         modalOverlay.addEventListener('click', () => {
