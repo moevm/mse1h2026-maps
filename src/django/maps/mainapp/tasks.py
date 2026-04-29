@@ -1,5 +1,7 @@
 # collector/tasks.py
+import datetime
 import os
+import time
 
 from celery import shared_task
 from neo4j import GraphDatabase
@@ -9,6 +11,22 @@ from src.db_access import get_request
 from src.graph_builder import build_graph
 from src.neo4j_db import set_to_neo4j
 from src.sources.collector import collect_all_sources
+
+
+@shared_task
+def example1():
+    print(f"EX1 - begin")
+    time.sleep(2)
+    print(f"EX1 - aftersleep")
+    example2.delay()
+    print("EX1 - can act")
+
+
+@shared_task
+def example2():
+    print(f"EX2 - begin")
+    time.sleep(4)
+    print(f"EX2 - aftersleep")
 
 
 @shared_task(bind=True, max_retries=3)

@@ -1,21 +1,8 @@
 from django.contrib.auth.models import User
 from django.http import HttpResponse
+from src.django.maps.mainapp import tasks
 
 
 def index(request):
-    """
-    user = User.objects.create_user(
-        username='TEST_USER',
-        password='12345',
-        email='ivan@example.com'
-    )
-    """
-
-    if request.user.is_authenticated:
-        user = request.user
-        print(user.id)
-        print(user.password)
-        print(type(user))
-        print("YES")  # Вывод в консоль сервера
-
+    tasks.example1.delay()
     return HttpResponse("PLACEHOLDER")
