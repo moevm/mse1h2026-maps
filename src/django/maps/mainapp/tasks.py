@@ -33,19 +33,12 @@ def example2():
 
 
 @shared_task(bind=True, max_retries=3)
-def process_simple_task(self, req_id: int, topic: str, source_name: str):
+def process_simple_task(self, req_id: int, topic: str, source_name: str, driver):
     try:
         data = simple_tasks[source_name](topic)
         # logger.exception(f"Дата {self.name}: {data}")
 
-        uri = os.environ.get("NEO_URI")
-        username = os.environ.get("NEO_USER")
-        password = os.environ.get("NEO_PASSWORD")
-        driver = GraphDatabase.driver(uri, auth=(username, password))
-
         set_to_neo4j(driver, data)
-        driver.close()
-
         status = "Done"
     except Exception as e:
         logger.exception(f"Ошибка в задаче {self.name}: {e}")
@@ -57,19 +50,13 @@ def process_simple_task(self, req_id: int, topic: str, source_name: str):
 
 
 @shared_task(bind=True, max_retries=3)
-def process_complex_task(self, req_id: int, topic: str, source_name: str):
+def process_complex_task(self, req_id: int, topic: str, source_name: str, driver):
     try:
         data = complex_task[source_name](topic)
         # logger.exception(f"Дата {self.name}: {data}")
 
-        uri = os.environ.get("NEO_URI")
-        username = os.environ.get("NEO_USER")
-        password = os.environ.get("NEO_PASSWORD")
-        driver = GraphDatabase.driver(uri, auth=(username, password))
-
         data = build_graph(data["results"], topic, ["openalex"], threshold=0.01)
         set_to_neo4j(driver, data)
-        driver.close()
 
         status = "Done"
     except Exception as e:
@@ -93,17 +80,19 @@ def finalize_topic(results, req_id):
 
 
 @shared_task(bind=True, max_retries=3)
-def process_topic(self, req_id: int, topic: str):
+def process_topic(self, req_id: int, topic: str, driver):
     close_old_connections()
     r = get_request(req_id)
     r.status = "processing"
     r.save()
 
     simple = [
-        process_simple_task.s(req_id, topic, name) for name in simple_tasks.keys()
+        process_simple_task.s(req_id, topic, name, driver)
+        for name in simple_tasks.keys()
     ]
     complex = [
-        process_complex_task.s(req_id, topic, name) for name in complex_task.keys()
+        process_complex_task.s(req_id, topic, name, driver)
+        for name in complex_task.keys()
     ]
     all_tasks = simple + complex
 

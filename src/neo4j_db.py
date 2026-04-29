@@ -335,7 +335,7 @@ def get_from_neo4j(driver, query):
                     }
                 )
 
-            return nodes, relationships
+            return {"nodes": nodes, "relationships": relationships}
 
     except ServiceUnavailable as e:
         raise ConnectionError(f"Neo4j не доступен: {e}") from e
