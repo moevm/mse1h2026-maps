@@ -3,6 +3,7 @@ from django.db import models
 
 class TopicRequest(models.Model):
     topic = models.CharField(max_length=200)
+    source_info = models.JSONField(default=dict, blank=True)
     status = models.CharField(
         max_length=20, default="pending"
     )  # pending, processing, completed, error
