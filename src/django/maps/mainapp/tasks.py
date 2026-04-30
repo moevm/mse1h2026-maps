@@ -41,7 +41,7 @@ def process_simple_task(
         # logger.exception(f"Дата {self.name}: {data}")
         uri = os.environ.get("NEO_URI")
         driver = GraphDatabase.driver(uri, auth=(username, password))
-        set_to_neo4j(driver, data)
+        set_to_neo4j(driver, f"{username}db", data)
         driver.close()
         status = "Done"
     except Exception as e:
@@ -64,7 +64,7 @@ def process_complex_task(
         data = build_graph(data["results"], topic, ["openalex"], threshold=0.01)
         uri = os.environ.get("NEO_URI")
         driver = GraphDatabase.driver(uri, auth=(username, password))
-        set_to_neo4j(driver, data)
+        set_to_neo4j(driver, f"{username}db", data)
         driver.close()
 
         status = "Done"

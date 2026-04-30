@@ -36,6 +36,7 @@ def user_status(request):
         )
 
 
+@login_required
 def start(request):
     topic = request.GET.get("topic")
 
@@ -60,7 +61,7 @@ def get_widget(request):
     password = request.user.password.split("$")[2]
 
     driver = GraphDatabase.driver(uri, auth=(username, password))
-    VG = get_from_neo4j(driver, topic)
+    VG = get_from_neo4j(driver, f"{username}db", topic)
     driver.close()
 
     return JsonResponse(VG)
@@ -93,8 +94,8 @@ def status(request):
     res = {}
     res["Status"] = req.status
     res["Info"] = req.source_info
-    # return JsonResponse(res)
-    return HttpResponse(f"{req.status}")
+    return JsonResponse(res)
+    # return HttpResponse(f"{req.status}")
 
 
 def result(reqest):
