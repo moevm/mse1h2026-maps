@@ -2,7 +2,7 @@ import re
 import time
 import logging
 from neo4j_viz.neo4j import from_neo4j
-from neo4j.exceptions import ServiceUnavailable, AuthError, ClientError, TransientError, ConstraintError
+from neo4j.exceptions import ServiceUnavailable, AuthError, TransientError, SessionExpired
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,6 @@ def clean_rel_type(rel_type):
 
 def wait_for_db_online(session, db_name, timeout=30, interval=1):
     start = time.time()
-
     while True:
         result = session.run(
             f"SHOW DATABASE {db_name} YIELD name, currentStatus "
@@ -39,9 +38,10 @@ def wait_for_db_online(session, db_name, timeout=30, interval=1):
         time.sleep(interval)
 
 
-def create_user_and_db(driver, user_id, neo4j_password):
+def create_user_and_db(driver, user_id,neo4j_password):
     if not user_id:
         raise ValueError("user_id не может быть пустым")
+
     if not neo4j_password:
         raise ValueError("neo4j_password не может быть пустым")
 
@@ -61,7 +61,8 @@ def create_user_and_db(driver, user_id, neo4j_password):
 
             session.run(
                 f"CREATE USER {neo4j_username} "
-                f"SET PASSWORD '{neo4j_password}' CHANGE NOT REQUIRED"
+                "SET PASSWORD $password CHANGE NOT REQUIRED",
+                password=neo4j_password
             )
             user_created = True
 
@@ -119,30 +120,36 @@ def create_user_and_db(driver, user_id, neo4j_password):
 
 def create_nodes(tx, nodes, query):
 
-    if not nodes:
-        raise ValueError("nodes не может быть пустым")
-
     uid_map = {}
-    query = query.strip().lower()
 
     for node in nodes:
         try:
-            if "uid" not in node:
-                raise ValueError(f"Узел не содержит обязательное поле uid: {node}")
-            if "labels" not in node or not node["labels"]:
-                raise ValueError(f"Узел не содержит обязательное поле labels: {node}")
 
             labels = ":".join(node["labels"])
             props = node.get("properties", {})
             old_uid = node["uid"]
 
-            label_en = props.get("label_en", "")
-            semantic_part = normalize_name(label_en) if label_en else "no_label"
+            label_en = props.get("label_en") or ""
+            label_ru = props.get("label_ru") or ""
+
+            if label_en:
+                semantic_part = normalize_name(label_en)
+            elif label_ru:
+                semantic_part = normalize_name(label_ru)
+            else:
+                for key, value in props.items():
+                    if key.startswith("label_") and value:
+                        semantic_part = normalize_name(str(value))
+                        break
+                else:
+                    semantic_part = "no_label"
+
+            if "descriptions" in node:
+                props["descriptions"] = node["descriptions"]
 
             props["source_uid"] = old_uid
             props["query"] = query
             new_uid = f"{old_uid}::{semantic_part}"
-
             uid_map[old_uid] = new_uid
             tx.run(
                 f"MERGE (n:{labels} {{uid: $uid, query: $query_param}}) SET n += $props",
@@ -157,32 +164,25 @@ def create_nodes(tx, nodes, query):
             raise PermissionError(f"Ошибка авторизации при создании узла {node.get('uid', '?')}: {e}") from e
         except ValueError:
             raise
-        except Exception as e:
-            raise RuntimeError(f"Не удалось создать узел {node.get('uid', '?')}: {e}") from e
 
     return uid_map
 
 
 def create_relationships(tx, relationships, uid_map, query):
-    if not isinstance(relationships, list):
-        raise ValueError("relationships должен быть списком")
-
-    query = query.strip().lower()
-
     for rel in relationships:
+        from_uid = uid_map.get(rel["from_uid"], rel["from_uid"])
+        to_uid = uid_map.get(rel["to_uid"], rel["to_uid"])
+
+        if from_uid == to_uid:
+            continue
+
+        props = rel.get("properties", {}).copy()
+        if rel.get("descriptions"):
+            props["descriptions"] = rel["descriptions"]
+
+        clean_type = clean_rel_type(rel["type"])
+
         try:
-            if "from_uid" not in rel or "to_uid" not in rel:
-                raise ValueError(f"Связь не содержит from_uid или to_uid: {rel}")
-            if "type" not in rel:
-                raise ValueError(f"Связь не содержит обязательное поле type: {rel}")
-
-            from_uid = uid_map.get(rel["from_uid"], rel["from_uid"])
-            to_uid = uid_map.get(rel["to_uid"], rel["to_uid"])
-
-            if from_uid == to_uid:
-                continue
-
-            clean_type = clean_rel_type(rel["type"])
             tx.run(
                 f"""
                 MATCH (a {{uid: $from_uid, query: $query_param}})
@@ -193,31 +193,14 @@ def create_relationships(tx, relationships, uid_map, query):
                 from_uid=from_uid,
                 to_uid=to_uid,
                 query_param=query,
-                props=rel.get("properties", {}),
+                props=props,
             )
-
-        except ValueError:
-            raise
-
         except ServiceUnavailable as e:
             raise ConnectionError(f"Neo4j сервер недоступен при создании связи: {e}") from e
-
         except AuthError as e:
             raise PermissionError(f"Ошибка авторизации при создании связи: {e}") from e
-
-        except ClientError as e:
-            if "node not found" in str(e).lower():
-                raise ValueError(
-                    f"Узел не найден для связи: {rel.get('from_uid', '?')} → {rel.get('to_uid', '?')}. Ошибка: {e}") from e
-            else:
-                raise ValueError(f"Ошибка клиента Neo4j при создании связи: {e}") from e
-
         except TransientError as e:
             raise TimeoutError(f"Временная ошибка Neo4j при создании связи, попробуйте позже: {e}") from e
-
-        except Exception as e:
-            raise RuntimeError(
-                f"Ошибка при создании связи {rel.get('from_uid', '?')} → {rel.get('to_uid', '?')}: {e}") from e
 
 
 def set_to_neo4j(driver, db_name, data):
@@ -233,7 +216,41 @@ def set_to_neo4j(driver, db_name, data):
     if not isinstance(data["relationships"], list):
         raise ValueError("relationships должен быть списком")
 
-    query = data["query"]
+    for i, node in enumerate(data["nodes"]):
+        if "uid" not in node:
+            raise ValueError(f"Узел {i} не содержит обязательное поле uid")
+        if "labels" not in node or not node["labels"]:
+            raise ValueError(f"Узел {i} не содержит обязательное поле labels или оно пустое")
+        if not isinstance(node["labels"], list):
+            raise ValueError(f"labels узла {i} должен быть списком")
+        if "properties" in node and not isinstance(node["properties"], dict):
+            raise ValueError(f"properties узла {i} должен быть словарём")
+
+    uids_in_nodes = {node["uid"] for node in data["nodes"]}
+
+    for i, rel in enumerate(data["relationships"]):
+        if "properties" in rel and not isinstance(rel["properties"], dict):
+            raise ValueError(f"properties связи {i} должен быть словарём")
+        if "from_uid" not in rel:
+            raise ValueError(f"Связь {i} не содержит поле from_uid")
+        if "to_uid" not in rel:
+            raise ValueError(f"Связь {i} не содержит поле to_uid")
+        if "type" not in rel:
+            raise ValueError(f"Связь {i} не содержит поле type")
+        if not isinstance(rel["type"], str) or not rel["type"].strip():
+            raise ValueError(f"type связи {i} не может быть пустым")
+
+        if rel["from_uid"] not in uids_in_nodes:
+            raise ValueError(
+                f"Связь {i}: from_uid '{rel['from_uid']}' не найден среди узлов. "
+            )
+        if rel["to_uid"] not in uids_in_nodes:
+            raise ValueError(
+                f"Связь {i}: to_uid '{rel['to_uid']}' не найден среди узлов. "
+                f"Доступные uid: {sorted(uids_in_nodes)[:10]}"
+            )
+
+    query = data["query"].strip().lower()
 
     def _execute(tx, data):
         uid_map = create_nodes(tx, data["nodes"], query)
@@ -242,25 +259,16 @@ def set_to_neo4j(driver, db_name, data):
     try:
         with driver.session(database=db_name) as session:
             session.execute_write(_execute, data)
-
-    except ServiceUnavailable as e:
+    except (ServiceUnavailable, SessionExpired, TransientError) as e:
         raise ConnectionError(f"Neo4j не доступен при записи графа '{query}': {e}") from e
-
     except AuthError as e:
         raise PermissionError(f"Ошибка авторизации при записи графа '{query}': {e}") from e
-
-    except ConstraintError as e:
-        raise ValueError(f"Нарушение уникальности при записи графа '{query}': {e}") from e
-
+    except (ValueError, ConnectionError, PermissionError, TimeoutError) as e:
+        raise
     except Exception as e:
         raise RuntimeError(f"Ошибка при записи графа '{query}': {e}") from e
 
 def get_from_neo4j(driver, db_name, query):
-
-    if not query or not query.strip():
-        raise ValueError("query не может быть пустым")
-
-    query = query.strip().lower()
 
     try:
         with driver.session(database=db_name) as session:
@@ -309,3 +317,147 @@ def get_from_neo4j(driver, db_name, query):
 
     except Exception as e:
         raise RuntimeError(f"Ошибка: {e}") from e
+
+
+def add_node(driver, db_name, query, nodes=None, relationships=None):
+
+    result = {}
+
+    def _execute(tx):
+        uid_map = {}
+        if nodes:
+            uid_map = create_nodes(tx, nodes, query)
+            result.update(uid_map)
+
+        if relationships:
+            create_relationships(tx, relationships, uid_map, query)
+
+    try:
+        with driver.session(database=db_name) as session:
+            session.execute_write(_execute)
+            return result
+
+    except (ServiceUnavailable, SessionExpired, TransientError) as e:
+        raise ConnectionError(f"Neo4j не доступен: {e}") from e
+    except AuthError as e:
+        raise PermissionError(f"Ошибка авторизации: {e}") from e
+    except ValueError:
+        raise
+    except Exception as e:
+        raise RuntimeError(f"Ошибка при создании элементов графа: {e}") from e
+
+
+def delete_node(driver, db_name, query, uid):
+
+    def _execute(tx):
+        result = tx.run(
+            "MATCH (n {uid: $uid, query: $q}) RETURN count(n) AS cnt",
+            uid=uid,
+            q=query,
+        )
+        record = result.single()
+        if not record or record["cnt"] == 0:
+            raise ValueError(
+                f"Узел с uid='{uid}' не найден в графе '{query}'"
+            )
+        tx.run(
+            "MATCH (n {uid: $uid, query: $q}) DETACH DELETE n",
+            uid=uid,
+            q=query,
+        )
+
+    try:
+        with driver.session(database=db_name) as session:
+            session.execute_write(_execute)
+    except (ServiceUnavailable, SessionExpired, TransientError) as e:
+        raise ConnectionError(f"Neo4j не доступен при удалении узла: {e}") from e
+    except AuthError as e:
+        raise PermissionError(f"Ошибка авторизации при удалении узла: {e}") from e
+    except ValueError:
+        raise
+    except Exception as e:
+        raise RuntimeError(f"Ошибка при удалении узла '{uid}': {e}") from e
+
+def update_node(driver, db_name, query, node_uid, new_properties=None, new_labels=None):
+
+    if not query or not query.strip():
+        raise ValueError("query не может быть пустым")
+    if not node_uid or not node_uid.strip():
+        raise ValueError("node_uid не может быть пустым")
+    if new_properties is None and new_labels is None:
+        raise ValueError("Необходимо передать new_properties или new_labels")
+
+    PROTECTED = {"uid", "query", "source_uid"}
+
+    def _execute(tx):
+        check = tx.run(
+            "MATCH (n {uid: $uid, query: $q}) RETURN labels(n) AS lbls",
+            uid=node_uid,
+            q=query,
+        )
+        record = check.single()
+        if not record:
+            raise ValueError(
+                f"Узел с uid='{node_uid}' не найден в графе '{query}'"
+            )
+
+        if new_properties is not None:
+            safe_props = {k: v for k, v in new_properties.items() if k not in PROTECTED}
+            props_to_set = {k: v for k, v in safe_props.items() if v is not None}
+            props_to_remove = [k for k, v in safe_props.items() if v is None]
+
+            if props_to_set:
+                tx.run(
+                    "MATCH (n {uid: $uid, query: $q}) SET n += $props",
+                    uid=node_uid,
+                    q=query,
+                    props=props_to_set,
+                )
+
+            for prop_key in props_to_remove:
+                tx.run(
+                    """
+                    MATCH (n {uid: $uid, query: $q})
+                    SET n = apoc.map.removeKey(properties(n), $key)
+                    SET n.uid = $uid, n.query = $q
+                    """,
+                    uid=node_uid,
+                    q=query,
+                    key=prop_key,
+                )
+
+        if new_labels is not None:
+            if not new_labels:
+                raise ValueError("new_labels не может быть пустым списком")
+
+            current_labels = record["lbls"]
+            labels_to_remove = [lb for lb in current_labels if lb not in new_labels]
+            labels_to_add = [lb for lb in new_labels if lb not in current_labels]
+
+            if labels_to_remove:
+                remove_clause = ":".join(labels_to_remove)
+                tx.run(
+                    f"MATCH (n {{uid: $uid, query: $q}}) REMOVE n:{remove_clause}",
+                    uid=node_uid,
+                    q=query,
+                )
+
+            if labels_to_add:
+                add_clause = ":".join(labels_to_add)
+                tx.run(
+                    f"MATCH (n {{uid: $uid, query: $q}}) SET n:{add_clause}",
+                    uid=node_uid,
+                    q=query,
+                )
+
+    try:
+        with driver.session(database=db_name) as session:
+            session.execute_write(_execute)
+    except (ServiceUnavailable, SessionExpired, TransientError) as e:
+        raise ConnectionError(f"Neo4j не доступен при обновлении узла: {e}") from e
+    except AuthError as e:
+        raise PermissionError(f"Ошибка авторизации при обновлении узла: {e}") from e
+    except ValueError:
+        raise
+    except Exception as e:
+        raise RuntimeError(f"Ошибка при обновлении узла '{node_uid}': {e}") from e
