@@ -1,3 +1,8 @@
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import json
 import unittest
 from unittest.mock import MagicMock, patch
@@ -5,12 +10,7 @@ from unittest.mock import MagicMock, patch
 import networkx as nx
 import numpy as np
 
-try:
-    import graph_builder
-except ModuleNotFoundError:
-    raise ModuleNotFoundError("нет такого модуля")
-
-from graph_builder import (
+from src.graph_builder import (
     FORMAT_REGISTRY,
     _github_collect_nodes,
     _github_matches,
@@ -239,7 +239,7 @@ class TestGraphBuildingErrors(unittest.TestCase):
         self.assertEqual(result["nodes"], [])
         self.assertEqual(result["sources"], [])
 
-    @patch("graph_builder.parse_any")
+    @patch("src.graph_builder.parse_any")
     def test_build_graph_from_any_parse_error(self, mock_parse):
         mock_parse.side_effect = ValueError("GraphBuilder: parse failed")
         with self.assertRaises(ValueError) as ctx:
