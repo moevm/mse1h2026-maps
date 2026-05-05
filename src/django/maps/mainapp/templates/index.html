@@ -68,7 +68,7 @@
         <main class="main-content" id="mainContent">
             <div class="graph-container">
                 <h3>Визуализация графа</h3>
-                <div class="graph-placeholder">
+                <div class="graph-placeholder" id="graphPlaceholder">
                     ЗДЕСЬ БУДЕТ ГРАФ
                 </div>
             </div>
@@ -104,6 +104,22 @@
                         <li><a href="#">Ресурс 3</a></li>
                     </ul>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ОТДЕЛЬНЫЙ КОНТЕЙНЕР ДЛЯ ПРОГРЕССА (ВНЕ .app-container, НЕ ПЕРЕКРЫВАЕТ ГРАФ) -->
+    <div id="progressToast" class="progress-toast" style="display: none;">
+        <div class="progress-toast-header">
+            <span>🔄 Обработка запроса</span>
+            <button class="progress-toast-close" id="progressCloseBtn">✕</button>
+        </div>
+        <div class="progress-toast-body">
+            <div class="progress-toast-id">ID: <span id="progressRequestId"></span></div>
+            <div class="progress-toast-status">Статус: <span id="progressStatusValue" class="status-pending">pending</span></div>
+            <div class="progress-toast-sources">
+                <div>Источники:</div>
+                <ul id="progressSourcesList"></ul>
             </div>
         </div>
     </div>
