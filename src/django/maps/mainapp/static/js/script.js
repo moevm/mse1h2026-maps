@@ -5,15 +5,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.getElementById('sidebar');
     const toggleBtn = document.getElementById('sidebarToggle');
     const mainContent = document.getElementById('mainContent');
-    const graphPlaceholder = document.querySelector('.graph-placeholder');
+    const graphPlaceholder = document.getElementById('graphPlaceholder');
     const searchButton = document.querySelector('.search-button');
     const searchField = document.getElementById('searchField');
+    
+    // Элементы прогресса (отдельный тост)
+    const progressToast = document.getElementById('progressToast');
+    const progressRequestIdSpan = document.getElementById('progressRequestId');
+    const progressStatusValue = document.getElementById('progressStatusValue');
+    const progressSourcesList = document.getElementById('progressSourcesList');
+    const progressCloseBtn = document.getElementById('progressCloseBtn');
 
     let statusPollInterval = null;
     let network = null;
     let isAuthenticated = false;
     let currentRequestId = null;
     let lastInfoState = {};
+
+    // Функции для управления клавиатурой графа
+    function enableGraphKeyboard() {
+        if (network && network.setOptions) {
+            network.setOptions({ interaction: { keyboard: true } });
+            console.log('Клавиатура графа ВКЛЮЧЕНА');
+        }
+    }
+
+    function disableGraphKeyboard() {
+        if (network && network.setOptions) {
+            network.setOptions({ interaction: { keyboard: false } });
+            console.log('Клавиатура графа ВЫКЛЮЧЕНА');
+        }
+    }
+
+    // Настройка отслеживания фокуса на полях ввода
+    function setupInputFocusTracking() {
+        const inputs = document.querySelectorAll('input, textarea');
+        
+        inputs.forEach(input => {
+            input.removeEventListener('focus', disableGraphKeyboard);
+            input.removeEventListener('blur', enableGraphKeyboard);
+            input.addEventListener('focus', disableGraphKeyboard);
+            input.addEventListener('blur', enableGraphKeyboard);
+        });
+    }
 
     // ===== АУТЕНТИФИКАЦИЯ =====
 
@@ -194,10 +228,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     network.destroy();
                     network = null;
                 }
-                const graphPlaceholder = document.querySelector('.graph-placeholder');
                 if (graphPlaceholder) {
-                    graphPlaceholder.innerHTML = 'Войдите в систему для просмотра графа';
+                    graphPlaceholder.innerHTML = 'Введите запрос для поиска';
                 }
+                // Включаем клавиатуру графа после входа
+                setTimeout(() => enableGraphKeyboard(), 100);
             } else {
                 showLoginError('Неверный логин или пароль');
             }
@@ -271,10 +306,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     network.destroy();
                     network = null;
                 }
-                const graphPlaceholder = document.querySelector('.graph-placeholder');
                 if (graphPlaceholder) {
                     graphPlaceholder.innerHTML = 'Войдите в систему для просмотра графа';
                 }
+                hideProgress();
             }
         } catch (error) {
             console.error('Ошибка выхода:', error);
@@ -287,6 +322,62 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
         return true;
+    }
+
+    // ===== УПРАВЛЕНИЕ ПРОГРЕССОМ (ТОСТ) =====
+    function showProgress(requestId, status, info) {
+        if (progressToast) {
+            progressToast.style.display = 'block';
+            if (progressRequestIdSpan) {
+                progressRequestIdSpan.textContent = requestId;
+            }
+            if (progressStatusValue) {
+                progressStatusValue.textContent = status;
+                progressStatusValue.className = `status-${status}`;
+            }
+            updateProgressInfo(info);
+        }
+    }
+
+    function updateProgressInfo(info) {
+        if (!progressSourcesList) return;
+        
+        const sources = Object.entries(info);
+        if (sources.length === 0) {
+            progressSourcesList.innerHTML = '<li>Ожидание данных...</li>';
+            return;
+        }
+        
+        progressSourcesList.innerHTML = sources.map(([source, state]) => {
+            let statusText = '';
+            let statusClass = '';
+            if (state === 'Done') {
+                statusText = '✓ Готово';
+                statusClass = 'done';
+            } else if (state === 'Processing') {
+                statusText = '⏳ Обработка...';
+                statusClass = 'processing';
+            } else {
+                statusText = '⏸ Ожидание';
+                statusClass = 'pending';
+            }
+            return `<li class="${statusClass}">${source}: ${statusText}</li>`;
+        }).join('');
+    }
+
+    function hideProgress() {
+        if (progressToast) {
+            progressToast.style.display = 'none';
+        }
+    }
+
+    if (progressCloseBtn) {
+        progressCloseBtn.addEventListener('click', () => {
+            hideProgress();
+            if (statusPollInterval) {
+                stopStatusPolling();
+            }
+        });
     }
 
     // ===== ФУНКЦИЯ ОПРОСА СТАТУСА =====
@@ -306,79 +397,52 @@ document.addEventListener('DOMContentLoaded', () => {
             
             console.log('Статус запроса:', status, 'Info:', info);
             
-            const graphPlaceholder = document.querySelector('.graph-placeholder');
+            showProgress(requestId, status, info);
             
-            // Проверяем, изменился ли Info (добавился новый источник или изменился статус)
             const infoChanged = hasInfoChanged(info);
             
-            switch(status) {
-                case 'pending':
-                    graphPlaceholder.innerHTML = `
-                        <div style="padding: 20px; text-align: center;">
-                            <div style="color: #FF9800;">⏳ Запрос в очереди (pending)</div>
-                            <div>ID: ${requestId}</div>
-                            <div>Ожидание начала обработки...</div>
-                        </div>
-                    `;
-                    break;
-
-                case 'processing':
-                    // Показываем прогресс по источникам
-                    const sourcesList = Object.entries(info).map(([source, state]) => 
-                        `<li style="color: ${state === 'Done' ? '#4CAF50' : '#FF9800'}">
-                            ${source}: ${state === 'Done' ? '✓ Готово' : '⏳ Обработка...'}
-                        </li>`
-                    ).join('');
-                    
-                    graphPlaceholder.innerHTML = `
-                        <div style="padding: 20px; text-align: center;">
-                            <div style="color: #2196F3;">🔄 Запрос обрабатывается</div>
-                            <div>ID: ${requestId}</div>
-                            <div style="margin-top: 10px;">
-                                <div>Прогресс:</div>
-                                <ul style="text-align: left; display: inline-block;">${sourcesList}</ul>
-                            </div>
-                        </div>
-                    `;
-                    
-                    // Если Info изменился (добавился новый источник или завершился источник), обновляем граф
-                    if (infoChanged) {
-                        console.log('Info изменился, обновляем граф...');
-                        await loadGraphWidget(requestId);
-                    }
-                    break;
-
-                case 'completed':
-                    await loadGraphWidget(requestId);
-                    stopStatusPolling();
-                    break;
-
-                case 'error':
-                    graphPlaceholder.innerHTML = `
-                        <div style="padding: 20px; text-align: center;">
-                            <div style="color: #f44336;">❌ Ошибка выполнения запроса</div>
-                            <div>ID: ${requestId}</div>
-                            <div>Что-то пошло не так</div>
-                        </div>
-                    `;
-                    stopStatusPolling();
-                    break;
-
-                default:
-                    graphPlaceholder.innerHTML = `
-                        <div style="padding: 20px; text-align: center;">
-                            <div>Неизвестный статус: ${status}</div>
-                            <div>ID: ${requestId}</div>
-                        </div>
-                    `;
+            if (status === 'processing' && infoChanged) {
+                console.log('Info изменился, обновляем граф...');
+                await loadGraphWidget(requestId);
             }
             
-            // Сохраняем текущее состояние Info для следующего сравнения
+            if (status === 'completed') {
+                console.log('Запрос завершен, финальное обновление графа...');
+                await loadGraphWidget(requestId);
+                if (progressStatusValue) {
+                    progressStatusValue.textContent = 'completed';
+                    progressStatusValue.className = 'status-completed';
+                }
+                setTimeout(() => {
+                    hideProgress();
+                }, 2000);
+                stopStatusPolling();
+            }
+            
+            if (status === 'error') {
+                if (progressStatusValue) {
+                    progressStatusValue.textContent = 'error';
+                    progressStatusValue.className = 'status-error';
+                }
+                setTimeout(() => {
+                    hideProgress();
+                }, 3000);
+                stopStatusPolling();
+                if (graphPlaceholder) {
+                    graphPlaceholder.innerHTML = `
+                        <div style="padding: 20px; text-align: center; color: #f44336;">
+                            <div>❌ Ошибка выполнения запроса</div>
+                            <div>ID: ${requestId}</div>
+                        </div>
+                    `;
+                }
+            }
+            
             lastInfoState = { ...info };
 
         } catch (error) {
             console.error('Ошибка в checkRequestStatus:', error);
-            const graphPlaceholder = document.querySelector('.graph-placeholder');
+            hideProgress();
             if (graphPlaceholder) {
                 graphPlaceholder.innerHTML = `
                     <div style="padding: 20px; text-align: center; color: #f44336;">
@@ -389,7 +453,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Функция проверки изменения Info
     function hasInfoChanged(newInfo) {
         const newSources = Object.keys(newInfo);
         const oldSources = Object.keys(lastInfoState);
@@ -418,7 +481,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const nodesDataSet = network.body.data.nodes;
             const edgesDataSet = network.body.data.edges;
             
-            // Обновляем узлы
             const nodes = data.nodes.map(node => ({
                 id: node.id,
                 label: node.properties?.label_en || node.caption || node.properties?.name || node.id,
@@ -427,7 +489,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 font: { size: 14, color: '#000000' }
             }));
             
-            // Обновляем ребра
             const edges = data.relationships.map(rel => ({
                 id: rel.id,
                 from: rel.from,
@@ -437,63 +498,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 font: { size: 12, align: 'middle' }
             }));
             
-            // Получаем текущие ID
             const existingNodeIds = new Set(nodesDataSet.getIds());
             const existingEdgeIds = new Set(edgesDataSet.getIds());
             
             const newNodeIds = new Set(nodes.map(n => n.id));
             const newEdgeIds = new Set(edges.map(e => e.id));
             
-            // Удаляем отсутствующие узлы и ребра
             const nodesToRemove = [...existingNodeIds].filter(id => !newNodeIds.has(id));
             const edgesToRemove = [...existingEdgeIds].filter(id => !newEdgeIds.has(id));
             
-            if (nodesToRemove.length) {
-                nodesDataSet.remove(nodesToRemove);
-            }
-            if (edgesToRemove.length) {
-                edgesDataSet.remove(edgesToRemove);
-            }
+            if (nodesToRemove.length) nodesDataSet.remove(nodesToRemove);
+            if (edgesToRemove.length) edgesDataSet.remove(edgesToRemove);
             
-            // Добавляем новые узлы
             const nodesToAdd = nodes.filter(node => !existingNodeIds.has(node.id));
-            if (nodesToAdd.length) {
-                nodesDataSet.add(nodesToAdd);
-            }
+            if (nodesToAdd.length) nodesDataSet.add(nodesToAdd);
             
-            // Обновляем существующие узлы
             const nodesToUpdate = nodes.filter(node => existingNodeIds.has(node.id));
-            if (nodesToUpdate.length) {
-                nodesDataSet.update(nodesToUpdate);
-            }
+            if (nodesToUpdate.length) nodesDataSet.update(nodesToUpdate);
             
-            // Добавляем новые ребра
             const edgesToAdd = edges.filter(edge => !existingEdgeIds.has(edge.id));
-            if (edgesToAdd.length) {
-                edgesDataSet.add(edgesToAdd);
-            }
+            if (edgesToAdd.length) edgesDataSet.add(edgesToAdd);
             
-            // Обновляем существующие ребра
             const edgesToUpdate = edges.filter(edge => existingEdgeIds.has(edge.id));
-            if (edgesToUpdate.length) {
-                edgesDataSet.update(edgesToUpdate);
-            }
+            if (edgesToUpdate.length) edgesDataSet.update(edgesToUpdate);
             
-            console.log('Граф обновлен:', {
-                nodesAdded: nodesToAdd.length,
-                nodesUpdated: nodesToUpdate.length,
-                nodesRemoved: nodesToRemove.length,
-                edgesAdded: edgesToAdd.length,
-                edgesUpdated: edgesToUpdate.length,
-                edgesRemoved: edgesToRemove.length
-            });
+            console.log('Граф обновлен');
             
-            // Центрируем граф при первом появлении узлов
+            // Обновляем обработчики фокуса после обновления графа
+            setupInputFocusTracking();
+            
             if (existingNodeIds.size === 0 && nodes.length > 0) {
                 setTimeout(() => {
-                    if (network) {
-                        network.fit();
-                    }
+                    if (network) network.fit();
                 }, 500);
             }
             
@@ -504,7 +540,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function createNewGraph(data) {
-        const graphPlaceholder = document.querySelector('.graph-placeholder');
+        if (!graphPlaceholder) return;
+        
         graphPlaceholder.innerHTML = '';
         
         const graphContainer = document.createElement('div');
@@ -552,10 +589,7 @@ document.addEventListener('DOMContentLoaded', () => {
             edges: {
                 width: 2,
                 shadow: true,
-                smooth: {
-                    type: 'continuous',
-                    roundness: 0.5
-                },
+                smooth: { type: 'continuous', roundness: 0.5 },
                 font: { size: 12, align: 'middle' }
             },
             physics: {
@@ -571,11 +605,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 hover: true,
                 tooltipDelay: 200,
                 navigationButtons: true,
-                keyboard: true
+                keyboard: true  // Клавиатура включена по умолчанию
             }
         };
         
         network = new vis.Network(graphContainer, { nodes: nodesDataSet, edges: edgesDataSet }, options);
+        
+        // Настраиваем отслеживание фокуса на полях ввода
+        setupInputFocusTracking();
         
         network.on('click', function(params) {
             if (params.nodes.length > 0) {
@@ -604,9 +641,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         setTimeout(() => {
-            if (network) {
-                network.fit();
-            }
+            if (network) network.fit();
         }, 500);
     }
 
@@ -625,13 +660,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (data.nodes && data.relationships) {
                 if (data.nodes.length === 0) {
-                    const graphPlaceholder = document.querySelector('.graph-placeholder');
-                    graphPlaceholder.innerHTML = `
-                        <div style="padding: 20px; text-align: center; color: #FF9800;">
-                            <div>Граф не содержит узлов</div>
-                            <div>Попробуйте изменить поисковый запрос</div>
-                        </div>
-                    `;
+                    if (graphPlaceholder) {
+                        graphPlaceholder.innerHTML = `
+                            <div style="padding: 20px; text-align: center; color: #FF9800;">
+                                <div>Граф не содержит узлов</div>
+                                <div>Попробуйте изменить поисковый запрос</div>
+                            </div>
+                        `;
+                    }
                     return;
                 }
 
@@ -646,7 +682,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('Ошибка загрузки графа:', error);
-            const graphPlaceholder = document.querySelector('.graph-placeholder');
             if (graphPlaceholder) {
                 graphPlaceholder.innerHTML = `
                     <div style="padding: 20px; text-align: center; color: #f44336;">
@@ -686,14 +721,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 network = null;
             }
 
-            const graphPlaceholder = document.querySelector('.graph-placeholder');
             if (graphPlaceholder) {
-                graphPlaceholder.innerHTML = `
-                    <div style="padding: 20px; text-align: center;">
-                        <div>Отправка запроса...</div>
-                        <div style="color: #2196F3;">Тема: ${keyWords}</div>
-                    </div>
-                `;
+                graphPlaceholder.innerHTML = '<div style="text-align: center; padding: 20px;">Отправка запроса...</div>';
             }
 
             const params = new URLSearchParams();
@@ -713,20 +742,13 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Получен requestId:', requestId);
 
             if (graphPlaceholder) {
-                graphPlaceholder.innerHTML = `
-                    <div style="padding: 20px; text-align: center;">
-                        <div style="color: #44cc44;">✓ Запрос отправлен!</div>
-                        <div>ID: ${requestId}</div>
-                        <div>Опрашиваем статус...</div>
-                    </div>
-                `;
+                graphPlaceholder.innerHTML = '<div style="text-align: center; padding: 20px;">Ожидание данных...</div>';
             }
 
             startStatusPolling(requestId);
 
         } catch (error) {
             console.error('Ошибка отправки запроса:', error);
-            const graphPlaceholder = document.querySelector('.graph-placeholder');
             if (graphPlaceholder) {
                 graphPlaceholder.innerHTML = `
                     <div style="padding: 20px; text-align: center; color: #ff6b6b;">
