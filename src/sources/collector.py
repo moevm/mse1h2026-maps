@@ -9,7 +9,11 @@ simple_tasks = {
     "wikidata": fetch_wikidata,
 }
 
-complex_task = {"alex": fetch_open_alex}
+complex_task = {
+    "alex": fetch_open_alex,
+    "github": fetch_github,
+    "wikipedia": fetch_wikipedia,
+}
 
 
 def collect_all_sources(topic: str, request_id: int) -> List[Dict[str, Any]]:
