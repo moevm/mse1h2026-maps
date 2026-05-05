@@ -1,5 +1,4 @@
 import requests
-import json
 
 def decode_inverted_abstract(inverted_index: dict) -> str:
     """Превращает словарь {позиция: [слова]} в обычный текст."""

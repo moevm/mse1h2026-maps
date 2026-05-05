@@ -9,7 +9,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
 from src.db_access import get_request, put_request
-from src.django.maps.mainapp.tasks import process_topic
+from src.django.maps.mainapp.tasks import get_widget_task, process_topic
 from src.neo4j_db import get_from_neo4j
 
 
@@ -28,6 +28,7 @@ def user_status(request):
             }
         )
     else:
+        print("no")
         return JsonResponse(
             {
                 "is_authenticated": False,
@@ -40,13 +41,10 @@ def user_status(request):
 def start(request):
     topic = request.GET.get("topic")
 
-    req_id = put_request(topic)
+    req_id = put_request(topic, request.user.id)
     print(topic)
 
-    username = f"user{request.user.id}"
-    password = request.user.password.split("$")[2]
-
-    process_topic.delay(req_id, topic, username, password)
+    process_topic.delay(req_id, topic)
 
     return HttpResponse(f"{req_id}")
 
@@ -56,14 +54,8 @@ def get_widget(request):
     request_id = request.GET.get("id")
     topic = get_request(request_id).topic
 
-    username = f"user{request.user.id}"
-    uri = os.environ.get("NEO_URI")
-    password = request.user.password.split("$")[2]
-
-    driver = GraphDatabase.driver(uri, auth=(username, password))
-    VG = get_from_neo4j(driver, f"{username}db", topic)
-    driver.close()
-
+    task = get_widget_task.apply(args=[request.user.id, topic])
+    VG = task.get()
     return JsonResponse(VG)
 
 
@@ -96,10 +88,6 @@ def status(request):
     res["Info"] = req.source_info
     return JsonResponse(res)
     # return HttpResponse(f"{req.status}")
-
-
-def result(reqest):
-    pass
 
 
 from src.neo4j_db import create_user_and_db

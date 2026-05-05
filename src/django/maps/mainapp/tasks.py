@@ -9,7 +9,7 @@ from neo4j import GraphDatabase
 
 from django.db import close_old_connections, transaction
 from src.db_access import get_request
-from src.graph_builder import build_graph
+from src.graph_builder import build_graph_from_any
 from src.neo4j_db import set_to_neo4j
 from src.sources.collector import complex_task, simple_tasks
 
@@ -17,32 +17,33 @@ logger = get_task_logger(__name__)
 
 
 @shared_task
-def example1():
-    print(f"EX1 - begin")
-    time.sleep(2)
-    print(f"EX1 - aftersleep")
-    example2.delay()
-    print("EX1 - can act")
+def get_widget_task(user_id, topic):
 
+    from django.contrib.auth import get_user_model
+    from src.neo4j_db import get_from_neo4j
 
-@shared_task
-def example2():
-    print(f"EX2 - begin")
-    time.sleep(4)
-    print(f"EX2 - aftersleep")
+    User = get_user_model()
+    user = User.objects.get(id=user_id)
+
+    username = f"user{user.id}"
+    password_hash = user.password.split("$")[2]
+    uri = os.environ.get("NEO_URI")
+
+    driver = GraphDatabase.driver(uri, auth=(username, password_hash))
+    VG = get_from_neo4j(driver, f"{username}db", topic)
+    driver.close()
+
+    return VG
 
 
 @shared_task(bind=True, max_retries=3)
-def process_simple_task(
-    self, req_id: int, topic: str, source_name: str, username, password
-):
+def process_simple_task(self, req_id: int, topic: str, source_name: str):
+    data = None
     try:
         data = simple_tasks[source_name](topic)
         # logger.exception(f"Дата {self.name}: {data}")
-        uri = os.environ.get("NEO_URI")
-        driver = GraphDatabase.driver(uri, auth=(username, password))
-        set_to_neo4j(driver, f"{username}db", data)
-        driver.close()
+        send_data.apply(args=[data, req_id])
+
         status = "Done"
     except Exception as e:
         logger.exception(f"Ошибка в задаче {self.name}: {e}")
@@ -51,21 +52,22 @@ def process_simple_task(
         topic_request = get_request(req_id)
         topic_request.source_info[source_name] = status
         topic_request.save(update_fields=["source_info"])
+
+    if status == "Done":
+        return data
 
 
 @shared_task(bind=True, max_retries=3)
-def process_complex_task(
-    self, req_id: int, topic: str, source_name: str, username, password
-):
+def process_complex_task(self, req_id: int, topic: str, source_name: str):
+    data_raw = None
+
     try:
-        data = complex_task[source_name](topic)
+        data_raw = complex_task[source_name](topic)
         # logger.exception(f"Дата {self.name}: {data}")
 
-        data = build_graph(data["results"], topic, ["openalex"], threshold=0.01)
-        uri = os.environ.get("NEO_URI")
-        driver = GraphDatabase.driver(uri, auth=(username, password))
-        set_to_neo4j(driver, f"{username}db", data)
-        driver.close()
+        data = build_graph_from_any(data_raw, topic, ["openalex"], threshold=0.01)
+        logger.exception(f"Дата {self.name}: {data}")
+        send_data.apply(args=[data, req_id])
 
         status = "Done"
     except Exception as e:
@@ -76,11 +78,37 @@ def process_complex_task(
         topic_request = get_request(req_id)
         topic_request.source_info[source_name] = status
         topic_request.save(update_fields=["source_info"])
+
+    if status == "Done":
+        return data_raw
+
+
+@shared_task
+def send_data(data, req_id: int):
+    uri = os.environ.get("NEO_URI")
+    req = get_request(req_id)
+    username = f"user{req.author.id}"
+    password = req.author.password.split("$")[2]
+    driver = GraphDatabase.driver(uri, auth=(username, password))
+    set_to_neo4j(driver, f"{username}db", data)
+    driver.close()
 
 
 @shared_task
 def finalize_topic(results, req_id):
     close_old_connections()
+    """with transaction.atomic():
+        r = get_request(req_id)
+        r.status = "unpolished"
+        r.save()"""
+
+    logger.exception(len(results))
+    topic = get_request(req_id).topic
+    data = build_graph_from_any(
+        results, topic, ["wikidata", "openalex"], threshold=0.01
+    )
+    send_data.apply(args=[data, req_id])
+    # time.sleep(2)
     with transaction.atomic():
         r = get_request(req_id)
         r.status = "completed"
@@ -89,19 +117,17 @@ def finalize_topic(results, req_id):
 
 
 @shared_task(bind=True, max_retries=3)
-def process_topic(self, req_id: int, topic: str, username, password):
+def process_topic(self, req_id: int, topic: str):
     close_old_connections()
     r = get_request(req_id)
     r.status = "processing"
     r.save()
 
     simple = [
-        process_simple_task.s(req_id, topic, name, username, password)
-        for name in simple_tasks.keys()
+        process_simple_task.s(req_id, topic, name) for name in simple_tasks.keys()
     ]
     complex = [
-        process_complex_task.s(req_id, topic, name, username, password)
-        for name in complex_task.keys()
+        process_complex_task.s(req_id, topic, name) for name in complex_task.keys()
     ]
     all_tasks = simple + complex
 

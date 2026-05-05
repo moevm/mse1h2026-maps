@@ -73,12 +73,14 @@ def fetch_labels_map(
 
         for eid, content in entities.items():
             labels = content.get("labels", {})
+            if labels == {}:
+                labels_map[eid] = [None, None]
+                continue
             descriptions = content.get("descriptions", {})
             descriptions_val = descriptions.get(lang, descriptions.get("en", {})).get("value", "")
             # Берем целевой язык, иначе английский, иначе сам ID
             label_val = labels.get(lang, labels.get("en", {})).get("value", eid)
             labels_map[eid] = [label_val, descriptions_val]
-
 
     return labels_map
 
@@ -92,6 +94,8 @@ def enrich_structure(data: any, labels: dict) -> any:
         # Если это сущность (Q-код)
         if data.get("entity-type") == "item" and "id" in data:
             qid = data["id"]
+            if labels.get(qid)[0] == None:
+                return 
             return {
                 "id": qid,
                 "label": labels.get(qid, qid)[0],
@@ -159,13 +163,21 @@ def transform_to_neo4j_format(wikidata_data: dict, query: str) -> dict:
     claims = entity.get("claims", {})
     for prop_id, statements in claims.items():
         for statement in statements:
+
             mainsnak = statement.get("mainsnak", {})
             datavalue = mainsnak.get("datavalue", {})
+
+            if mainsnak == {}:
+                continue
+            if datavalue == {}:
+                continue
 
             wierd = False
 
             # Нас интересуют только связи с другими сущностями (Q-кодами)
             if datavalue.get("type") == "wikibase-entityid":
+                if datavalue["value"] == None:
+                    continue
                 target_id = datavalue["value"]["id"]
 
                 if  "id" in datavalue["value"]["id"]:
