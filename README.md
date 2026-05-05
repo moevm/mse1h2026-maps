@@ -3,7 +3,7 @@
 ## Требования
 ### Для запуска через Docker
 - **Docker** 28 или выше
-- **Git** 
+- **Git**
 
 ## Установка и запуск
 ### Запуск через Docker
@@ -12,7 +12,7 @@
     ```bash
     git clone https://github.com/moevm/mse1h2026-maps.git
     cd mse1h2026-maps
-    
+
 2. **Настройте переменные окружения**
 
     Скопируйте **.env.example** в **.env** и при необходимости отредактируйте.
@@ -20,7 +20,7 @@
 3. **Соберите и запустите контейнеры (при первом запуске также выполните миграции моделей (шаблонов таблиц) в SQL)**
     ```bash
     docker-compose up --build
-    docker compose exec server python src/django/maps/manage.py migrate    
+    docker compose exec server python src/django/maps/manage.py migrate
 
 4. **Приложение станет доступно по адресу http://localhost:8000**
 

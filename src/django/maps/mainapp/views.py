@@ -1,48 +1,46 @@
 import os
-import threading
 
 from neo4j import GraphDatabase
 
-from django.db import close_old_connections
+from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
+from django.views.decorators.http import require_http_methods
 from src.db_access import get_request, put_request
-from src.neo4j_db import get_from_neo4j, set_to_neo4j
-from src.sources.collector import collect_all_sources
+from src.django.maps.mainapp.tasks import process_topic
+from src.neo4j_db import get_from_neo4j
 
 
 def home(request):
     return render(request, "index.html")
 
 
+@require_http_methods(["GET"])
+@ensure_csrf_cookie
+def user_status(request):
+    if request.user.is_authenticated:
+        return JsonResponse(
+            {
+                "is_authenticated": True,
+                "username": request.user.username,
+            }
+        )
+    else:
+        return JsonResponse(
+            {
+                "is_authenticated": False,
+                "username": None,
+            }
+        )
+
+
 def start(request):
     topic = request.GET.get("topic")
-    print(topic)
+
     req_id = put_request(topic)
-
-    def task():
-        close_old_connections()
-        r = get_request(req_id)
-        r.status = "processing"
-        r.save()
-        _, data = collect_all_sources(topic, req_id)
-
-        print(data)
-        uri = os.environ.get("NEO_URI")
-        username = os.environ.get("NEO_USER")
-        password = os.environ.get("NEO_PASSWORD")
-        driver = GraphDatabase.driver(uri, auth=(username, password))
-
-        set_to_neo4j(driver, data)
-
-        driver.close()
-
-        r.status = "completed"
-        r.save()
-
-    thread = threading.Thread(target=task)
-    thread.daemon = True  # поток завершится при остановке основного процесса
-    thread.start()
+    print(topic)
+    process_topic.delay(req_id, topic)
     return HttpResponse(f"{req_id}")
 
 
@@ -57,30 +55,7 @@ def get_widget(request):
     VG = get_from_neo4j(driver, topic)
     driver.close()
 
-    nodes = []
-    for node in VG.nodes:
-        nodes.append(
-            {
-                "id": node.id,
-                "caption": node.caption,
-                "labels": node.properties.get("labels", []),
-                "properties": node.properties,
-            }
-        )
-
-    relationships = []
-    for rel in VG.relationships:
-        relationships.append(
-            {
-                "id": rel.id,
-                "from": rel.source,
-                "to": rel.target,
-                "caption": rel.properties.get("type", ""),
-                "properties": rel.properties,
-            }
-        )
-
-    return JsonResponse({"nodes": nodes, "relationships": relationships})
+    return JsonResponse(VG)
 
 
 def node_info(request):
@@ -112,3 +87,22 @@ def status(request):
 
 def result(reqest):
     pass
+
+
+@require_http_methods(["POST"])
+@csrf_protect
+def register_user(request):
+    username = request.POST.get("username")
+    password = request.POST.get("password")
+
+    if not username or not password:
+        return JsonResponse({"error": "Username and password are required"}, status=400)
+
+    if User.objects.filter(username=username).exists():
+        return JsonResponse({"error": "User already exists"}, status=400)
+
+    try:
+        user = User.objects.create_user(username=username, password=password)
+        return JsonResponse({"message": "Registration successful"}, status=200)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
