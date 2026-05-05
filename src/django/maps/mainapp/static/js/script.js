@@ -1,5 +1,4 @@
 // Ждем загрузки DOM
-
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM загружен, инициализация...');
 
@@ -12,38 +11,315 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let statusPollInterval = null;
     let network = null;
+    let isAuthenticated = false;
 
-    if (typeof vis === 'undefined') {
-        console.error('vis.js не загружена!');
-        if (graphPlaceholder) {
-            graphPlaceholder.innerHTML = `
-                <div style="padding: 20px; text-align: center; color: #f44336;">
-                    <div>Ошибка: vis.js библиотека не загружена</div>
-                    <div>Проверьте файл static/libs/vis-network.min.js</div>
-                </div>
-            `;
+    // ===== АУТЕНТИФИКАЦИЯ =====
+
+    // Получение CSRF токена из cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
         }
-        return;
+        return cookieValue;
     }
 
-    console.log('vis.js загружена успешно, версия:', vis.version);
-
-    // Toggle sidebar
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', function() {
-            sidebar.classList.toggle('collapsed');
-            if (sidebar.classList.contains('collapsed')) {
-                toggleBtn.textContent = '▶';
-                mainContent.classList.add('expanded');
+    // Проверка статуса аутентификации
+    async function checkAuthStatus() {
+        try {
+            const response = await fetch('/accounts/user-status/');
+            if (response.ok) {
+                const data = await response.json();
+                isAuthenticated = data.is_authenticated;
+                if (isAuthenticated) {
+                    hideLoginModal();
+                    showUserInfo(data.username);
+                } else {
+                    showLoginModal();
+                    hideUserInfo();
+                }
             } else {
-                toggleBtn.textContent = '◀';
-                mainContent.classList.remove('expanded');
+                showLoginModal();
             }
-        });
+        } catch (error) {
+            console.error('Ошибка проверки аутентификации:', error);
+            showLoginModal();
+        }
+    }
+
+    // Показать модальное окно входа
+    function showLoginModal() {
+        const modal = document.getElementById('loginModal');
+        const registerModal = document.getElementById('registerModal');
+        const overlay = document.getElementById('modalOverlay');
+        const appContainer = document.querySelector('.app-container');
+        
+        if (registerModal) registerModal.style.display = 'none';
+        if (modal && overlay) {
+            modal.style.display = 'block';
+            overlay.style.display = 'block';
+            if (appContainer) {
+                appContainer.classList.add('blurred');
+            }
+        }
+    }
+
+    // Скрыть модальное окно входа
+    function hideLoginModal() {
+        const modal = document.getElementById('loginModal');
+        const registerModal = document.getElementById('registerModal');
+        const overlay = document.getElementById('modalOverlay');
+        const appContainer = document.querySelector('.app-container');
+        
+        if (modal) modal.style.display = 'none';
+        if (registerModal && registerModal.style.display === 'block') return;
+        
+        if (overlay) overlay.style.display = 'none';
+        if (appContainer) appContainer.classList.remove('blurred');
+    }
+
+    // Показать модальное окно регистрации
+    function showRegisterModal() {
+        const modal = document.getElementById('registerModal');
+        const loginModal = document.getElementById('loginModal');
+        const overlay = document.getElementById('modalOverlay');
+        const appContainer = document.querySelector('.app-container');
+        
+        if (loginModal) loginModal.style.display = 'none';
+        if (modal && overlay) {
+            modal.style.display = 'block';
+            overlay.style.display = 'block';
+            if (appContainer) {
+                appContainer.classList.add('blurred');
+            }
+            // Очищаем сообщения
+            const errorDiv = document.getElementById('registerError');
+            const successDiv = document.getElementById('registerSuccess');
+            if (errorDiv) errorDiv.style.display = 'none';
+            if (successDiv) successDiv.style.display = 'none';
+        }
+    }
+
+    // Скрыть модальное окно регистрации
+    function hideRegisterModal() {
+        const modal = document.getElementById('registerModal');
+        const loginModal = document.getElementById('loginModal');
+        const overlay = document.getElementById('modalOverlay');
+        const appContainer = document.querySelector('.app-container');
+        
+        if (modal) modal.style.display = 'none';
+        if (loginModal && loginModal.style.display === 'block') return;
+        
+        if (overlay) overlay.style.display = 'none';
+        if (appContainer) appContainer.classList.remove('blurred');
+    }
+
+    // Показать информацию о пользователе
+    function showUserInfo(username) {
+        const userInfo = document.getElementById('userInfo');
+        const usernameDisplay = document.getElementById('usernameDisplay');
+        if (userInfo && usernameDisplay) {
+            usernameDisplay.textContent = `Вы вошли как: ${username}`;
+            userInfo.style.display = 'flex';
+        }
+    }
+
+    // Скрыть информацию о пользователе
+    function hideUserInfo() {
+        const userInfo = document.getElementById('userInfo');
+        if (userInfo) {
+            userInfo.style.display = 'none';
+        }
+    }
+
+    // Показать ошибку входа
+    function showLoginError(message) {
+        const errorDiv = document.getElementById('loginError');
+        if (errorDiv) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 3000);
+        }
+    }
+
+    // Показать ошибку регистрации
+    function showRegisterError(message) {
+        const errorDiv = document.getElementById('registerError');
+        const successDiv = document.getElementById('registerSuccess');
+        if (errorDiv) {
+            if (successDiv) successDiv.style.display = 'none';
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 3000);
+        }
+    }
+
+    // Показать успех регистрации
+    function showRegisterSuccess(message) {
+        const successDiv = document.getElementById('registerSuccess');
+        const errorDiv = document.getElementById('registerError');
+        if (successDiv) {
+            if (errorDiv) errorDiv.style.display = 'none';
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+        }
+    }
+
+    // Обработка входа
+    async function handleLogin(event) {
+        event.preventDefault();
+        
+        const username = document.getElementById('loginUsername').value;
+        const password = document.getElementById('loginPassword').value;
+        
+        try {
+            const formData = new URLSearchParams();
+            formData.append('username', username);
+            formData.append('password', password);
+            
+            const response = await fetch('/accounts/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: formData
+            });
+            
+            if (response.ok || response.redirected) {
+                isAuthenticated = true;
+                hideLoginModal();
+                showUserInfo(username);
+                if (network) {
+                    network.destroy();
+                    network = null;
+                }
+                const graphPlaceholder = document.querySelector('.graph-placeholder');
+                if (graphPlaceholder) {
+                    graphPlaceholder.innerHTML = 'Войдите в систему для просмотра графа';
+                }
+            } else {
+                showLoginError('Неверный логин или пароль');
+            }
+        } catch (error) {
+            console.error('Ошибка входа:', error);
+            showLoginError('Ошибка соединения с сервером');
+        }
+    }
+
+    // Обработка регистрации
+    async function handleRegister(event) {
+        event.preventDefault();
+        
+        const username = document.getElementById('regUsername').value;
+        const password = document.getElementById('regPassword').value;
+        const passwordConfirm = document.getElementById('regPasswordConfirm').value;
+        
+        // Проверка совпадения паролей
+        if (password !== passwordConfirm) {
+            showRegisterError('Пароли не совпадают');
+            return;
+        }
+        
+        // // Проверка длины пароля
+        // if (password.length < 4) {
+        //     showRegisterError('Пароль должен содержать минимум 4 символа');
+        //     return;
+        // }
+        
+        // // Проверка длины логина
+        // if (username.length < 3) {
+        //     showRegisterError('Логин должен содержать минимум 3 символа');
+        //     return;
+        // }
+        
+        try {
+            const formData = new URLSearchParams();
+            formData.append('username', username);
+            formData.append('password', password);
+            
+            const response = await fetch('/accounts/register/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: formData
+            });
+            
+            if (response.ok) {
+                showRegisterSuccess('Регистрация успешна! Теперь вы можете войти.');
+                setTimeout(() => {
+                    hideRegisterModal();
+                    showLoginModal();
+                    document.getElementById('registerForm').reset();
+                }, 2000);
+            } else {
+                const errorText = await response.text();
+                if (errorText.includes('already exists')) {
+                    showRegisterError('Пользователь с таким именем уже существует');
+                } else {
+                    showRegisterError('Ошибка регистрации. Попробуйте снова.');
+                }
+            }
+        } catch (error) {
+            console.error('Ошибка регистрации:', error);
+            showRegisterError('Ошибка соединения с сервером');
+        }
+    }
+
+    // Обработка выхода
+    async function handleLogout() {
+        try {
+            const response = await fetch('/logout/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            });
+            
+            if (response.ok) {
+                isAuthenticated = false;
+                hideUserInfo();
+                showLoginModal();
+                if (network) {
+                    network.destroy();
+                    network = null;
+                }
+                const graphPlaceholder = document.querySelector('.graph-placeholder');
+                if (graphPlaceholder) {
+                    graphPlaceholder.innerHTML = 'Войдите в систему для просмотра графа';
+                }
+            }
+        } catch (error) {
+            console.error('Ошибка выхода:', error);
+        }
+    }
+
+    // Проверка аутентификации перед запросами
+    function requireAuth() {
+        if (!isAuthenticated) {
+            showLoginModal();
+            return false;
+        }
+        return true;
     }
 
     // ===== ФУНКЦИЯ ОПРОСА СТАТУСА =====
     async function checkRequestStatus(requestId) {
+        if (!requireAuth()) return;
+        
         try {
             const response = await fetch(`/api/status/?id=${requestId}`);
             const status = await response.text();
@@ -111,6 +387,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ===== ЗАГРУЗКА ИНТЕРАКТИВНОГО ГРАФА =====
     async function loadGraphWidget(requestId) {
+        if (!requireAuth()) return;
+        
         try {
             const graphPlaceholder = document.querySelector('.graph-placeholder');
             graphPlaceholder.innerHTML = '<div style="text-align: center; padding: 20px;">Загрузка графа...</div>';
@@ -150,7 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const nodes = data.nodes.map(node => ({
                     id: node.id,
                     label: node.properties?.label_en || node.caption || node.properties?.name || node.id,
-                    title: node.properties?.info || 'Нет информации',
+                    title: node.properties?.desc_en || node.properties?.info || 'Нет информации',
                     group: node.labels?.[0] || 'default',
                     font: { size: 14, color: '#000000' }
                 }));
@@ -209,13 +487,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 network.on('click', function(params) {
                     if (params.nodes.length > 0) {
                         const nodeId = params.nodes[0];
-                        const node = nodes.find(n => n.id === nodeId);
-                        if (node) {
+                        const originalNode = data.nodes.find(n => n.id === nodeId);
+                        if (originalNode) {
                             openInfoPanel({
-                                name: node.label,
-                                info: node.title || 'Нет дополнительной информации',
-                                links: [],
-                                resources: []
+                                name: originalNode.properties?.label_en || originalNode.caption || nodeId,
+                                info: originalNode.properties?.desc_en || originalNode.properties?.info || 'Нет дополнительной информации',
+                                links: originalNode.properties?.links || [],
+                                resources: originalNode.properties?.resources || []
                             });
                         }
                     } else if (params.edges.length > 0) {
@@ -232,7 +510,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
 
-                // Центрируем граф
                 setTimeout(() => {
                     if (network) {
                         network.fit();
@@ -271,8 +548,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ===== ОТПРАВКА ЗАПРОСА =====
     async function sendToDjango(keyWords, options) {
+        if (!requireAuth()) return;
+        
         try {
-            // Уничтожаем предыдущий граф
             if (network) {
                 network.destroy();
                 network = null;
@@ -330,6 +608,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function drawGraph(keyWords, options) {
+        if (!requireAuth()) return;
+        
         if (!keyWords || keyWords.trim() === '') {
             alert('Пожалуйста, введите поисковый запрос');
             return;
@@ -458,6 +738,95 @@ document.addEventListener('DOMContentLoaded', () => {
             closeInfoPanelFunction();
         }
     });
+
+    // ===== ИНИЦИАЛИЗАЦИЯ ОБРАБОТЧИКОВ =====
+    
+    if (typeof vis === 'undefined') {
+        console.error('vis.js не загружена!');
+        if (graphPlaceholder) {
+            graphPlaceholder.innerHTML = `
+                <div style="padding: 20px; text-align: center; color: #f44336;">
+                    <div>Ошибка: vis.js библиотека не загружена</div>
+                    <div>Проверьте файл static/libs/vis-network.min.js</div>
+                </div>
+            `;
+        }
+        return;
+    }
+
+    console.log('vis.js загружена успешно, версия:', vis.version);
+
+    // Toggle sidebar
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function() {
+            sidebar.classList.toggle('collapsed');
+            if (sidebar.classList.contains('collapsed')) {
+                toggleBtn.textContent = '▶';
+                mainContent.classList.add('expanded');
+            } else {
+                toggleBtn.textContent = '◀';
+                mainContent.classList.remove('expanded');
+            }
+        });
+    }
+
+    // Настройка обработчиков аутентификации
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleRegister);
+    }
+
+    const closeModalBtn = document.getElementById('closeLoginModal');
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', () => {
+            hideLoginModal();
+        });
+    }
+
+    const closeRegisterModal = document.getElementById('closeRegisterModal');
+    if (closeRegisterModal) {
+        closeRegisterModal.addEventListener('click', () => {
+            hideRegisterModal();
+        });
+    }
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
+
+    const showRegisterBtn = document.getElementById('showRegisterBtn');
+    if (showRegisterBtn) {
+        showRegisterBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showRegisterModal();
+        });
+    }
+
+    const showLoginBtn = document.getElementById('showLoginBtn');
+    if (showLoginBtn) {
+        showLoginBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            hideRegisterModal();
+            showLoginModal();
+        });
+    }
+
+    // Закрытие модальных окон по клику на оверлей
+    const modalOverlay = document.getElementById('modalOverlay');
+    if (modalOverlay) {
+        modalOverlay.addEventListener('click', () => {
+            hideLoginModal();
+            hideRegisterModal();
+        });
+    }
+
+    checkAuthStatus();
 
     console.log('Приложение полностью инициализировано');
 });
