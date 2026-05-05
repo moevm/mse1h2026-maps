@@ -13,6 +13,8 @@ def collect_all_sources(topic: str, request_id: int) -> List[Dict[str, Any]]:
 
     open_alex_json = fetch_open_alex(topic)
     wikidata_json = fetch_wikidata(topic)
+    wikipedia_json = fetch_wikipedia(topic)
+    github_json = fetch_github(topic)
 
     with open("data.json", "w", encoding="utf-8") as write_file:
         json.dump(open_alex_json, write_file, indent=4, ensure_ascii=False)
