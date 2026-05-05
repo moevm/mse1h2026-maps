@@ -22,9 +22,15 @@ def build_similarity_graph_from_nodes(
     model_name: str = "all-mpnet-base-v2",
     threshold: float = 0.3,
 ) -> nx.Graph:
-    print("PAPER")
-    [print(p) for p in papers]
-    abstracts = [preprocess_text(p.get("abstract_inverted_index", "")) for p in papers]
+    """
+    Строит граф схожести на основе эмбеддингов текстов узлов.
+    """
+    if not nodes:
+        raise ValueError(
+            "GraphBuilder: список узлов пуст, невозможно построить граф схожести"
+        )
+    if not isinstance(threshold, (int, float)) or threshold < 0 or threshold > 1:
+        raise ValueError("GraphBuilder: threshold должен быть числом от 0 до 1")
 
     try:
         texts = [node["text"] for node in nodes]

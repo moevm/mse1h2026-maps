@@ -26,7 +26,16 @@ if __name__ == "__main__":
         "-A",
         "maps",
         "worker",
-        "--pool=solo",
+        "--pool=threads",
+        "--concurrency=4",  # количество потоков
         "--loglevel=info",
     ]
+    """sys.argv = [
+        "celery",
+        "-A",
+        "maps",
+        "worker",
+        "--pool=solo",
+        "--loglevel=info",
+    ]"""
     celery.main()

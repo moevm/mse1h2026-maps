@@ -2,13 +2,14 @@ import os
 
 from neo4j import GraphDatabase
 
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
 from src.db_access import get_request, put_request
-from src.django.maps.mainapp.tasks import process_topic
+from src.django.maps.mainapp.tasks import get_widget_task, process_topic
 from src.neo4j_db import get_from_neo4j
 
 
@@ -27,6 +28,7 @@ def user_status(request):
             }
         )
     else:
+        print("no")
         return JsonResponse(
             {
                 "is_authenticated": False,
@@ -35,26 +37,25 @@ def user_status(request):
         )
 
 
+@login_required
 def start(request):
     topic = request.GET.get("topic")
 
-    req_id = put_request(topic)
+    req_id = put_request(topic, request.user.id)
     print(topic)
+
     process_topic.delay(req_id, topic)
+
     return HttpResponse(f"{req_id}")
 
 
+@login_required
 def get_widget(request):
     request_id = request.GET.get("id")
     topic = get_request(request_id).topic
 
-    uri = os.environ.get("NEO_URI")
-    username = os.environ.get("NEO_USER")
-    password = os.environ.get("NEO_PASSWORD")
-    driver = GraphDatabase.driver(uri, auth=(username, password))
-    VG = get_from_neo4j(driver, topic)
-    driver.close()
-
+    task = get_widget_task.apply(args=[request.user.id, topic])
+    VG = task.get()
     return JsonResponse(VG)
 
 
@@ -82,11 +83,14 @@ def node_info(request):
 def status(request):
     id = request.GET.get("id")
     req = get_request(id)
-    return HttpResponse(f"{req.status}")
+    res = {}
+    res["Status"] = req.status
+    res["Info"] = req.source_info
+    return JsonResponse(res)
+    # return HttpResponse(f"{req.status}")
 
 
-def result(reqest):
-    pass
+from src.neo4j_db import create_user_and_db
 
 
 @require_http_methods(["POST"])
@@ -103,6 +107,19 @@ def register_user(request):
 
     try:
         user = User.objects.create_user(username=username, password=password)
+
+        uri = os.environ.get("NEO_URI")
+        usernameN = os.environ.get("NEO_USER")
+        passwordN = os.environ.get("NEO_PASSWORD")
+        driver = GraphDatabase.driver(uri, auth=(usernameN, passwordN))
+
+        password_hash = user.password.split("$")[2]
+        username = user.id
+        print(password_hash)
+        print(username)
+        tmp = create_user_and_db(driver, username, password_hash)
+        print(tmp)
+
         return JsonResponse({"message": "Registration successful"}, status=200)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
