@@ -308,5 +308,5 @@
 [Протокол встречи с заказчиком №3](Итреация%203/Созвон%20с%20заказчиком%20№3%2031.03.md)
 
 
-[Запись встречи с заказчиком №3](https://drive.google.com/file/d/14NvejjAK-AcIBakR0nGGGl-WKvl3gx6b/view)
+[Запись встречи с заказчиком №3](https://drive.google.com/file/d/1GIIxtWS0jZ0YwX-XmMKKEijil4KPzCqm/view?usp=sharing)
 
