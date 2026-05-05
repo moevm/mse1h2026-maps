@@ -20,19 +20,22 @@ def clean_rel_type(rel_type):
 
 def create_nodes(tx, nodes, query):
     uid_map = {}
+    # определяем uid центрального узла заранее
+    central_uid = normalize_name(query)
 
     for node in nodes:
         labels = ":".join(node["labels"])
         props = node.get("properties", {})
         old_uid = node["uid"]
 
-        if "label_en" in props:
-            new_uid = f"{normalize_name(props['label_en'])}"
+        if old_uid.startswith("query:"):
+            new_uid = central_uid
         else:
-            new_uid = old_uid
-        props["query"] = query
+            new_uid = old_uid  # все остальные — оригинальный uid
 
+        props["query"] = query
         uid_map[old_uid] = new_uid
+
         tx.run(
             f"MERGE (n:{labels} {{uid: $uid, query: $query_param}}) SET n += $props",
             uid=new_uid,
@@ -88,4 +91,30 @@ def get_from_neo4j(driver, query):
         )
 
         vg = from_neo4j(result, row_limit=10000)
-        return vg
+        return serlialize(vg)
+
+
+def serlialize(VG):
+    nodes = []
+    for node in VG.nodes:
+        nodes.append(
+            {
+                "id": node.id,
+                "caption": node.caption,
+                "labels": node.properties.get("labels", []),
+                "properties": node.properties,
+            }
+        )
+
+    relationships = []
+    for rel in VG.relationships:
+        relationships.append(
+            {
+                "id": rel.id,
+                "from": rel.source,
+                "to": rel.target,
+                "caption": rel.properties.get("type", ""),
+                "properties": rel.properties,
+            }
+        )
+    return {"nodes": nodes, "relationships": relationships}
