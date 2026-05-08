@@ -1,11 +1,17 @@
 import logging
 import re
 import time
-import logging
+
+from neo4j.exceptions import (
+    AuthError,
+    ServiceUnavailable,
+    SessionExpired,
+    TransientError,
+)
 from neo4j_viz.neo4j import from_neo4j
-from neo4j.exceptions import ServiceUnavailable, AuthError, TransientError, SessionExpired
 
 logger = logging.getLogger(__name__)
+
 
 def normalize_name(name):
     words = name.lower().strip().split()
@@ -20,6 +26,7 @@ def clean_rel_type(rel_type):
     cleaned = re.sub(r"_+", "_", cleaned)
     cleaned = cleaned.strip("_")
     return cleaned
+
 
 def wait_for_db_online(session, db_name, timeout=30, interval=1):
     start = time.time()
@@ -39,7 +46,7 @@ def wait_for_db_online(session, db_name, timeout=30, interval=1):
         time.sleep(interval)
 
 
-def create_user_and_db(driver, user_id,neo4j_password):
+def create_user_and_db(driver, user_id, neo4j_password):
     if not user_id:
         raise ValueError("user_id не может быть пустым")
 
@@ -63,7 +70,7 @@ def create_user_and_db(driver, user_id,neo4j_password):
             session.run(
                 f"CREATE USER {neo4j_username} "
                 "SET PASSWORD $password CHANGE NOT REQUIRED",
-                password=neo4j_password
+                password=neo4j_password,
             )
             user_created = True
 
@@ -88,9 +95,15 @@ def create_user_and_db(driver, user_id,neo4j_password):
             session.run(f"GRANT READ {{*}} ON GRAPH {db_name} TO {role_name}")
             session.run(f"GRANT TRAVERSE ON GRAPH {db_name} TO {role_name}")
             session.run(f"GRANT WRITE ON GRAPH {db_name} TO {role_name}")
-            session.run(f"GRANT CREATE NEW NODE LABEL ON DATABASE {db_name} TO {role_name}")
-            session.run(f"GRANT CREATE NEW RELATIONSHIP TYPE ON DATABASE {db_name} TO {role_name}")
-            session.run(f"GRANT CREATE NEW PROPERTY NAME ON DATABASE {db_name} TO {role_name}")
+            session.run(
+                f"GRANT CREATE NEW NODE LABEL ON DATABASE {db_name} TO {role_name}"
+            )
+            session.run(
+                f"GRANT CREATE NEW RELATIONSHIP TYPE ON DATABASE {db_name} TO {role_name}"
+            )
+            session.run(
+                f"GRANT CREATE NEW PROPERTY NAME ON DATABASE {db_name} TO {role_name}"
+            )
 
     except ServiceUnavailable as e:
         raise ConnectionError(f"Neo4j сервер недоступен: {e}") from e
@@ -118,6 +131,7 @@ def create_user_and_db(driver, user_id,neo4j_password):
         raise RuntimeError(f"Не удалось создать пользователя: {e}") from e
 
     return db_name, neo4j_username
+
 
 def wait_for_db_online(session, db_name, timeout=30, interval=1):
     start = time.time()
@@ -225,7 +239,6 @@ def create_user_and_db(driver, user_id, neo4j_password):
 
 
 def create_nodes(tx, nodes, query):
-
     uid_map = {}
 
     for node in nodes:
@@ -306,15 +319,18 @@ def create_relationships(tx, relationships, uid_map, query):
                 props=props,
             )
         except ServiceUnavailable as e:
-            raise ConnectionError(f"Neo4j сервер недоступен при создании связи: {e}") from e
+            raise ConnectionError(
+                f"Neo4j сервер недоступен при создании связи: {e}"
+            ) from e
         except AuthError as e:
             raise PermissionError(f"Ошибка авторизации при создании связи: {e}") from e
         except TransientError as e:
-            raise TimeoutError(f"Временная ошибка Neo4j при создании связи, попробуйте позже: {e}") from e
+            raise TimeoutError(
+                f"Временная ошибка Neo4j при создании связи, попробуйте позже: {e}"
+            ) from e
 
 
 def set_to_neo4j(driver, db_name, data):
-
     if "query" not in data:
         raise ValueError("data должна содержать поле query")
     if "nodes" not in data or "relationships" not in data:
@@ -330,7 +346,9 @@ def set_to_neo4j(driver, db_name, data):
         if "uid" not in node:
             raise ValueError(f"Узел {i} не содержит обязательное поле uid")
         if "labels" not in node or not node["labels"]:
-            raise ValueError(f"Узел {i} не содержит обязательное поле labels или оно пустое")
+            raise ValueError(
+                f"Узел {i} не содержит обязательное поле labels или оно пустое"
+            )
         if not isinstance(node["labels"], list):
             raise ValueError(f"labels узла {i} должен быть списком")
         if "properties" in node and not isinstance(node["properties"], dict):
@@ -370,16 +388,21 @@ def set_to_neo4j(driver, db_name, data):
         with driver.session(database=db_name) as session:
             session.execute_write(_execute, data)
     except (ServiceUnavailable, SessionExpired, TransientError) as e:
-        raise ConnectionError(f"Neo4j не доступен при записи графа '{query}': {e}") from e
+        raise ConnectionError(
+            f"Neo4j не доступен при записи графа '{query}': {e}"
+        ) from e
     except AuthError as e:
-        raise PermissionError(f"Ошибка авторизации при записи графа '{query}': {e}") from e
+        raise PermissionError(
+            f"Ошибка авторизации при записи графа '{query}': {e}"
+        ) from e
     except (ValueError, ConnectionError, PermissionError, TimeoutError) as e:
         raise
     except Exception as e:
         raise RuntimeError(f"Ошибка при записи графа '{query}': {e}") from e
 
-def get_from_neo4j(driver, db_name, query):
 
+def get_from_neo4j(driver, db_name, query):
+    query = query.strip().lower()
     try:
         with driver.session(database=db_name) as session:
             result = session.run(
@@ -397,22 +420,26 @@ def get_from_neo4j(driver, db_name, query):
 
             nodes = []
             for node in VG.nodes:
-                nodes.append({
-                    "id": node.id,
-                    "caption": node.caption,
-                    "labels": node.properties.get("labels", []),
-                    "properties": node.properties,
-                })
+                nodes.append(
+                    {
+                        "id": node.id,
+                        "caption": node.caption,
+                        "labels": node.properties.get("labels", []),
+                        "properties": node.properties,
+                    }
+                )
 
             relationships = []
             for rel in VG.relationships:
-                relationships.append({
-                    "id": rel.id,
-                    "from": rel.source,
-                    "to": rel.target,
-                    "caption": rel.properties.get("type", ""),
-                    "properties": rel.properties,
-                })
+                relationships.append(
+                    {
+                        "id": rel.id,
+                        "from": rel.source,
+                        "to": rel.target,
+                        "caption": rel.properties.get("type", ""),
+                        "properties": rel.properties,
+                    }
+                )
 
             return {"nodes": nodes, "relationships": relationships}
 
@@ -430,7 +457,6 @@ def get_from_neo4j(driver, db_name, query):
 
 
 def add_node(driver, db_name, query, nodes=None, relationships=None):
-
     result = {}
 
     def _execute(tx):
@@ -458,7 +484,6 @@ def add_node(driver, db_name, query, nodes=None, relationships=None):
 
 
 def delete_node(driver, db_name, query, uid):
-
     def _execute(tx):
         result = tx.run(
             "MATCH (n {uid: $uid, query: $q}) RETURN count(n) AS cnt",
@@ -467,9 +492,7 @@ def delete_node(driver, db_name, query, uid):
         )
         record = result.single()
         if not record or record["cnt"] == 0:
-            raise ValueError(
-                f"Узел с uid='{uid}' не найден в графе '{query}'"
-            )
+            raise ValueError(f"Узел с uid='{uid}' не найден в графе '{query}'")
         tx.run(
             "MATCH (n {uid: $uid, query: $q}) DETACH DELETE n",
             uid=uid,
@@ -501,7 +524,6 @@ def delete_node(driver, db_name, query, uid):
 
 
 def delete_node(driver, db_name, query, uid):
-
     def _execute(tx):
         result = tx.run(
             "MATCH (n {uid: $uid, query: $q}) RETURN count(n) AS cnt",
@@ -531,7 +553,6 @@ def delete_node(driver, db_name, query, uid):
 
 
 def update_node(driver, db_name, query, node_uid, new_properties=None, new_labels=None):
-
     if not query or not query.strip():
         raise ValueError("query не может быть пустым")
     if not node_uid or not node_uid.strip():

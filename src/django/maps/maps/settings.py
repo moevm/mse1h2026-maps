@@ -21,6 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("DJANGO_SECRET")
+
+os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
+os.environ["TRANSFORMERS_VERBOSITY"] = "error"
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ["TRANSFORMERS_NO_ADVISORY_WARNINGS"] = "1"
+
 # TODO: ENV
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -136,3 +142,45 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "UTC"
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "simple": {
+            "format": "[{asctime} {levelname} {name}] {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+            "level": "ERROR",  # сам хендлер будет принимать только ERROR и выше
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "ERROR",  # ← корневой логгер НЕ пропускает INFO/WARNING
+    },
+    "loggers": {
+        # Если вам нужны логи Django (например, ошибки запросов) — они всё равно попадут,
+        # потому что Django использует уровень WARNING для ошибок 4xx/5xx?
+        # Но можно явно разрешить нужные логгеры, если они требуют более низкого уровня.
+        # Например, пусть Celery worker пишет ошибки через корневой логгер, но можно и явно:
+        "celery": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,  # не дублировать в корневой
+        },
+        "django": {
+            "handlers": ["console"],
+            "level": "ERROR",  # Django ошибки (500 и пр.)
+            "propagate": False,
+        },
+        # А эти библиотеки полностью отключаем (наследуют от корневого → уровень ERROR)
+        # Можно оставить как есть, они автоматически будут фильтроваться.
+    },
+}
+
+CELERY_WORKER_HIJACK_ROOT_LOGGER = False

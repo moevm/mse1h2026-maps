@@ -10,7 +10,7 @@ simple_tasks = {
 }
 
 complex_task = {
-    "alex": fetch_open_alex,
+    "openalex": fetch_open_alex,
     "github": fetch_github,
     "wikipedia": fetch_wikipedia,
 }
