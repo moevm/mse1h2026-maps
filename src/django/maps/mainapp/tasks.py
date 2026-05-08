@@ -1,7 +1,5 @@
 # collector/tasks.py
-import datetime
 import os
-import time
 
 from celery import chord, group, shared_task
 from celery.utils.log import get_task_logger
@@ -18,7 +16,6 @@ logger = get_task_logger(__name__)
 
 @shared_task
 def get_widget_task(user_id, topic):
-
     from django.contrib.auth import get_user_model
     from src.neo4j_db import get_from_neo4j
 
@@ -32,7 +29,7 @@ def get_widget_task(user_id, topic):
     driver = GraphDatabase.driver(uri, auth=(username, password_hash))
     VG = get_from_neo4j(driver, f"{username}db", topic)
     driver.close()
-
+    # logger.exception(f"VG: {VG}")
     return VG
 
 
@@ -54,7 +51,7 @@ def process_simple_task(self, req_id: int, topic: str, source_name: str):
         topic_request.save(update_fields=["source_info"])
 
     if status == "Done":
-        return data
+        return data, source_name
 
 
 @shared_task(bind=True, max_retries=3)
@@ -63,10 +60,9 @@ def process_complex_task(self, req_id: int, topic: str, source_name: str):
 
     try:
         data_raw = complex_task[source_name](topic)
+        # logger.exception(f"Дата {self.name}: {data_raw}")
+        data = build_graph_from_any(data_raw, topic, [source_name], threshold=0.9)
         # logger.exception(f"Дата {self.name}: {data}")
-
-        data = build_graph_from_any(data_raw, topic, ["openalex"], threshold=0.01)
-        logger.exception(f"Дата {self.name}: {data}")
         send_data.apply(args=[data, req_id])
 
         status = "Done"
@@ -80,7 +76,7 @@ def process_complex_task(self, req_id: int, topic: str, source_name: str):
         topic_request.save(update_fields=["source_info"])
 
     if status == "Done":
-        return data_raw
+        return data_raw, source_name
 
 
 @shared_task
@@ -90,6 +86,7 @@ def send_data(data, req_id: int):
     username = f"user{req.author.id}"
     password = req.author.password.split("$")[2]
     driver = GraphDatabase.driver(uri, auth=(username, password))
+    # logger.exception(f"DATA: {data}")
     set_to_neo4j(driver, f"{username}db", data)
     driver.close()
 
@@ -102,11 +99,18 @@ def finalize_topic(results, req_id):
         r.status = "unpolished"
         r.save()"""
 
-    logger.exception(len(results))
     topic = get_request(req_id).topic
-    data = build_graph_from_any(
-        results, topic, ["wikidata", "openalex"], threshold=0.01
-    )
+    data_raw = []
+    sources = []
+
+    for elem in results:
+        if elem is None:
+            continue
+        data_raw.append(elem[0])
+        sources.append(elem[1])
+
+    logger.exception(f"data size: {len(data_raw)} | src size: {len(sources)}")
+    data = build_graph_from_any(data_raw, topic, sources, threshold=0.9)
     send_data.apply(args=[data, req_id])
     # time.sleep(2)
     with transaction.atomic():

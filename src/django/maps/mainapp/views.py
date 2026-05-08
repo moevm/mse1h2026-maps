@@ -28,7 +28,6 @@ def user_status(request):
             }
         )
     else:
-        print("no")
         return JsonResponse(
             {
                 "is_authenticated": False,
@@ -42,7 +41,6 @@ def start(request):
     topic = request.GET.get("topic")
 
     req_id = put_request(topic, request.user.id)
-    print(topic)
 
     process_topic.delay(req_id, topic)
 
@@ -115,10 +113,7 @@ def register_user(request):
 
         password_hash = user.password.split("$")[2]
         username = user.id
-        print(password_hash)
-        print(username)
         tmp = create_user_and_db(driver, username, password_hash)
-        print(tmp)
 
         return JsonResponse({"message": "Registration successful"}, status=200)
     except Exception as e:
