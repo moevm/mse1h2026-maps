@@ -1,27 +1,24 @@
-*
-{
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-html, body
-{
+html, body {
     height: 100%;
     width: 100%;
     font-family: Arial, sans-serif;
 }
 
-.app-container
-{
+.app-container {
     display: flex;
     height: 100vh;
     width: 100%;
     overflow: hidden;
 }
 
-.sidebar
-{
+/* ===== САЙДБАР ===== */
+.sidebar {
     width: 320px;
     height: 100vh;
     border-right: 1px solid #b0d4f0;
@@ -32,13 +29,11 @@ html, body
     flex-shrink: 0;
 }
 
-.sidebar.collapsed
-{
+.sidebar.collapsed {
     width: 60px;
 }
 
-.sidebar-header
-{
+.sidebar-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -49,25 +44,21 @@ html, body
     transition: all 0.3s ease;
 }
 
-.sidebar-header h3
-{
+.sidebar-header h3 {
     color: #1e4a7a;
 }
 
-.sidebar.collapsed .sidebar-header
-{
+.sidebar.collapsed .sidebar-header {
     justify-content: center;
     padding: 15px 0;
     background-color: #b8e0ff;
 }
 
-.sidebar.collapsed .sidebar-header h3
-{
+.sidebar.collapsed .sidebar-header h3 {
     display: none;
 }
 
-.sidebar-toggle
-{
+.sidebar-toggle {
     width: 40px;
     height: 40px;
     background-color: #87cefa;
@@ -83,38 +74,70 @@ html, body
     flex-shrink: 0;
 }
 
-.sidebar-toggle:hover
-{
+.sidebar-toggle:hover {
     background-color: #5f9ea0;
 }
 
-.sidebar-content
-{
+.sidebar-content {
     flex: 1;
     padding: 20px 15px;
     overflow-y: auto;
 }
 
-.sidebar.collapsed .sidebar-content
-{
+.sidebar.collapsed .sidebar-content {
     display: none;
 }
 
-.search-container
-{
+/* ===== БЛОК АУТЕНТИФИКАЦИИ ===== */
+.auth-section {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #b0e0ff;
+}
+
+.user-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #e0f0ff;
+    border-radius: 8px;
+}
+
+.user-info span {
+    font-size: 14px;
+    color: #1e4a7a;
+    font-weight: 500;
+}
+
+.logout-btn {
+    padding: 5px 12px;
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+}
+
+.logout-btn:hover {
+    background: #ff4444;
+}
+
+/* ===== ПОИСК ===== */
+.search-container {
     display: flex;
     gap: 10px;
     margin-bottom: 25px;
 }
 
-.search-input
-{
+.search-input {
     flex: 1;
     height: 40px;
 }
 
-.search-input input
-{
+.search-input input {
     width: 100%;
     height: 100%;
     padding: 0 12px;
@@ -125,14 +148,12 @@ html, body
     transition: border-color 0.2s;
 }
 
-.search-input input:focus
-{
+.search-input input:focus {
     border-color: #5f9ea0;
     box-shadow: 0 0 5px rgba(135, 206, 250, 0.5);
 }
 
-.search-button
-{
+.search-button {
     width: 40px;
     height: 40px;
     background-color: #87cefa;
@@ -148,13 +169,12 @@ html, body
     flex-shrink: 0;
 }
 
-.search-button:hover
-{
+.search-button:hover {
     background-color: #5f9ea0;
 }
 
-.options h4
-{
+/* ===== ОПЦИИ ===== */
+.options h4 {
     margin-bottom: 15px;
     color: #1e4a7a;
     font-size: 16px;
@@ -162,21 +182,18 @@ html, body
     padding-bottom: 5px;
 }
 
-.options ul
-{
+.options ul {
     list-style: none;
     margin-bottom: 20px;
 }
 
-.options li
-{
+.options li {
     margin-bottom: 12px;
     display: flex;
     align-items: center;
 }
 
-.options input[type="checkbox"]
-{
+.options input[type="checkbox"] {
     width: 18px;
     height: 18px;
     margin-right: 10px;
@@ -184,8 +201,7 @@ html, body
     accent-color: #87cefa;
 }
 
-.options label
-{
+.options label {
     font-size: 14px;
     color: #2c6b9e;
     cursor: pointer;
@@ -193,18 +209,12 @@ html, body
     transition: color 0.2s;
 }
 
-.options label:hover
-{
+.options label:hover {
     color: #5f9ea0;
 }
 
-.options input[type="checkbox"]::before
-{
-    background-color: #87cefa;
-}
-
-.main-content
-{
+/* ===== ОСНОВНОЙ КОНТЕНТ ===== */
+.main-content {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -213,8 +223,7 @@ html, body
     overflow: auto;
 }
 
-.graph-container
-{
+.graph-container {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -225,8 +234,7 @@ html, body
     background-color: #f0faff;
 }
 
-.graph-container h3
-{
+.graph-container h3 {
     margin: 0;
     padding: 15px 20px;
     background-color: #e0f0ff;
@@ -235,8 +243,7 @@ html, body
     color: #1e4a7a;
 }
 
-.graph-placeholder
-{
+.graph-placeholder {
     flex: 1;
     display: flex;
     align-items: center;
@@ -248,9 +255,8 @@ html, body
     padding: 20px;
 }
 
-
-.info-panel
-{
+/* ===== ИНФОРМАЦИОННАЯ ПАНЕЛЬ ===== */
+.info-panel {
     position: fixed;
     top: 0;
     right: -400px;
@@ -265,13 +271,11 @@ html, body
     overflow: hidden;
 }
 
-.info-panel.open
-{
+.info-panel.open {
     right: 0;
 }
 
-.info-panel-header
-{
+.info-panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -280,15 +284,13 @@ html, body
     border-bottom: 2px solid #87cefa;
 }
 
-.info-panel-header h3
-{
+.info-panel-header h3 {
     margin: 0;
     color: #1e4a7a;
     font-size: 18px;
 }
 
-.info-panel-close
-{
+.info-panel-close {
     width: 32px;
     height: 32px;
     background-color: #ff6b6b;
@@ -303,67 +305,56 @@ html, body
     transition: background-color 0.2s;
 }
 
-.info-panel-close:hover
-{
+.info-panel-close:hover {
     background-color: #ff4444;
 }
 
-.info-panel-content
-{
+.info-panel-content {
     flex: 1;
     padding: 20px;
     overflow-y: auto;
 }
 
-.info-section
-{
+.info-section {
     margin-bottom: 25px;
     padding-bottom: 15px;
     border-bottom: 1px solid #e0e0e0;
 }
 
-.info-section h4
-{
+.info-section h4 {
     margin: 0 0 10px 0;
     color: #1e4a7a;
     font-size: 16px;
 }
 
-.info-section p
-{
+.info-section p {
     margin: 0;
     color: #333;
     line-height: 1.5;
 }
 
-.info-section ul
-{
+.info-section ul {
     margin: 0;
     padding-left: 20px;
 }
 
-.info-section li
-{
+.info-section li {
     margin-bottom: 8px;
     color: #555;
 }
 
-.info-section a
-{
+.info-section a {
     color: #5f9ea0;
     text-decoration: none;
     transition: color 0.2s;
 }
 
-.info-section a:hover
-{
+.info-section a:hover {
     color: #1e4a7a;
     text-decoration: underline;
 }
 
-
-.info-panel-overlay
-{
+.info-panel-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -374,7 +365,283 @@ html, body
     display: none;
 }
 
-.info-panel-overlay.active
-{
+.info-panel-overlay.active {
     display: block;
+}
+
+/* ===== МОДАЛЬНЫЕ ОКНА ===== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+}
+
+.login-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 1001;
+    width: 400px;
+    max-width: 90%;
+}
+
+.login-modal-content {
+    padding: 0;
+}
+
+.login-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: #e0f0ff;
+    border-bottom: 2px solid #87cefa;
+    border-radius: 12px 12px 0 0;
+}
+
+.login-modal-header h2 {
+    margin: 0;
+    color: #1e4a7a;
+    font-size: 20px;
+}
+
+.login-modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: #666;
+    transition: color 0.2s;
+}
+
+.login-modal-close:hover {
+    color: #ff4444;
+}
+
+.login-modal-body {
+    padding: 30px;
+}
+
+.login-modal-body .form-group {
+    margin-bottom: 20px;
+}
+
+.login-modal-body label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+}
+
+.login-modal-body input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+.login-modal-body input:focus {
+    outline: none;
+    border-color: #87cefa;
+    box-shadow: 0 0 5px rgba(135, 206, 250, 0.5);
+}
+
+.login-btn {
+    width: 100%;
+    padding: 12px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.login-btn:hover {
+    background: #45a049;
+}
+
+.error-message {
+    margin-bottom: 15px;
+    padding: 8px;
+    background: #ffebee;
+    border-radius: 4px;
+    text-align: center;
+    color: #c62828;
+    font-size: 14px;
+}
+
+.success-message {
+    margin-bottom: 15px;
+    padding: 8px;
+    background: #e8f5e9;
+    border-radius: 4px;
+    text-align: center;
+    color: #2e7d32;
+    font-size: 14px;
+}
+
+.auth-switch {
+    margin-top: 20px;
+    text-align: center;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.auth-switch span {
+    font-size: 14px;
+    color: #666;
+}
+
+.auth-switch a {
+    color: #87cefa;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.auth-switch a:hover {
+    color: #5f9ea0;
+    text-decoration: underline;
+}
+
+.app-container.blurred {
+    filter: blur(4px);
+    pointer-events: none;
+    user-select: none;
+}
+
+/* ===== ТОСТ-ПРОГРЕСС (отдельный, не перекрывает граф) ===== */
+.progress-toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10000;
+    min-width: 280px;
+    max-width: 350px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-left: 4px solid #2196F3;
+    overflow: hidden;
+    animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.progress-toast-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    font-weight: 600;
+    font-size: 13px;
+    color: #2196F3;
+}
+
+.progress-toast-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #999;
+    padding: 0 4px;
+    transition: color 0.2s;
+}
+
+.progress-toast-close:hover {
+    color: #ff4444;
+}
+
+.progress-toast-body {
+    padding: 12px 15px;
+    font-size: 12px;
+}
+
+.progress-toast-id {
+    color: #666;
+    margin-bottom: 5px;
+    font-size: 11px;
+    word-break: break-all;
+}
+
+.progress-toast-status {
+    margin-bottom: 10px;
+    color: #666;
+}
+
+.progress-toast-status span {
+    font-weight: 500;
+}
+
+.status-pending {
+    color: #FF9800;
+}
+
+.status-processing {
+    color: #2196F3;
+}
+
+.status-completed {
+    color: #4CAF50;
+}
+
+.status-error {
+    color: #f44336;
+}
+
+.progress-toast-sources {
+    margin-top: 8px;
+}
+
+.progress-toast-sources > div {
+    color: #666;
+    margin-bottom: 5px;
+    font-size: 11px;
+}
+
+.progress-toast-sources ul {
+    margin: 0;
+    padding-left: 16px;
+    list-style: none;
+}
+
+.progress-toast-sources li {
+    margin-bottom: 4px;
+    font-size: 11px;
+}
+
+.progress-toast-sources li.done {
+    color: #4CAF50;
+}
+
+.progress-toast-sources li.processing {
+    color: #FF9800;
+}
+
+.progress-toast-sources li.pending {
+    color: #999;
 }

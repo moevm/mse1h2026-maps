@@ -1,104 +1,448 @@
 // Ждем загрузки DOM
-
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM загружен, инициализация...');
 
     const sidebar = document.getElementById('sidebar');
     const toggleBtn = document.getElementById('sidebarToggle');
     const mainContent = document.getElementById('mainContent');
-    const graphPlaceholder = document.querySelector('.graph-placeholder');
+    const graphPlaceholder = document.getElementById('graphPlaceholder');
     const searchButton = document.querySelector('.search-button');
     const searchField = document.getElementById('searchField');
+    
+    // Элементы прогресса (отдельный тост)
+    const progressToast = document.getElementById('progressToast');
+    const progressRequestIdSpan = document.getElementById('progressRequestId');
+    const progressStatusValue = document.getElementById('progressStatusValue');
+    const progressSourcesList = document.getElementById('progressSourcesList');
+    const progressCloseBtn = document.getElementById('progressCloseBtn');
 
     let statusPollInterval = null;
     let network = null;
+    let isAuthenticated = false;
+    let currentRequestId = null;
+    let lastInfoState = {};
 
-    if (typeof vis === 'undefined') {
-        console.error('vis.js не загружена!');
-        if (graphPlaceholder) {
-            graphPlaceholder.innerHTML = `
-                <div style="padding: 20px; text-align: center; color: #f44336;">
-                    <div>Ошибка: vis.js библиотека не загружена</div>
-                    <div>Проверьте файл static/libs/vis-network.min.js</div>
-                </div>
-            `;
+    // Функции для управления клавиатурой графа
+    function enableGraphKeyboard() {
+        if (network && network.setOptions) {
+            network.setOptions({ interaction: { keyboard: true } });
+            console.log('Клавиатура графа ВКЛЮЧЕНА');
         }
-        return;
     }
 
-    console.log('vis.js загружена успешно, версия:', vis.version);
+    function disableGraphKeyboard() {
+        if (network && network.setOptions) {
+            network.setOptions({ interaction: { keyboard: false } });
+            console.log('Клавиатура графа ВЫКЛЮЧЕНА');
+        }
+    }
 
-    // Toggle sidebar
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', function() {
-            sidebar.classList.toggle('collapsed');
-            if (sidebar.classList.contains('collapsed')) {
-                toggleBtn.textContent = '▶';
-                mainContent.classList.add('expanded');
+    // Настройка отслеживания фокуса на полях ввода
+    function setupInputFocusTracking() {
+        const inputs = document.querySelectorAll('input, textarea');
+        
+        inputs.forEach(input => {
+            input.removeEventListener('focus', disableGraphKeyboard);
+            input.removeEventListener('blur', enableGraphKeyboard);
+            input.addEventListener('focus', disableGraphKeyboard);
+            input.addEventListener('blur', enableGraphKeyboard);
+        });
+    }
+
+    // ===== АУТЕНТИФИКАЦИЯ =====
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    async function checkAuthStatus() {
+        try {
+            const response = await fetch('/accounts/user-status/');
+            if (response.ok) {
+                const data = await response.json();
+                isAuthenticated = data.is_authenticated;
+                if (isAuthenticated) {
+                    hideLoginModal();
+                    showUserInfo(data.username);
+                } else {
+                    showLoginModal();
+                    hideUserInfo();
+                }
             } else {
-                toggleBtn.textContent = '◀';
-                mainContent.classList.remove('expanded');
+                showLoginModal();
+            }
+        } catch (error) {
+            console.error('Ошибка проверки аутентификации:', error);
+            showLoginModal();
+        }
+    }
+
+    function showLoginModal() {
+        const modal = document.getElementById('loginModal');
+        const registerModal = document.getElementById('registerModal');
+        const overlay = document.getElementById('modalOverlay');
+        const appContainer = document.querySelector('.app-container');
+        
+        if (registerModal) registerModal.style.display = 'none';
+        if (modal && overlay) {
+            modal.style.display = 'block';
+            overlay.style.display = 'block';
+            if (appContainer) {
+                appContainer.classList.add('blurred');
+            }
+        }
+    }
+
+    function hideLoginModal() {
+        const modal = document.getElementById('loginModal');
+        const registerModal = document.getElementById('registerModal');
+        const overlay = document.getElementById('modalOverlay');
+        const appContainer = document.querySelector('.app-container');
+        
+        if (modal) modal.style.display = 'none';
+        if (registerModal && registerModal.style.display === 'block') return;
+        
+        if (overlay) overlay.style.display = 'none';
+        if (appContainer) appContainer.classList.remove('blurred');
+    }
+
+    function showRegisterModal() {
+        const modal = document.getElementById('registerModal');
+        const loginModal = document.getElementById('loginModal');
+        const overlay = document.getElementById('modalOverlay');
+        const appContainer = document.querySelector('.app-container');
+        
+        if (loginModal) loginModal.style.display = 'none';
+        if (modal && overlay) {
+            modal.style.display = 'block';
+            overlay.style.display = 'block';
+            if (appContainer) {
+                appContainer.classList.add('blurred');
+            }
+            const errorDiv = document.getElementById('registerError');
+            const successDiv = document.getElementById('registerSuccess');
+            if (errorDiv) errorDiv.style.display = 'none';
+            if (successDiv) successDiv.style.display = 'none';
+        }
+    }
+
+    function hideRegisterModal() {
+        const modal = document.getElementById('registerModal');
+        const loginModal = document.getElementById('loginModal');
+        const overlay = document.getElementById('modalOverlay');
+        const appContainer = document.querySelector('.app-container');
+        
+        if (modal) modal.style.display = 'none';
+        if (loginModal && loginModal.style.display === 'block') return;
+        
+        if (overlay) overlay.style.display = 'none';
+        if (appContainer) appContainer.classList.remove('blurred');
+    }
+
+    function showUserInfo(username) {
+        const userInfo = document.getElementById('userInfo');
+        const usernameDisplay = document.getElementById('usernameDisplay');
+        if (userInfo && usernameDisplay) {
+            usernameDisplay.textContent = `Вы вошли как: ${username}`;
+            userInfo.style.display = 'flex';
+        }
+    }
+
+    function hideUserInfo() {
+        const userInfo = document.getElementById('userInfo');
+        if (userInfo) {
+            userInfo.style.display = 'none';
+        }
+    }
+
+    function showLoginError(message) {
+        const errorDiv = document.getElementById('loginError');
+        if (errorDiv) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 3000);
+        }
+    }
+
+    function showRegisterError(message) {
+        const errorDiv = document.getElementById('registerError');
+        const successDiv = document.getElementById('registerSuccess');
+        if (errorDiv) {
+            if (successDiv) successDiv.style.display = 'none';
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 3000);
+        }
+    }
+
+    function showRegisterSuccess(message) {
+        const successDiv = document.getElementById('registerSuccess');
+        const errorDiv = document.getElementById('registerError');
+        if (successDiv) {
+            if (errorDiv) errorDiv.style.display = 'none';
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+        }
+    }
+
+    async function handleLogin(event) {
+        event.preventDefault();
+        
+        const username = document.getElementById('loginUsername').value;
+        const password = document.getElementById('loginPassword').value;
+        
+        try {
+            const formData = new URLSearchParams();
+            formData.append('username', username);
+            formData.append('password', password);
+            
+            const response = await fetch('/accounts/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: formData
+            });
+            
+            if (response.ok || response.redirected) {
+                isAuthenticated = true;
+                hideLoginModal();
+                showUserInfo(username);
+                if (network) {
+                    network.destroy();
+                    network = null;
+                }
+                if (graphPlaceholder) {
+                    graphPlaceholder.innerHTML = 'Введите запрос для поиска';
+                }
+                // Включаем клавиатуру графа после входа
+                setTimeout(() => enableGraphKeyboard(), 100);
+            } else {
+                showLoginError('Неверный логин или пароль');
+            }
+        } catch (error) {
+            console.error('Ошибка входа:', error);
+            showLoginError('Ошибка соединения с сервером');
+        }
+    }
+
+    async function handleRegister(event) {
+        event.preventDefault();
+        
+        const username = document.getElementById('regUsername').value;
+        const password = document.getElementById('regPassword').value;
+        const passwordConfirm = document.getElementById('regPasswordConfirm').value;
+        
+        if (password !== passwordConfirm) {
+            showRegisterError('Пароли не совпадают');
+            return;
+        }
+        
+        try {
+            const formData = new URLSearchParams();
+            formData.append('username', username);
+            formData.append('password', password);
+            
+            const response = await fetch('/accounts/register/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: formData
+            });
+            
+            if (response.ok) {
+                showRegisterSuccess('Регистрация успешна! Теперь вы можете войти.');
+                setTimeout(() => {
+                    hideRegisterModal();
+                    showLoginModal();
+                    document.getElementById('registerForm').reset();
+                }, 2000);
+            } else {
+                const errorText = await response.text();
+                if (errorText.includes('already exists')) {
+                    showRegisterError('Пользователь с таким именем уже существует');
+                } else {
+                    showRegisterError('Ошибка регистрации. Попробуйте снова.');
+                }
+            }
+        } catch (error) {
+            console.error('Ошибка регистрации:', error);
+            showRegisterError('Ошибка соединения с сервером');
+        }
+    }
+
+    async function handleLogout() {
+        try {
+            const response = await fetch('/logout/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            });
+            
+            if (response.ok) {
+                isAuthenticated = false;
+                hideUserInfo();
+                showLoginModal();
+                if (network) {
+                    network.destroy();
+                    network = null;
+                }
+                if (graphPlaceholder) {
+                    graphPlaceholder.innerHTML = 'Войдите в систему для просмотра графа';
+                }
+                hideProgress();
+            }
+        } catch (error) {
+            console.error('Ошибка выхода:', error);
+        }
+    }
+
+    function requireAuth() {
+        if (!isAuthenticated) {
+            showLoginModal();
+            return false;
+        }
+        return true;
+    }
+
+    // ===== УПРАВЛЕНИЕ ПРОГРЕССОМ (ТОСТ) =====
+    function showProgress(requestId, status, info) {
+        if (progressToast) {
+            progressToast.style.display = 'block';
+            if (progressRequestIdSpan) {
+                progressRequestIdSpan.textContent = requestId;
+            }
+            if (progressStatusValue) {
+                progressStatusValue.textContent = status;
+                progressStatusValue.className = `status-${status}`;
+            }
+            updateProgressInfo(info);
+        }
+    }
+
+    function updateProgressInfo(info) {
+        if (!progressSourcesList) return;
+        
+        const sources = Object.entries(info);
+        if (sources.length === 0) {
+            progressSourcesList.innerHTML = '<li>Ожидание данных...</li>';
+            return;
+        }
+        
+        progressSourcesList.innerHTML = sources.map(([source, state]) => {
+            let statusText = '';
+            let statusClass = '';
+            if (state === 'Done') {
+                statusText = '✓ Готово';
+                statusClass = 'done';
+            } else if (state === 'Processing') {
+                statusText = '⏳ Обработка...';
+                statusClass = 'processing';
+            } else {
+                statusText = '⏸ Ожидание';
+                statusClass = 'pending';
+            }
+            return `<li class="${statusClass}">${source}: ${statusText}</li>`;
+        }).join('');
+    }
+
+    function hideProgress() {
+        if (progressToast) {
+            progressToast.style.display = 'none';
+        }
+    }
+
+    if (progressCloseBtn) {
+        progressCloseBtn.addEventListener('click', () => {
+            hideProgress();
+            if (statusPollInterval) {
+                stopStatusPolling();
             }
         });
     }
 
     // ===== ФУНКЦИЯ ОПРОСА СТАТУСА =====
     async function checkRequestStatus(requestId) {
+        if (!requireAuth()) return;
+        
         try {
             const response = await fetch(`/api/status/?id=${requestId}`);
-            const status = await response.text();
-
-            const graphPlaceholder = document.querySelector('.graph-placeholder');
-
-            switch(status) {
-                case 'pending':
-                    graphPlaceholder.innerHTML = `
-                        <div style="padding: 20px; text-align: center;">
-                            <div style="color: #FF9800;">Запрос в очереди (pending)</div>
-                            <div>ID: ${requestId}</div>
-                            <div>Ожидание начала обработки...</div>
-                        </div>
-                    `;
-                    break;
-
-                case 'processing':
-                    graphPlaceholder.innerHTML = `
-                        <div style="padding: 20px; text-align: center;">
-                            <div style="color: #2196F3;">Запрос обрабатывается (processing)</div>
-                            <div>ID: ${requestId}</div>
-                            <div>Идет построение графа...</div>
-                        </div>
-                    `;
-                    break;
-
-                case 'completed':
-                    await loadGraphWidget(requestId);
-                    stopStatusPolling();
-                    break;
-
-                case 'error':
-                    graphPlaceholder.innerHTML = `
-                        <div style="padding: 20px; text-align: center;">
-                            <div style="color: #f44336;">Ошибка выполнения запроса (error)</div>
-                            <div>ID: ${requestId}</div>
-                            <div>Что-то пошло не так</div>
-                        </div>
-                    `;
-                    stopStatusPolling();
-                    break;
-
-                default:
-                    graphPlaceholder.innerHTML = `
-                        <div style="padding: 20px; text-align: center;">
-                            <div>Неизвестный статус: ${status}</div>
-                            <div>ID: ${requestId}</div>
-                        </div>
-                    `;
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
             }
+            
+            const data = await response.json();
+            const status = data.Status;
+            const info = data.Info || {};
+            
+            console.log('Статус запроса:', status, 'Info:', info);
+            
+            showProgress(requestId, status, info);
+            
+            const infoChanged = hasInfoChanged(info);
+            
+            if (status === 'processing' && infoChanged) {
+                console.log('Info изменился, обновляем граф...');
+                await loadGraphWidget(requestId);
+            }
+            
+            if (status === 'completed') {
+                console.log('Запрос завершен, финальное обновление графа...');
+                await loadGraphWidget(requestId);
+                if (progressStatusValue) {
+                    progressStatusValue.textContent = 'completed';
+                    progressStatusValue.className = 'status-completed';
+                }
+                setTimeout(() => {
+                    hideProgress();
+                }, 2000);
+                stopStatusPolling();
+            }
+            
+            if (status === 'error') {
+                if (progressStatusValue) {
+                    progressStatusValue.textContent = 'error';
+                    progressStatusValue.className = 'status-error';
+                }
+                setTimeout(() => {
+                    hideProgress();
+                }, 3000);
+                stopStatusPolling();
+                if (graphPlaceholder) {
+                    graphPlaceholder.innerHTML = `
+                        <div style="padding: 20px; text-align: center; color: #f44336;">
+                            <div>❌ Ошибка выполнения запроса</div>
+                            <div>ID: ${requestId}</div>
+                        </div>
+                    `;
+                }
+            }
+            
+            lastInfoState = { ...info };
 
         } catch (error) {
             console.error('Ошибка в checkRequestStatus:', error);
-            const graphPlaceholder = document.querySelector('.graph-placeholder');
+            hideProgress();
             if (graphPlaceholder) {
                 graphPlaceholder.innerHTML = `
                     <div style="padding: 20px; text-align: center; color: #f44336;">
@@ -109,12 +453,203 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function hasInfoChanged(newInfo) {
+        const newSources = Object.keys(newInfo);
+        const oldSources = Object.keys(lastInfoState);
+        
+        if (newSources.length !== oldSources.length) {
+            return true;
+        }
+        
+        for (const source of newSources) {
+            if (newInfo[source] !== lastInfoState[source]) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    // ===== ОБНОВЛЕНИЕ ГРАФА =====
+    function updateGraph(data) {
+        if (!network) {
+            createNewGraph(data);
+            return;
+        }
+        
+        try {
+            const nodesDataSet = network.body.data.nodes;
+            const edgesDataSet = network.body.data.edges;
+            
+            const nodes = data.nodes.map(node => ({
+                id: node.id,
+                label: node.properties?.label_en || node.caption || node.properties?.name || node.id,
+                title: node.properties?.desc_en || node.properties?.info || 'Нет информации',
+                group: node.labels?.[0] || 'default',
+                font: { size: 14, color: '#000000' }
+            }));
+            
+            const edges = data.relationships.map(rel => ({
+                id: rel.id,
+                from: rel.from,
+                to: rel.to,
+                label: rel.caption || rel.properties?.type || 'связь',
+                arrows: 'to',
+                font: { size: 12, align: 'middle' }
+            }));
+            
+            const existingNodeIds = new Set(nodesDataSet.getIds());
+            const existingEdgeIds = new Set(edgesDataSet.getIds());
+            
+            const newNodeIds = new Set(nodes.map(n => n.id));
+            const newEdgeIds = new Set(edges.map(e => e.id));
+            
+            const nodesToRemove = [...existingNodeIds].filter(id => !newNodeIds.has(id));
+            const edgesToRemove = [...existingEdgeIds].filter(id => !newEdgeIds.has(id));
+            
+            if (nodesToRemove.length) nodesDataSet.remove(nodesToRemove);
+            if (edgesToRemove.length) edgesDataSet.remove(edgesToRemove);
+            
+            const nodesToAdd = nodes.filter(node => !existingNodeIds.has(node.id));
+            if (nodesToAdd.length) nodesDataSet.add(nodesToAdd);
+            
+            const nodesToUpdate = nodes.filter(node => existingNodeIds.has(node.id));
+            if (nodesToUpdate.length) nodesDataSet.update(nodesToUpdate);
+            
+            const edgesToAdd = edges.filter(edge => !existingEdgeIds.has(edge.id));
+            if (edgesToAdd.length) edgesDataSet.add(edgesToAdd);
+            
+            const edgesToUpdate = edges.filter(edge => existingEdgeIds.has(edge.id));
+            if (edgesToUpdate.length) edgesDataSet.update(edgesToUpdate);
+            
+            console.log('Граф обновлен');
+            
+            // Обновляем обработчики фокуса после обновления графа
+            setupInputFocusTracking();
+            
+            if (existingNodeIds.size === 0 && nodes.length > 0) {
+                setTimeout(() => {
+                    if (network) network.fit();
+                }, 500);
+            }
+            
+        } catch (error) {
+            console.error('Ошибка обновления графа:', error);
+            createNewGraph(data);
+        }
+    }
+
+    function createNewGraph(data) {
+        if (!graphPlaceholder) return;
+        
+        graphPlaceholder.innerHTML = '';
+        
+        const graphContainer = document.createElement('div');
+        graphContainer.id = 'graph-container';
+        graphContainer.style.width = '100%';
+        graphContainer.style.height = '100%';
+        graphContainer.style.minHeight = '600px';
+        graphContainer.style.position = 'relative';
+        graphContainer.style.border = '1px solid #ddd';
+        graphContainer.style.borderRadius = '4px';
+        graphContainer.style.backgroundColor = '#f5f5f5';
+        graphPlaceholder.appendChild(graphContainer);
+        
+        const nodes = data.nodes.map(node => ({
+            id: node.id,
+            label: node.properties?.label_en || node.caption || node.properties?.name || node.id,
+            title: node.properties?.desc_en || node.properties?.info || 'Нет информации',
+            group: node.labels?.[0] || 'default',
+            font: { size: 14, color: '#000000' }
+        }));
+        
+        const edges = data.relationships.map(rel => ({
+            id: rel.id,
+            from: rel.from,
+            to: rel.to,
+            label: rel.caption || rel.properties?.type || 'связь',
+            arrows: 'to',
+            font: { size: 12, align: 'middle' }
+        }));
+        
+        console.log('Создание графа:', { nodesCount: nodes.length, edgesCount: edges.length });
+        
+        const nodesDataSet = new vis.DataSet(nodes);
+        const edgesDataSet = new vis.DataSet(edges);
+        
+        const options = {
+            nodes: {
+                shape: 'dot',
+                size: 25,
+                borderWidth: 2,
+                borderWidthSelected: 3,
+                shadow: true,
+                font: { size: 14, color: '#000000' }
+            },
+            edges: {
+                width: 2,
+                shadow: true,
+                smooth: { type: 'continuous', roundness: 0.5 },
+                font: { size: 12, align: 'middle' }
+            },
+            physics: {
+                enabled: true,
+                stabilization: true,
+                barnesHut: {
+                    gravitationalConstant: -8000,
+                    springConstant: 0.001,
+                    springLength: 200
+                }
+            },
+            interaction: {
+                hover: true,
+                tooltipDelay: 200,
+                navigationButtons: true,
+                keyboard: true  // Клавиатура включена по умолчанию
+            }
+        };
+        
+        network = new vis.Network(graphContainer, { nodes: nodesDataSet, edges: edgesDataSet }, options);
+        
+        // Настраиваем отслеживание фокуса на полях ввода
+        setupInputFocusTracking();
+        
+        network.on('click', function(params) {
+            if (params.nodes.length > 0) {
+                const nodeId = params.nodes[0];
+                const originalNode = data.nodes.find(n => n.id === nodeId);
+                if (originalNode) {
+                    openInfoPanel({
+                        name: originalNode.properties?.label_en || originalNode.caption || nodeId,
+                        info: originalNode.properties?.desc_en || originalNode.properties?.info || 'Нет дополнительной информации',
+                        links: originalNode.properties?.links || [],
+                        resources: originalNode.properties?.resources || []
+                    });
+                }
+            } else if (params.edges.length > 0) {
+                const edgeId = params.edges[0];
+                const edge = edges.find(e => e.id === edgeId);
+                if (edge) {
+                    openInfoPanel({
+                        name: `Связь: ${edge.label}`,
+                        info: `Связь между узлами`,
+                        links: [],
+                        resources: []
+                    });
+                }
+            }
+        });
+        
+        setTimeout(() => {
+            if (network) network.fit();
+        }, 500);
+    }
+
     // ===== ЗАГРУЗКА ИНТЕРАКТИВНОГО ГРАФА =====
     async function loadGraphWidget(requestId) {
+        if (!requireAuth()) return;
+        
         try {
-            const graphPlaceholder = document.querySelector('.graph-placeholder');
-            graphPlaceholder.innerHTML = '<div style="text-align: center; padding: 20px;">Загрузка графа...</div>';
-
             const response = await fetch(`/api/graph-widget/?id=${requestId}`);
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -125,127 +660,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (data.nodes && data.relationships) {
                 if (data.nodes.length === 0) {
-                    graphPlaceholder.innerHTML = `
-                        <div style="padding: 20px; text-align: center; color: #FF9800;">
-                            <div>Граф не содержит узлов</div>
-                            <div>Попробуйте изменить поисковый запрос</div>
-                        </div>
-                    `;
+                    if (graphPlaceholder) {
+                        graphPlaceholder.innerHTML = `
+                            <div style="padding: 20px; text-align: center; color: #FF9800;">
+                                <div>Граф не содержит узлов</div>
+                                <div>Попробуйте изменить поисковый запрос</div>
+                            </div>
+                        `;
+                    }
                     return;
                 }
 
-                graphPlaceholder.innerHTML = '';
-
-                const graphContainer = document.createElement('div');
-                graphContainer.id = 'graph-container';
-                graphContainer.style.width = '100%';
-                graphContainer.style.height = '100%';
-                graphContainer.style.minHeight = '600px';
-                graphContainer.style.position = 'relative';
-                graphContainer.style.border = '1px solid #ddd';
-                graphContainer.style.borderRadius = '4px';
-                graphContainer.style.backgroundColor = '#f5f5f5';
-                graphPlaceholder.appendChild(graphContainer);
-
-                const nodes = data.nodes.map(node => ({
-                    id: node.id,
-                    label: node.properties?.label_en || node.caption || node.properties?.name || node.id,
-                    title: node.properties?.info || 'Нет информации',
-                    group: node.labels?.[0] || 'default',
-                    font: { size: 14, color: '#000000' }
-                }));
-
-                const edges = data.relationships.map(rel => ({
-                    id: rel.id,
-                    from: rel.from,
-                    to: rel.to,
-                    label: rel.caption || rel.properties?.type || 'связь',
-                    arrows: 'to',
-                    font: { size: 12, align: 'middle' }
-                }));
-
-                console.log('Создание графа:', { nodesCount: nodes.length, edgesCount: edges.length });
-
-                const nodesDataSet = new vis.DataSet(nodes);
-                const edgesDataSet = new vis.DataSet(edges);
-
-                const options = {
-                    nodes: {
-                        shape: 'dot',
-                        size: 25,
-                        borderWidth: 2,
-                        borderWidthSelected: 3,
-                        shadow: true,
-                        font: { size: 14, color: '#000000' }
-                    },
-                    edges: {
-                        width: 2,
-                        shadow: true,
-                        smooth: {
-                            type: 'continuous',
-                            roundness: 0.5
-                        },
-                        font: { size: 12, align: 'middle' }
-                    },
-                    physics: {
-                        enabled: true,
-                        stabilization: true,
-                        barnesHut: {
-                            gravitationalConstant: -8000,
-                            springConstant: 0.001,
-                            springLength: 200
-                        }
-                    },
-                    interaction: {
-                        hover: true,
-                        tooltipDelay: 200,
-                        navigationButtons: true,
-                        keyboard: true
-                    }
-                };
-
-                network = new vis.Network(graphContainer, { nodes: nodesDataSet, edges: edgesDataSet }, options);
-
-                network.on('click', function(params) {
-                    if (params.nodes.length > 0) {
-                        const nodeId = params.nodes[0];
-                        const node = nodes.find(n => n.id === nodeId);
-                        if (node) {
-                            openInfoPanel({
-                                name: node.label,
-                                info: node.title || 'Нет дополнительной информации',
-                                links: [],
-                                resources: []
-                            });
-                        }
-                    } else if (params.edges.length > 0) {
-                        const edgeId = params.edges[0];
-                        const edge = edges.find(e => e.id === edgeId);
-                        if (edge) {
-                            openInfoPanel({
-                                name: `Связь: ${edge.label}`,
-                                info: `Связь между узлами`,
-                                links: [],
-                                resources: []
-                            });
-                        }
-                    }
-                });
-
-                // Центрируем граф
-                setTimeout(() => {
-                    if (network) {
-                        network.fit();
-                    }
-                }, 500);
-
+                if (network) {
+                    updateGraph(data);
+                } else {
+                    createNewGraph(data);
+                }
             } else {
                 throw new Error('Неверный формат данных графа');
             }
 
         } catch (error) {
             console.error('Ошибка загрузки графа:', error);
-            const graphPlaceholder = document.querySelector('.graph-placeholder');
             if (graphPlaceholder) {
                 graphPlaceholder.innerHTML = `
                     <div style="padding: 20px; text-align: center; color: #f44336;">
@@ -258,6 +694,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function startStatusPolling(requestId) {
         if (statusPollInterval) clearInterval(statusPollInterval);
+        
+        currentRequestId = requestId;
+        lastInfoState = {};
+        
         checkRequestStatus(requestId);
         statusPollInterval = setInterval(() => checkRequestStatus(requestId), 2000);
     }
@@ -267,25 +707,22 @@ document.addEventListener('DOMContentLoaded', () => {
             clearInterval(statusPollInterval);
             statusPollInterval = null;
         }
+        currentRequestId = null;
+        lastInfoState = {};
     }
 
     // ===== ОТПРАВКА ЗАПРОСА =====
     async function sendToDjango(keyWords, options) {
+        if (!requireAuth()) return;
+        
         try {
-            // Уничтожаем предыдущий граф
             if (network) {
                 network.destroy();
                 network = null;
             }
 
-            const graphPlaceholder = document.querySelector('.graph-placeholder');
             if (graphPlaceholder) {
-                graphPlaceholder.innerHTML = `
-                    <div style="padding: 20px; text-align: center;">
-                        <div>Отправка запроса...</div>
-                        <div style="color: #2196F3;">Тема: ${keyWords}</div>
-                    </div>
-                `;
+                graphPlaceholder.innerHTML = '<div style="text-align: center; padding: 20px;">Отправка запроса...</div>';
             }
 
             const params = new URLSearchParams();
@@ -305,24 +742,17 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Получен requestId:', requestId);
 
             if (graphPlaceholder) {
-                graphPlaceholder.innerHTML = `
-                    <div style="padding: 20px; text-align: center;">
-                        <div style="color: #44cc44;">✓ Запрос отправлен!</div>
-                        <div>ID: ${requestId}</div>
-                        <div>Опрашиваем статус...</div>
-                    </div>
-                `;
+                graphPlaceholder.innerHTML = '<div style="text-align: center; padding: 20px;">Ожидание данных...</div>';
             }
 
             startStatusPolling(requestId);
 
         } catch (error) {
             console.error('Ошибка отправки запроса:', error);
-            const graphPlaceholder = document.querySelector('.graph-placeholder');
             if (graphPlaceholder) {
                 graphPlaceholder.innerHTML = `
                     <div style="padding: 20px; text-align: center; color: #ff6b6b;">
-                        <div>❌ Ошибка: ${error.message}</div>
+                        <div>Ошибка: ${error.message}</div>
                     </div>
                 `;
             }
@@ -330,6 +760,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function drawGraph(keyWords, options) {
+        if (!requireAuth()) return;
+        
         if (!keyWords || keyWords.trim() === '') {
             alert('Пожалуйста, введите поисковый запрос');
             return;
@@ -458,6 +890,92 @@ document.addEventListener('DOMContentLoaded', () => {
             closeInfoPanelFunction();
         }
     });
+
+    // ===== ИНИЦИАЛИЗАЦИЯ ОБРАБОТЧИКОВ =====
+    
+    if (typeof vis === 'undefined') {
+        console.error('vis.js не загружена!');
+        if (graphPlaceholder) {
+            graphPlaceholder.innerHTML = `
+                <div style="padding: 20px; text-align: center; color: #f44336;">
+                    <div>Ошибка: vis.js библиотека не загружена</div>
+                    <div>Проверьте файл static/libs/vis-network.min.js</div>
+                </div>
+            `;
+        }
+        return;
+    }
+
+    console.log('vis.js загружена успешно, версия:', vis.version);
+
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function() {
+            sidebar.classList.toggle('collapsed');
+            if (sidebar.classList.contains('collapsed')) {
+                toggleBtn.textContent = '▶';
+                mainContent.classList.add('expanded');
+            } else {
+                toggleBtn.textContent = '◀';
+                mainContent.classList.remove('expanded');
+            }
+        });
+    }
+
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleRegister);
+    }
+
+    const closeModalBtn = document.getElementById('closeLoginModal');
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', () => {
+            hideLoginModal();
+        });
+    }
+
+    const closeRegisterModal = document.getElementById('closeRegisterModal');
+    if (closeRegisterModal) {
+        closeRegisterModal.addEventListener('click', () => {
+            hideRegisterModal();
+        });
+    }
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
+
+    const showRegisterBtn = document.getElementById('showRegisterBtn');
+    if (showRegisterBtn) {
+        showRegisterBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showRegisterModal();
+        });
+    }
+
+    const showLoginBtn = document.getElementById('showLoginBtn');
+    if (showLoginBtn) {
+        showLoginBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            hideRegisterModal();
+            showLoginModal();
+        });
+    }
+
+    const modalOverlay = document.getElementById('modalOverlay');
+    if (modalOverlay) {
+        modalOverlay.addEventListener('click', () => {
+            hideLoginModal();
+            hideRegisterModal();
+        });
+    }
+
+    checkAuthStatus();
 
     console.log('Приложение полностью инициализировано');
 });

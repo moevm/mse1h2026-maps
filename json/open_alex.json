@@ -1,0 +1,700 @@
+{
+    "meta": {
+        "count": 129765,
+        "db_response_time_ms": 123,
+        "page": 1,
+        "per_page": 30,
+        "groups_count": null,
+        "cost_usd": 0.001
+    },
+    "results": [
+        {
+            "id": "https://openalex.org/W1999562671",
+            "title": "Power Flow Solution by Newton's Method",
+            "primary_location": {
+                "id": "doi:10.1109/tpas.1967.291823",
+                "is_oa": false,
+                "landing_page_url": "https://doi.org/10.1109/tpas.1967.291823",
+                "pdf_url": null,
+                "source": {
+                    "id": "https://openalex.org/S35391503",
+                    "display_name": "IEEE Transactions on Power Apparatus and Systems",
+                    "issn_l": "0018-9510",
+                    "issn": [
+                        "0018-9510"
+                    ],
+                    "is_oa": false,
+                    "is_in_doaj": false,
+                    "is_core": false,
+                    "host_organization": "https://openalex.org/P4310319808",
+                    "host_organization_name": "Institute of Electrical and Electronics Engineers",
+                    "host_organization_lineage": [
+                        "https://openalex.org/P4310319808"
+                    ],
+                    "host_organization_lineage_names": [
+                        "Institute of Electrical and Electronics Engineers"
+                    ],
+                    "type": "journal"
+                },
+                "license": null,
+                "license_id": null,
+                "version": "publishedVersion",
+                "is_accepted": true,
+                "is_published": true,
+                "raw_source_name": "IEEE Transactions on Power Apparatus and Systems",
+                "raw_type": "journal-article"
+            },
+            "publication_date": "1967-11-01",
+            "doi": "https://doi.org/10.1109/tpas.1967.291823",
+            "abstract_inverted_index": "The ac power flow problem can be solved efficiently by Newton's method. Only five iterations, each equivalent to about seven of the widely used Gauss-Seidel method, are required for an exact solution. Problem dependent memory and time requirements vary approximately in direct proportion to problem size. Problems of 500 to 1000 nodes can be solved on computers with 32K core memory. The method, introduced in 1961, has been made practical by optimally ordered Gaussian elimination and special programming techniques. Equations, programming details, and examples of solutions of large problems are given."
+        },
+        {
+            "id": "https://openalex.org/W612879516",
+            "title": "Solving Nonlinear Equations with Newton's Method",
+            "primary_location": {
+                "id": "doi:10.1137/1.9780898718898",
+                "is_oa": false,
+                "landing_page_url": "https://doi.org/10.1137/1.9780898718898",
+                "pdf_url": null,
+                "source": {
+                    "id": "https://openalex.org/S4306463922",
+                    "display_name": "Society for Industrial and Applied Mathematics eBooks",
+                    "issn_l": null,
+                    "issn": null,
+                    "is_oa": false,
+                    "is_in_doaj": false,
+                    "is_core": false,
+                    "host_organization": "https://openalex.org/P4310320508",
+                    "host_organization_name": "Society for Industrial and Applied Mathematics",
+                    "host_organization_lineage": [
+                        "https://openalex.org/P4310320508"
+                    ],
+                    "host_organization_lineage_names": [
+                        "Society for Industrial and Applied Mathematics"
+                    ],
+                    "type": "ebook platform"
+                },
+                "license": null,
+                "license_id": null,
+                "version": "publishedVersion",
+                "is_accepted": true,
+                "is_published": true,
+                "raw_source_name": null,
+                "raw_type": "monograph"
+            },
+            "publication_date": "2003-01-01",
+            "doi": "https://doi.org/10.1137/1.9780898718898",
+            "abstract_inverted_index": "Preface How to Get the Software 1. Introduction 2. Finding the Newton Step with Gaussian Elimination 3. Newton-Krylov Methods 4. Broyden's Method Bibliography Index."
+        },
+        {
+            "id": "https://openalex.org/W2006544565",
+            "title": "First- and Second-Order Methods for Learning: Between Steepest Descent and Newton's Method",
+            "primary_location": {
+                "id": "doi:10.1162/neco.1992.4.2.141",
+                "is_oa": false,
+                "landing_page_url": "https://doi.org/10.1162/neco.1992.4.2.141",
+                "pdf_url": null,
+                "source": {
+                    "id": "https://openalex.org/S207023548",
+                    "display_name": "Neural Computation",
+                    "issn_l": "0899-7667",
+                    "issn": [
+                        "0899-7667",
+                        "1530-888X"
+                    ],
+                    "is_oa": false,
+                    "is_in_doaj": false,
+                    "is_core": true,
+                    "host_organization": "https://openalex.org/P4310315718",
+                    "host_organization_name": "The MIT Press",
+                    "host_organization_lineage": [
+                        "https://openalex.org/P4310315718"
+                    ],
+                    "host_organization_lineage_names": [
+                        "The MIT Press"
+                    ],
+                    "type": "journal"
+                },
+                "license": null,
+                "license_id": null,
+                "version": "publishedVersion",
+                "is_accepted": true,
+                "is_published": true,
+                "raw_source_name": "Neural Computation",
+                "raw_type": "journal-article"
+            },
+            "publication_date": "1992-03-01",
+            "doi": "https://doi.org/10.1162/neco.1992.4.2.141",
+            "abstract_inverted_index": "On-line first-order backpropagation is sufficiently fast and effective for many large-scale classification problems but for very high precision mappings, batch processing may be the method of choice. This paper reviews first- and second-order optimization methods for learning in feedforward neural networks. The viewpoint is that of optimization: many methods can be cast in the language of optimization techniques, allowing the transfer to neural nets of detailed results about computational complexity and safety procedures to ensure convergence and to avoid numerical problems. The review is not intended to deliver detailed prescriptions for the most appropriate methods in specific applications, but to illustrate the main characteristics of the different methods and their mutual relations."
+        },
+        {
+            "id": "https://openalex.org/W2004586020",
+            "title": "Newton's Method for Multiobjective Optimization",
+            "primary_location": {
+                "id": "doi:10.1137/08071692x",
+                "is_oa": false,
+                "landing_page_url": "https://doi.org/10.1137/08071692x",
+                "pdf_url": null,
+                "source": {
+                    "id": "https://openalex.org/S928796702",
+                    "display_name": "SIAM Journal on Optimization",
+                    "issn_l": "1052-6234",
+                    "issn": [
+                        "1052-6234",
+                        "1095-7189"
+                    ],
+                    "is_oa": false,
+                    "is_in_doaj": false,
+                    "is_core": true,
+                    "host_organization": "https://openalex.org/P4310320508",
+                    "host_organization_name": "Society for Industrial and Applied Mathematics",
+                    "host_organization_lineage": [
+                        "https://openalex.org/P4310320508"
+                    ],
+                    "host_organization_lineage_names": [
+                        "Society for Industrial and Applied Mathematics"
+                    ],
+                    "type": "journal"
+                },
+                "license": null,
+                "license_id": null,
+                "version": "publishedVersion",
+                "is_accepted": true,
+                "is_published": true,
+                "raw_source_name": "SIAM Journal on Optimization",
+                "raw_type": "journal-article"
+            },
+            "publication_date": "2009-01-01",
+            "doi": "https://doi.org/10.1137/08071692x",
+            "abstract_inverted_index": "We propose an extension of Newton's method for unconstrained multiobjective optimization (multicriteria optimization). This method does not use a priori chosen weighting factors or any other form of a priori ranking or ordering information for the different objective functions. Newton's direction at each iterate is obtained by minimizing the max-ordering scalarization of the variations on the quadratic approximations of the objective functions. The objective functions are assumed to be twice continuously differentiable and locally strongly convex. Under these hypotheses, the method, as in the classical case, is locally superlinear convergent to optimal points. Again as in the scalar case, if the second derivatives are Lipschitz continuous, the rate of convergence is quadratic. Our convergence analysis uses a Kantorovich-like technique. As a byproduct, existence of optima is obtained under semilocal assumptions."
+        },
+        {
+            "id": "https://openalex.org/W2034493562",
+            "title": "Newton's method and periodic solutions of nonlinear wave equations",
+            "primary_location": {
+                "id": "doi:10.1002/cpa.3160461102",
+                "is_oa": false,
+                "landing_page_url": "https://doi.org/10.1002/cpa.3160461102",
+                "pdf_url": null,
+                "source": {
+                    "id": "https://openalex.org/S134818455",
+                    "display_name": "Communications on Pure and Applied Mathematics",
+                    "issn_l": "0010-3640",
+                    "issn": [
+                        "0010-3640",
+                        "1097-0312"
+                    ],
+                    "is_oa": false,
+                    "is_in_doaj": false,
+                    "is_core": true,
+                    "host_organization": "https://openalex.org/P4310320595",
+                    "host_organization_name": "Wiley",
+                    "host_organization_lineage": [
+                        "https://openalex.org/P4310320595"
+                    ],
+                    "host_organization_lineage_names": [
+                        "Wiley"
+                    ],
+                    "type": "journal"
+                },
+                "license": null,
+                "license_id": null,
+                "version": "publishedVersion",
+                "is_accepted": true,
+                "is_published": true,
+                "raw_source_name": "Communications on Pure and Applied Mathematics",
+                "raw_type": "journal-article"
+            },
+            "publication_date": "1993-12-01",
+            "doi": "https://doi.org/10.1002/cpa.3160461102",
+            "abstract_inverted_index": "Abstract We prove the existence of periodic solutions of the nonlinear wave equation satisfying either Dirichlet or periodic boundary conditions on the interval [ O , π]. The coefficients of the eigenfunction expansion of this equation satisfy a nonlinear functional equation. Using a version of Newton's method, we show that this equation has solutions provided the nonlinearity g ( x, u ) satisfies certain generic conditions of nonresonance and genuine nonlinearity. © 1993 John Wiley &amp; Sons, Inc."
+        },
+        {
+            "id": "https://openalex.org/W2166161964",
+            "title": "Newton's Method for B-Differentiable Equations",
+            "primary_location": {
+                "id": "doi:10.1287/moor.15.2.311",
+                "is_oa": false,
+                "landing_page_url": "https://doi.org/10.1287/moor.15.2.311",
+                "pdf_url": null,
+                "source": {
+                    "id": "https://openalex.org/S55826652",
+                    "display_name": "Mathematics of Operations Research",
+                    "issn_l": "0364-765X",
+                    "issn": [
+                        "0364-765X",
+                        "1526-5471"
+                    ],
+                    "is_oa": false,
+                    "is_in_doaj": false,
+                    "is_core": true,
+                    "host_organization": "https://openalex.org/P4310315699",
+                    "host_organization_name": "Institute for Operations Research and the Management Sciences",
+                    "host_organization_lineage": [
+                        "https://openalex.org/P4310315699"
+                    ],
+                    "host_organization_lineage_names": [
+                        "Institute for Operations Research and the Management Sciences"
+                    ],
+                    "type": "journal"
+                },
+                "license": null,
+                "license_id": null,
+                "version": "publishedVersion",
+                "is_accepted": true,
+                "is_published": true,
+                "raw_source_name": "Mathematics of Operations Research",
+                "raw_type": "journal-article"
+            },
+            "publication_date": "1990-05-01",
+            "doi": "https://doi.org/10.1287/moor.15.2.311",
+            "abstract_inverted_index": "In this paper, we extend the classical Newton method for solving continuously differentiable systems of nonlinear equations to B-differentiable systems. Such B-differentiable systems of equations provide a unified framework for the nonlinear complementarity, variational inequality and nonlinear programming problems. We establish the local and quadratic convergence of the method and propose a modification for global convergence. Applications of the theory to complementarity, variational inequality and optimization will be explained. In each of these contexts, the resulting method resembles the known Newton methods derived from Robinson's generalized equation formulation, but with a computational advantage. Namely, the new method incorporates a kind of active-set strategy in defining the subproblems. Unlike the previous methods which are only locally convergent, the modified version of the new method provides a descent algorithm which is globally convergent under some mild assumptions."
+        },
+        {
+            "id": "https://openalex.org/W1979382551",
+            "title": "Newton's Method for Large Bound-Constrained Optimization Problems",
+            "primary_location": {
+                "id": "doi:10.1137/s1052623498345075",
+                "is_oa": false,
+                "landing_page_url": "https://doi.org/10.1137/s1052623498345075",
+                "pdf_url": null,
+                "source": {
+                    "id": "https://openalex.org/S928796702",
+                    "display_name": "SIAM Journal on Optimization",
+                    "issn_l": "1052-6234",
+                    "issn": [
+                        "1052-6234",
+                        "1095-7189"
+                    ],
+                    "is_oa": false,
+                    "is_in_doaj": false,
+                    "is_core": true,
+                    "host_organization": "https://openalex.org/P4310320508",
+                    "host_organization_name": "Society for Industrial and Applied Mathematics",
+                    "host_organization_lineage": [
+                        "https://openalex.org/P4310320508"
+                    ],
+                    "host_organization_lineage_names": [
+                        "Society for Industrial and Applied Mathematics"
+                    ],
+                    "type": "journal"
+                },
+                "license": null,
+                "license_id": null,
+                "version": "publishedVersion",
+                "is_accepted": true,
+                "is_published": true,
+                "raw_source_name": "SIAM Journal on Optimization",
+                "raw_type": "journal-article"
+            },
+            "publication_date": "1999-01-01",
+            "doi": "https://doi.org/10.1137/s1052623498345075",
+            "abstract_inverted_index": "We analyze a trust region version of Newton's method for bound-constrained problems. Our approach relies on the geometry of the feasible set, not on the particular representation in terms of constraints. The convergence theory holds for linearly constrained problems and yields global and superlinear convergence without assuming either strict complementarity or linear independence of the active constraints. We also show that the convergence theory leads to an efficient implementation for large bound-constrained problems."
+        },
+        {
+            "id": "https://openalex.org/W2028324955",
+            "title": "Newton's method on Riemannian manifolds and a geometric model for the human spine",
+            "primary_location": {
+                "id": "doi:10.1093/imanum/22.3.359",
+                "is_oa": false,
+                "landing_page_url": "https://doi.org/10.1093/imanum/22.3.359",
+                "pdf_url": null,
+                "source": {
+                    "id": "https://openalex.org/S201897549",
+                    "display_name": "IMA Journal of Numerical Analysis",
+                    "issn_l": "0272-4979",
+                    "issn": [
+                        "0272-4979",
+                        "1464-3642"
+                    ],
+                    "is_oa": false,
+                    "is_in_doaj": false,
+                    "is_core": true,
+                    "host_organization": "https://openalex.org/P4310311648",
+                    "host_organization_name": "Oxford University Press",
+                    "host_organization_lineage": [
+                        "https://openalex.org/P4310311648",
+                        "https://openalex.org/P4310311647"
+                    ],
+                    "host_organization_lineage_names": [
+                        "Oxford University Press",
+                        "University of Oxford"
+                    ],
+                    "type": "journal"
+                },
+                "license": null,
+                "license_id": null,
+                "version": "publishedVersion",
+                "is_accepted": true,
+                "is_published": true,
+                "raw_source_name": "IMA Journal of Numerical Analysis",
+                "raw_type": "journal-article"
+            },
+            "publication_date": "2002-07-01",
+            "doi": "https://doi.org/10.1093/imanum/22.3.359",
+            "abstract_inverted_index": "Journal Article Newton's method on Riemannian manifolds and a geometric model for the human spine Get access Roy L. Adler, Roy L. Adler Search for other works by this author on: Oxford Academic Google Scholar Jean‐Pierre Dedieu, Jean‐Pierre Dedieu Search for other works by this author on: Oxford Academic Google Scholar Joseph Y. Margulies, Joseph Y. Margulies Search for other works by this author on: Oxford Academic Google Scholar Marco Martens, Marco Martens Search for other works by this author on: Oxford Academic Google Scholar Mike Shub Mike Shub Search for other works by this author on: Oxford Academic Google Scholar IMA Journal of Numerical Analysis, Volume 22, Issue 3, July 2002, Pages 359–390, https://doi.org/10.1093/imanum/22.3.359 Published: 01 July 2002"
+        },
+        {
+            "id": "https://openalex.org/W2133855606",
+            "title": "Continuous Newton's Method for Power Flow Analysis",
+            "primary_location": {
+                "id": "doi:10.1109/tpwrs.2008.2004820",
+                "is_oa": false,
+                "landing_page_url": "https://doi.org/10.1109/tpwrs.2008.2004820",
+                "pdf_url": null,
+                "source": {
+                    "id": "https://openalex.org/S201921491",
+                    "display_name": "IEEE Transactions on Power Systems",
+                    "issn_l": "0885-8950",
+                    "issn": [
+                        "0885-8950",
+                        "1558-0679"
+                    ],
+                    "is_oa": false,
+                    "is_in_doaj": false,
+                    "is_core": true,
+                    "host_organization": "https://openalex.org/P4310319808",
+                    "host_organization_name": "Institute of Electrical and Electronics Engineers",
+                    "host_organization_lineage": [
+                        "https://openalex.org/P4310319808"
+                    ],
+                    "host_organization_lineage_names": [
+                        "Institute of Electrical and Electronics Engineers"
+                    ],
+                    "type": "journal"
+                },
+                "license": null,
+                "license_id": null,
+                "version": "publishedVersion",
+                "is_accepted": true,
+                "is_published": true,
+                "raw_source_name": "IEEE Transactions on Power Systems",
+                "raw_type": "journal-article"
+            },
+            "publication_date": "2008-12-03",
+            "doi": "https://doi.org/10.1109/tpwrs.2008.2004820",
+            "abstract_inverted_index": "This paper describes the application of the continuous Newton's method to the power flow problem. This method basically consists in formulating the power flow problem as a set of autonomous ordinary differential equations. Based on this formal analogy, we propose an entire family of numerically efficient algorithms for solving ill-conditioned or badly-initialized power flow cases. The paper also shows that the classical Newton-Raphson's method and most robust power flow techniques proposed in the literature are particular cases of the proposed formulation. An example based on a 1254-bus model of the UCTE system is presented and discussed."
+        },
+        {
+            "id": "https://openalex.org/W1484204181",
+            "title": "Newton's Method for Generalized Equations.",
+            "primary_location": {
+                "id": "pmh:ADA077096",
+                "is_oa": false,
+                "landing_page_url": "http://oai.dtic.mil/oai/oai?&amp;verb=getRecord&amp;metadataPrefix=html&amp;identifier=ADA077096",
+                "pdf_url": null,
+                "source": {
+                    "id": "https://openalex.org/S4406923043",
+                    "display_name": "Defense Technical Information Center (DTIC)",
+                    "issn_l": null,
+                    "issn": null,
+                    "is_oa": false,
+                    "is_in_doaj": false,
+                    "is_core": false,
+                    "host_organization": null,
+                    "host_organization_name": null,
+                    "host_organization_lineage": [],
+                    "host_organization_lineage_names": [],
+                    "type": "repository"
+                },
+                "license": null,
+                "license_id": null,
+                "version": "submittedVersion",
+                "is_accepted": false,
+                "is_published": false,
+                "raw_source_name": "DTIC AND NTIS",
+                "raw_type": "Text"
+            },
+            "publication_date": "1979-06-01",
+            "doi": null,
+            "abstract_inverted_index": "Newton's method is a well known and often applied technique for computing a zero of a nonlinear function. By using the theory of generalized equations, a Newton method is developed to solve problems arising in both mathematical programming and mathematical economics. Two results concerning the convergence and convergence rate of Newton's method are proved for generalized equations. Examples are given to emphasize the application of this method to generalized equations representing the non-linear programming problem and the nonlinear complementarity problem. Computational results of Newton's method applied to a nonlinear complementarity problem of Kojima, and an invariant capital stock problem of Hansen and Koopmans are both presented."
+        },
+        {
+            "id": "https://openalex.org/W2044207982",
+            "title": "On the Complexity of Steepest Descent, Newton's and Regularized Newton's Methods for Nonconvex Unconstrained Optimization Problems",
+            "primary_location": {
+                "id": "doi:10.1137/090774100",
+                "is_oa": false,
+                "landing_page_url": "https://doi.org/10.1137/090774100",
+                "pdf_url": null,
+                "source": {
+                    "id": "https://openalex.org/S928796702",
+                    "display_name": "SIAM Journal on Optimization",
+                    "issn_l": "1052-6234",
+                    "issn": [
+                        "1052-6234",
+                        "1095-7189"
+                    ],
+                    "is_oa": false,
+                    "is_in_doaj": false,
+                    "is_core": true,
+                    "host_organization": "https://openalex.org/P4310320508",
+                    "host_organization_name": "Society for Industrial and Applied Mathematics",
+                    "host_organization_lineage": [
+                        "https://openalex.org/P4310320508"
+                    ],
+                    "host_organization_lineage_names": [
+                        "Society for Industrial and Applied Mathematics"
+                    ],
+                    "type": "journal"
+                },
+                "license": null,
+                "license_id": null,
+                "version": "publishedVersion",
+                "is_accepted": true,
+                "is_published": true,
+                "raw_source_name": "SIAM Journal on Optimization",
+                "raw_type": "journal-article"
+            },
+            "publication_date": "2010-01-01",
+            "doi": "https://doi.org/10.1137/090774100",
+            "abstract_inverted_index": "It is shown that the steepest-descent and Newton's methods for unconstrained nonconvex optimization under standard assumptions may both require a number of iterations and function evaluations arbitrarily close to $O(\\epsilon^{-2})$ to drive the norm of the gradient below $\\epsilon$. This shows that the upper bound of $O(\\epsilon^{-2})$ evaluations known for the steepest descent is tight and that Newton's method may be as slow as the steepest-descent method in the worst case. The improved evaluation complexity bound of $O(\\epsilon^{-3/2})$ evaluations known for cubically regularized Newton's methods is also shown to be tight."
+        },
+        {
+            "id": "https://openalex.org/W2068484625",
+            "title": "Numerical Methods for Unconstrained Optimization and Nonlinear Equations",
+            "primary_location": {
+                "id": "doi:10.1137/1.9781611971200",
+                "is_oa": false,
+                "landing_page_url": "https://doi.org/10.1137/1.9781611971200",
+                "pdf_url": null,
+                "source": {
+                    "id": "https://openalex.org/S4306463922",
+                    "display_name": "Society for Industrial and Applied Mathematics eBooks",
+                    "issn_l": null,
+                    "issn": null,
+                    "is_oa": false,
+                    "is_in_doaj": false,
+                    "is_core": false,
+                    "host_organization": "https://openalex.org/P4310320508",
+                    "host_organization_name": "Society for Industrial and Applied Mathematics",
+                    "host_organization_lineage": [
+                        "https://openalex.org/P4310320508"
+                    ],
+                    "host_organization_lineage_names": [
+                        "Society for Industrial and Applied Mathematics"
+                    ],
+                    "type": "ebook platform"
+                },
+                "license": null,
+                "license_id": null,
+                "version": "publishedVersion",
+                "is_accepted": true,
+                "is_published": true,
+                "raw_source_name": null,
+                "raw_type": "monograph"
+            },
+            "publication_date": "1996-01-01",
+            "doi": "https://doi.org/10.1137/1.9781611971200",
+            "abstract_inverted_index": "Preface 1. Introduction. Problems to be considered Characteristics of 'real-world' problems Finite-precision arithmetic and measurement of error Exercises 2. Nonlinear Problems in One Variable. What is not possible Newton's method for solving one equation in one unknown Convergence of sequences of real numbers Convergence of Newton's method Globally convergent methods for solving one equation in one uknown Methods when derivatives are unavailable Minimization of a function of one variable Exercises 3. Numerical Linear Algebra Background. Vector and matrix norms and orthogonality Solving systems of linear equations-matrix factorizations Errors in solving linear systems Updating matrix factorizations Eigenvalues and positive definiteness Linear least squares Exercises 4. Multivariable Calculus Background Derivatives and multivariable models Multivariable finite-difference derivatives Necessary and sufficient conditions for unconstrained minimization Exercises 5. Newton's Method for Nonlinear Equations and Unconstrained Minimization. Newton's method for systems of nonlinear equations Local convergence of Newton's method The Kantorovich and contractive mapping theorems Finite-difference derivative methods for systems of nonlinear equations Newton's method for unconstrained minimization Finite difference derivative methods for unconstrained minimization Exercises 6. Globally Convergent Modifications of Newton's Method. The quasi-Newton framework Descent directions Line searches The model-trust region approach Global methods for systems of nonlinear equations Exercises 7. Stopping, Scaling, and Testing. Scaling Stopping criteria Testing Exercises 8. Secant Methods for Systems of Nonlinear Equations. Broyden's method Local convergence analysis of Broyden's method Implementation of quasi-Newton algorithms using Broyden's update Other secant updates for nonlinear equations Exercises 9. Secant Methods for Unconstrained Minimization. The symmetric secant update of Powell Symmetric positive definite secant updates Local convergence of positive definite secant methods Implementation of quasi-Newton algorithms using the positive definite secant update Another convergence result for the positive definite secant method Other secant updates for unconstrained minimization Exercises 10. Nonlinear Least Squares. The nonlinear least-squares problem Gauss-Newton-type methods Full Newton-type methods Other considerations in solving nonlinear least-squares problems Exercises 11. Methods for Problems with Special Structure. The sparse finite-difference Newton method Sparse secant methods Deriving least-change secant updates Analyzing least-change secant methods Exercises Appendix A. A Modular System of Algorithms for Unconstrained Minimization and Nonlinear Equations (by Robert Schnabel) Appendix B. Test Problems (by Robert Schnabel) References Author Index Subject Index."
+        },
+        {
+            "id": "https://openalex.org/W2001515960",
+            "title": "Newton's Method for the Matrix Square Root",
+            "primary_location": {
+                "id": "doi:10.2307/2007992",
+                "is_oa": false,
+                "landing_page_url": "https://doi.org/10.2307/2007992",
+                "pdf_url": null,
+                "source": {
+                    "id": "https://openalex.org/S102439543",
+                    "display_name": "Mathematics of Computation",
+                    "issn_l": "0025-5718",
+                    "issn": [
+                        "0025-5718",
+                        "1088-6842"
+                    ],
+                    "is_oa": false,
+                    "is_in_doaj": false,
+                    "is_core": true,
+                    "host_organization": "https://openalex.org/P4310315719",
+                    "host_organization_name": "American Mathematical Society",
+                    "host_organization_lineage": [
+                        "https://openalex.org/P4310315719"
+                    ],
+                    "host_organization_lineage_names": [
+                        "American Mathematical Society"
+                    ],
+                    "type": "journal"
+                },
+                "license": null,
+                "license_id": null,
+                "version": "publishedVersion",
+                "is_accepted": true,
+                "is_published": true,
+                "raw_source_name": "Mathematics of Computation",
+                "raw_type": "journal-article"
+            },
+            "publication_date": "1986-04-01",
+            "doi": "https://doi.org/10.2307/2007992",
+            "abstract_inverted_index": "One approach to computing a square root of a matrix A is to apply Newton's method to the quadratic matrix equation F(X) ≡X2 - A = 0. Two widely-quoted matrix square root iterations obtained by rewriting this Newton iteration are shown to have excellent mathematical convergence properties. However, by means of a perturbation analysis and supportive numerical examples, it is shown that these simplified iterations are numerically unstable. A further variant of Newton's method for the matrix square root, recently proposed in the literature, is shown to be, for practical purposes, numerically stable."
+        },
+        {
+            "id": "https://openalex.org/W2794665582",
+            "title": "On the Convergence of Newton's Method in Power Flow Studies for DC Microgrids",
+            "primary_location": {
+                "id": "doi:10.1109/tpwrs.2018.2820430",
+                "is_oa": false,
+                "landing_page_url": "https://doi.org/10.1109/tpwrs.2018.2820430",
+                "pdf_url": null,
+                "source": {
+                    "id": "https://openalex.org/S201921491",
+                    "display_name": "IEEE Transactions on Power Systems",
+                    "issn_l": "0885-8950",
+                    "issn": [
+                        "0885-8950",
+                        "1558-0679"
+                    ],
+                    "is_oa": false,
+                    "is_in_doaj": false,
+                    "is_core": true,
+                    "host_organization": "https://openalex.org/P4310319808",
+                    "host_organization_name": "Institute of Electrical and Electronics Engineers",
+                    "host_organization_lineage": [
+                        "https://openalex.org/P4310319808"
+                    ],
+                    "host_organization_lineage_names": [
+                        "Institute of Electrical and Electronics Engineers"
+                    ],
+                    "type": "journal"
+                },
+                "license": null,
+                "license_id": null,
+                "version": "publishedVersion",
+                "is_accepted": true,
+                "is_published": true,
+                "raw_source_name": "IEEE Transactions on Power Systems",
+                "raw_type": "journal-article"
+            },
+            "publication_date": "2018-03-28",
+            "doi": "https://doi.org/10.1109/tpwrs.2018.2820430",
+            "abstract_inverted_index": "The power flow is a nonlinear problem that requires a Newton's method to be solved in dc microgrids with constant power terminals. This paper presents sufficient conditions for the quadratic convergence of the Newton's method in this type of grids. The classic Newton's method as well as an approximated Newton's method are analyzed in both master-slave and island operation with droop controls. Requirements for the convergence as well as for the existence and uniqueness of the solution starting from voltages close to 1 pu are presented. Computational results complement this theoretical analysis."
+        },
+        {
+            "id": "https://openalex.org/W2094760120",
+            "title": "Convergence of Newton's method and uniqueness of the solution of equations in Banach space",
+            "primary_location": {
+                "id": "doi:10.1093/imanum/20.1.123",
+                "is_oa": false,
+                "landing_page_url": "https://doi.org/10.1093/imanum/20.1.123",
+                "pdf_url": null,
+                "source": {
+                    "id": "https://openalex.org/S201897549",
+                    "display_name": "IMA Journal of Numerical Analysis",
+                    "issn_l": "0272-4979",
+                    "issn": [
+                        "0272-4979",
+                        "1464-3642"
+                    ],
+                    "is_oa": false,
+                    "is_in_doaj": false,
+                    "is_core": true,
+                    "host_organization": "https://openalex.org/P4310311648",
+                    "host_organization_name": "Oxford University Press",
+                    "host_organization_lineage": [
+                        "https://openalex.org/P4310311648",
+                        "https://openalex.org/P4310311647"
+                    ],
+                    "host_organization_lineage_names": [
+                        "Oxford University Press",
+                        "University of Oxford"
+                    ],
+                    "type": "journal"
+                },
+                "license": null,
+                "license_id": null,
+                "version": "publishedVersion",
+                "is_accepted": true,
+                "is_published": true,
+                "raw_source_name": "IMA Journal of Numerical Analysis",
+                "raw_type": "journal-article"
+            },
+            "publication_date": "2000-01-01",
+            "doi": "https://doi.org/10.1093/imanum/20.1.123",
+            "abstract_inverted_index": "Under the hypothesis that the derivative satisfies some kind of weak Lipschitz condition, exact estimates of the radii of convergence ball of Newton's method and of the uniqueness ball for the solution of operator equations are given in Banach space. Relevant results under the assumptions of Kantorovich and Smale types are improved upon in this paper."
+        },
+        {
+            "id": "https://openalex.org/W1980271325",
+            "title": "Solving a Quadratic Matrix Equation by Newton's Method with Exact Line Searches",
+            "primary_location": {
+                "id": "doi:10.1137/s0895479899350976",
+                "is_oa": false,
+                "landing_page_url": "https://doi.org/10.1137/s0895479899350976",
+                "pdf_url": null,
+                "source": {
+                    "id": "https://openalex.org/S16958353",
+                    "display_name": "SIAM Journal on Matrix Analysis and Applications",
+                    "issn_l": "0895-4798",
+                    "issn": [
+                        "0895-4798",
+                        "1095-7162"
+                    ],
+                    "is_oa": false,
+                    "is_in_doaj": false,
+                    "is_core": true,
+                    "host_organization": "https://openalex.org/P4310320508",
+                    "host_organization_name": "Society for Industrial and Applied Mathematics",
+                    "host_organization_lineage": [
+                        "https://openalex.org/P4310320508"
+                    ],
+                    "host_organization_lineage_names": [
+                        "Society for Industrial and Applied Mathematics"
+                    ],
+                    "type": "journal"
+                },
+                "license": null,
+                "license_id": null,
+                "version": "publishedVersion",
+                "is_accepted": true,
+                "is_published": true,
+                "raw_source_name": "SIAM Journal on Matrix Analysis and Applications",
+                "raw_type": "journal-article"
+            },
+            "publication_date": "2001-01-01",
+            "doi": "https://doi.org/10.1137/s0895479899350976",
+            "abstract_inverted_index": "We show how to incorporate exact line searches into Newton's method for solving the quadratic matrix equation AX2 + BX + C = 0, where A, B and C are square matrices. The line searches are relatively inexpensive and improve the global convergence properties of Newton's method in theory and in practice. We also derive a condition number for the problem and show how to compute the backward error of an approximate solution."
+        },
+        {
+            "id": "https://openalex.org/W2007753746",
+            "title": "Global Convergence of Damped Newton's Method for Nonsmooth Equations via the Path Search",
+            "primary_location": {
+                "id": "doi:10.1287/moor.19.2.352",
+                "is_oa": false,
+                "landing_page_url": "https://doi.org/10.1287/moor.19.2.352",
+                "pdf_url": null,
+                "source": {
+                    "id": "https://openalex.org/S55826652",
+                    "display_name": "Mathematics of Operations Research",
+                    "issn_l": "0364-765X",
+                    "issn": [
+                        "0364-765X",
+                        "1526-5471"
+                    ],
+                    "is_oa": false,
+                    "is_in_doaj": false,
+                    "is_core": true,
+                    "host_organization": "https://openalex.org/P4310315699",
+                    "host_organization_name": "Institute for Operations Research and the Management Sciences",
+                    "host_organization_lineage": [
+                        "https://openalex.org/P4310315699"
+                    ],
+                    "host_organization_lineage_names": [
+                        "Institute for Operations Research and the Management Sciences"
+                    ],
+                    "type": "journal"
+                },
+                "license": null,
+                "license_id": null,
+                "version": "publishedVersion",
+                "is_accepted": true,
+                "is_published": true,
+                "raw_source_name": "Mathematics of Operations Research",
+                "raw_type": "journal-article"
+            },
+            "publication_date": "1994-05-01",
+            "doi": "https://doi.org/10.1287/moor.19.2.352",
+            "abstract_inverted_index": "A natural damping of Newton's method for nonsmooth equations is presented. This damping, via the path search instead of the traditional line search, enlarges the domain of convergence of Newton's method and therefore is said to be globally convergent. Convergence behavior is like that of line search damped Newton's method for smooth equations, including Q-quadratic convergence rates under appropriate conditions. Applications of the path search include damping Robinson-Newton's method for nonsmooth normal equations corresponding to nonlinear complementarity problems and variational inequalities, hence damping both Wilson's method (sequential quadratic programming) for nonlinear programming and Josephy-Newton's method for generalized equations. Computational examples from nonlinear programming are given."
+        }
+    ],
+    "group_by": []
+}
