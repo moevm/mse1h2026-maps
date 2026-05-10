@@ -32,6 +32,37 @@ cp .env.example .env
 copy .env.example .env
 ```
 
+### Переменные окружения
+
+Пользователь может вручную настроить следующие переменные в файле **.env**:
+
+| Переменная | Описание | Пример |
+|---|---|---|
+| `DJANGO_SECRET` | Секретный ключ Django. Для production нужно заменить на свой. | `django-insecure-local-dev-only` |
+| `DJANGO_DEBUG` | Режим отладки Django. Для разработки — `1`, для production — `0`. | `1` |
+| `DJANGO_ALLOWED_HOSTS` | Список разрешённых хостов через запятую. | `localhost,127.0.0.1,0.0.0.0,server` |
+| `DB_NAME` | Название базы данных PostgreSQL. | `mapsdb` |
+| `DB_USER` | Пользователь PostgreSQL. | `admin` |
+| `DB_PASSWORD` | Пароль пользователя PostgreSQL. | `CHANGETHAT` |
+| `DB_HOST` | Хост PostgreSQL для локального запуска без Docker. В Docker Compose переопределяется на `postgres`. | `localhost` |
+| `DB_PORT` | Порт PostgreSQL для локального запуска без Docker. | `5432` |
+| `NEO_URI` | URI подключения к Neo4j для локального запуска без Docker. В Docker Compose переопределяется на `bolt://neo4j:7687`. | `bolt://localhost:7687` |
+| `NEO_USER` | Пользователь Neo4j. | `neo4j` |
+| `NEO_PASSWORD` | Пароль пользователя Neo4j. | `12345678` |
+| `NEO4J_ACCEPT_LICENSE_AGREEMENT` | Подтверждение лицензии Neo4j Enterprise. | `yes` |
+| `CELERY_BROKER_URL` | URL брокера Celery для локального запуска без Docker. В Docker Compose переопределяется на `redis://redis:6379/0`. | `redis://localhost:6379/0` |
+| `CELERY_RESULT_BACKEND` | URL backend-хранилища результатов Celery для локального запуска без Docker. В Docker Compose переопределяется на `redis://redis:6379/0`. | `redis://localhost:6379/0` |
+
+В Docker Compose сервисы обращаются друг к другу по именам контейнеров:
+
+```text
+postgres:5432
+neo4j:7687
+redis:6379
+```
+
+Поэтому значения `DB_HOST`, `NEO_URI`, `CELERY_BROKER_URL` и `CELERY_RESULT_BACKEND` из `.env` могут использоваться для локального запуска, а внутри Docker переопределяются compose-файлами.
+
 3. **Выберите вариант запуска**
 
 #### Dev-версия
