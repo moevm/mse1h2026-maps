@@ -1,0 +1,107 @@
+x-app-env: &app-env
+  DJANGO_SECRET: ${DJANGO_SECRET:-change-me-in-production}
+  DJANGO_DEBUG: ${DJANGO_DEBUG:-0}
+  DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,0.0.0.0,server}
+
+  DB_NAME: ${DB_NAME:-mapsdb}
+  DB_USER: ${DB_USER:-admin}
+  DB_PASSWORD: ${DB_PASSWORD:-CHANGETHAT}
+  DB_HOST: postgres
+  DB_PORT: 5432
+
+  NEO_URI: bolt://neo4j:7687
+  NEO_USER: ${NEO_USER:-neo4j}
+  NEO_PASSWORD: ${NEO_PASSWORD:-12345678}
+
+  CELERY_BROKER_URL: redis://redis:6379/0
+  CELERY_RESULT_BACKEND: redis://redis:6379/0
+
+  HF_HOME: /cache/hf
+  TRANSFORMERS_CACHE: /cache/hf
+  PYTHONPATH: /app:/app/src/django/maps
+
+x-app-base: &app-base
+  build: .
+  image: mse1h2026-maps:prod
+  env_file:
+    - .env
+  environment:
+    <<: *app-env
+  volumes:
+    - hf_cache:/cache/hf
+  restart: unless-stopped
+
+services:
+  server:
+    <<: *app-base
+    command: python src/django/maps/manage.py runserver 0.0.0.0:8000
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    <<: *app-base
+    working_dir: /app/src/django/maps
+    command: celery -A maps worker --loglevel=info
+    depends_on:
+      postgres:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:18-bookworm
+    environment:
+      POSTGRES_DB: ${DB_NAME:-mapsdb}
+      POSTGRES_USER: ${DB_USER:-admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-CHANGETHAT}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  neo4j:
+    image: neo4j:5.26.23-enterprise-ubi10
+    environment:
+      NEO4J_AUTH: ${NEO_USER:-neo4j}/${NEO_PASSWORD:-12345678}
+      NEO4J_ACCEPT_LICENSE_AGREEMENT: ${NEO4J_ACCEPT_LICENSE_AGREEMENT:-yes}
+      NEO_USER: ${NEO_USER:-neo4j}
+      NEO_PASSWORD: ${NEO_PASSWORD:-12345678}
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u $${NEO_USER} -p $${NEO_PASSWORD} 'RETURN 1' >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  neo4j_data:
+  hf_cache:

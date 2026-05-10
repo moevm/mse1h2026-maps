@@ -1,21 +1,50 @@
-FROM python:3.11-slim
+FROM python:3.11-slim-bookworm AS builder
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+COPY --from=ghcr.io/astral-sh/uv:0.8 /uv /uvx /bin/
+
+ENV UV_NO_CACHE=1 \
+    UV_LINK_MODE=copy \
+    UV_HTTP_TIMEOUT=120 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    build-essential \
-    libglib2.0-0 \
-    libpq-dev \
+RUN apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=60 update \
+    && apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=60 install -y --no-install-recommends \
+        gcc \
+        build-essential \
+        libpq-dev \
+        ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir --timeout 5 --retries 2 -r /app/requirements.txt \
- || pip install --no-cache-dir --timeout 5 --retries 2 -i https://pypi.tuna.tsinghua.edu.cn/simple --trusted-host pypi.tuna.tsinghua.edu.cn -r /app/requirements.txt \
- || pip install --no-cache-dir --timeout 5 --retries 2 -i https://mirrors.aliyun.com/pypi/simple --trusted-host mirrors.aliyun.com -r /app/requirements.txt
+
+RUN python -m venv /opt/venv
+
+RUN uv pip install --python /opt/venv/bin/python --no-cache \
+    --index-strategy unsafe-best-match \
+    -r /app/requirements.txt
+
+
+FROM python:3.11-slim-bookworm AS runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app:/app/src/django/maps \
+    PATH="/opt/venv/bin:$PATH" \
+    HF_HOME=/cache/hf \
+    TRANSFORMERS_CACHE=/cache/hf
+
+WORKDIR /app
+
+RUN apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=60 update \
+    && apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=60 install -y --no-install-recommends \
+        libglib2.0-0 \
+        libgomp1 \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /opt/venv /opt/venv
 
 COPY . /app
 
