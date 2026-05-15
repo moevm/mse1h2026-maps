@@ -1,11 +1,19 @@
 import json
+import os
 import re
 from typing import Any, Dict, List, Optional, Union
 
 import matplotlib.pyplot as plt
 import networkx as nx
+from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+
+load_dotenv()
+
+HUGGINGFACE_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
+
+os.environ["HF_TOKEN"] = HUGGINGFACE_TOKEN
 
 
 def restore_abstract_from_inverted_index(inverted_index: dict) -> str:
