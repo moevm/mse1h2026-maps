@@ -378,6 +378,41 @@ def delete_node(driver, db_name, query, uid):
     except Exception as e:
         raise RuntimeError(f"Ошибка при удалении узла '{uid}': {e}") from e
 
+def get_history(driver, user_id):
+    
+    db_name = f"user{user_id}db"
+    def db_exists():
+        try:
+            with driver.session() as session:
+                result = session.run("SHOW DATABASES")
+                dbs = [record["name"] for record in result]
+                return db_name in dbs
+        except Exception as e:
+            raise RuntimeError(f"Не удалось проверить существование БД: {e}") from e
+
+    if not db_exists():
+        return []
+
+    try:
+        with driver.session(database=db_name) as session:
+            result = session.run("MATCH (n) RETURN DISTINCT n.query AS query")
+            queries = [record["query"] for record in result]
+
+            history = []
+            for query in queries:
+                item = {"query": query}
+                graph = get_from_neo4j(driver, db_name, query)
+                item["graph"] = graph
+                history.append(item)
+            return history
+
+    except ServiceUnavailable as e:
+        raise ConnectionError(f"Neo4j сервер недоступен: {e}") from e
+    except AuthError as e:
+        raise PermissionError(f"Ошибка авторизации: {e}") from e
+    except Exception as e:
+        raise RuntimeError(f"Ошибка при получении истории: {e}") from e
+
 def update_node(driver, db_name, query, node_uid, new_properties=None, new_labels=None):
 
     if not query or not query.strip():
