@@ -19,3 +19,6 @@ class RawData(models.Model):
     source = models.CharField(max_length=50)  # wikidata, github, semantic_scholar
     data = models.JSONField()
     collected_at = models.DateTimeField(auto_now_add=True)
+    refined = models.BooleanField(
+        default=False
+    )  # отработало ли построение графа, если таска simple то false

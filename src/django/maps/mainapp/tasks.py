@@ -3,6 +3,7 @@ import os
 
 from celery import chord, group, shared_task
 from celery.utils.log import get_task_logger
+from mainapp.models import RawData
 from neo4j import GraphDatabase
 
 from django.db import close_old_connections, transaction
@@ -39,6 +40,13 @@ def process_simple_task(self, req_id: int, topic: str, source_name: str):
     try:
         data = simple_tasks[source_name](topic)
         # logger.exception(f"Дата {self.name}: {data}")
+
+        with transaction.atomic():
+            topic_request = get_request(req_id)
+            RawData.objects.create(
+                topic_request=topic_request, source=source_name, data=data
+            )
+
         send_data.apply(args=[data, req_id])
 
         status = "Done"
@@ -61,8 +69,18 @@ def process_complex_task(self, req_id: int, topic: str, source_name: str):
     try:
         data_raw = complex_task[source_name](topic)
         # logger.exception(f"Дата {self.name}: {data_raw}")
+        raw_id = 0
+        with transaction.atomic():
+            topic_request = get_request(req_id)
+            raw_id = RawData.objects.create(
+                topic_request=topic_request, source=source_name, data=data_raw
+            ).id
         data = build_graph_from_any(data_raw, topic, [source_name], threshold=0.9)
         # logger.exception(f"Дата {self.name}: {data}")
+
+        with transaction.atomic():
+            RawData.objects.filter(id=raw_id).update(data=data, refined=True)
+
         send_data.apply(args=[data, req_id])
 
         status = "Done"
@@ -111,6 +129,11 @@ def finalize_topic(results, req_id):
 
     logger.exception(f"data size: {len(data_raw)} | src size: {len(sources)}")
     data = build_graph_from_any(data_raw, topic, sources, threshold=0.9)
+    with transaction.atomic():
+        topic_request = get_request(req_id)
+        RawData.objects.create(
+            topic_request=topic_request, source="ALL_SRC_DONE", data=data_raw
+        )
     send_data.apply(args=[data, req_id])
     # time.sleep(2)
     with transaction.atomic():
@@ -123,9 +146,10 @@ def finalize_topic(results, req_id):
 @shared_task(bind=True, max_retries=3)
 def process_topic(self, req_id: int, topic: str):
     close_old_connections()
-    r = get_request(req_id)
-    r.status = "processing"
-    r.save()
+    with transaction.atomic():
+        r = get_request(req_id)
+        r.status = "processing"
+        r.save()
 
     simple = [
         process_simple_task.s(req_id, topic, name) for name in simple_tasks.keys()
