@@ -118,14 +118,15 @@ def create_user_and_db(driver, user_id, neo4j_password):
 
     return db_name, neo4j_username
 
-def create_nodes(tx, nodes, query):
 
+from datetime import datetime
+
+def create_nodes(tx, nodes, query):
     uid_map = {}
-    current_time = time.time()
+    current_time = datetime.now().isoformat()
 
     for node in nodes:
         try:
-
             labels = ":".join(node["labels"])
             props = node.get("properties", {})
             old_uid = node["uid"]
@@ -168,7 +169,6 @@ def create_nodes(tx, nodes, query):
             raise
 
     return uid_map
-
 
 def create_relationships(tx, relationships, uid_map, query):
     for rel in relationships:
