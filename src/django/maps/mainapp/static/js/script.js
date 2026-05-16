@@ -1011,6 +1011,24 @@ async function loadHistory() {
     }
 }
 
+function formatDate(item) {
+    const dateStr = item.date || item.created_at || item.timestamp;
+    
+    if (!dateStr) {
+        return 'Дата неизвестна';
+    }
+    
+    try {
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) {
+            return 'Дата неизвестна';
+        }
+        return date.toLocaleString();
+    } catch (e) {
+        return 'Дата неизвестна';
+    }
+}
+
 function renderHistory() {
     if (!historyList) return;
     
@@ -1020,12 +1038,13 @@ function renderHistory() {
     }
     
     historyList.innerHTML = historyData.map(item => `
-        <div class="history-item" data-query="${item.query}">
+        <div class="history-item" data-query="${escapeHtml(item.query)}">
             <div class="history-item-query">${escapeHtml(item.query)}</div>
-            <div class="history-item-date">${item.date || new Date(item.timestamp).toLocaleString()}</div>
+            <div class="history-item-date">${formatDate(item)}</div>
         </div>
     `).join('');
     
+    // Добавляем обработчики кликов
     document.querySelectorAll('.history-item').forEach(item => {
         item.addEventListener('click', () => {
             const query = item.dataset.query;
