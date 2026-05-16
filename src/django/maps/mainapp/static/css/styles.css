@@ -740,3 +740,60 @@ html, body {
     text-align: center;
     color: #999;
 }
+
+
+.info-panel-content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    max-height: calc(100vh - 80px);
+}
+
+
+.info-section {
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+/* Для длинного текста */
+.info-section p {
+    margin: 0;
+    color: #333;
+    line-height: 1.5;
+    max-height: 200px;
+    overflow-y: auto;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+/* Для списка связей и ресурсов */
+.info-section ul {
+    margin: 0;
+    padding-left: 20px;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+
+.info-section ul::-webkit-scrollbar,
+.info-section p::-webkit-scrollbar {
+    width: 6px;
+}
+
+.info-section ul::-webkit-scrollbar-track,
+.info-section p::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.info-section ul::-webkit-scrollbar-thumb,
+.info-section p::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.info-section ul::-webkit-scrollbar-thumb:hover,
+.info-section p::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
