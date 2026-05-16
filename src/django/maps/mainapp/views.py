@@ -10,7 +10,7 @@ from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
 from src.db_access import get_request, put_request
 from src.django.maps.mainapp.tasks import get_widget_task, process_topic
-from src.neo4j_db import get_from_neo4j
+from src.neo4j_db import get_from_neo4j, get_history
 
 
 def home(request):
@@ -34,6 +34,20 @@ def user_status(request):
                 "username": None,
             }
         )
+
+
+@login_required
+def history(request):
+
+    user = request.user
+    username = f"user{user.id}"
+    password_hash = user.password.split("$")[2]
+    uri = os.environ.get("NEO_URI")
+
+    driver = GraphDatabase.driver(uri, auth=(username, password_hash))
+    hist = get_history(driver, user.id)
+    print(hist)
+    return JsonResponse(hist)
 
 
 @login_required

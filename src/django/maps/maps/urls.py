@@ -14,4 +14,5 @@ urlpatterns = [
     path("", starter.home),
     path("accounts/register/", starter.register_user, name="register_user"),
     path("accounts/user-status/", starter.user_status, name="user_status"),
+    path("api/get-history/", starter.history, name="get_history"),
 ]
