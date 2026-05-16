@@ -49,6 +49,88 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ===== НАСТРОЙКА ОБРАБОТЧИКА КЛИКА =====
+    function setupNetworkClickHandler(data, edges) {
+        if (!network) return;
+        
+        network.off('click');
+        
+        network.on('click', function(params) {
+            if (params.nodes.length > 0) {
+                const nodeId = params.nodes[0];
+                const originalNode = data.nodes.find(n => n.id === nodeId);
+                if (originalNode) {
+                    const props = originalNode.properties || {};
+                    
+                    const connectedRelationships = data.relationships.filter(rel => 
+                        rel.from === nodeId || rel.to === nodeId
+                    );
+                    
+                    const connectedNodes = connectedRelationships.map(rel => {
+                        const targetId = rel.from === nodeId ? rel.to : rel.from;
+                        const targetNode = data.nodes.find(n => n.id === targetId);
+                        const targetProps = targetNode?.properties || {};
+                        return {
+                            type: rel.caption || rel.properties?.type || 'связь',
+                            target: targetProps.label_en || targetNode?.caption || targetId
+                        };
+                    });
+                    
+                    const resources = [];
+                    const addedUrls = new Set();
+                    
+                    if (props.url && !addedUrls.has(props.url)) {
+                        resources.push({ name: 'Википедия', url: props.url });
+                        addedUrls.add(props.url);
+                    }
+                    
+                    if (props.wiki_url && !addedUrls.has(props.wiki_url)) {
+                        resources.push({ name: 'Wikidata', url: props.wiki_url });
+                        addedUrls.add(props.wiki_url);
+                    }
+                    
+                    if (props.uid && props.uid.startsWith('wikidata:') && !addedUrls.has(`https://www.wikidata.org/wiki/${props.uid.split(':')[1]}`)) {
+                        const wikidataId = props.uid.split(':')[1];
+                        resources.push({ 
+                            name: 'Wikidata', 
+                            url: `https://www.wikidata.org/wiki/${wikidataId}` 
+                        });
+                        addedUrls.add(`https://www.wikidata.org/wiki/${wikidataId}`);
+                    }
+                    
+                    if (originalNode.labels?.includes('Paper') && props.paperId && !addedUrls.has(props.paperId)) {
+                        resources.push({ 
+                            name: props.label_en || 'Научная статья', 
+                            url: props.paperId 
+                        });
+                        addedUrls.add(props.paperId);
+                    }
+                    
+                    openInfoPanel({
+                        name: props.label_en || originalNode.caption || nodeId,
+                        desc_en: props.desc_en || props.description || props.abstract || 'Нет описания',
+                        info: props.info,
+                        links: connectedNodes,
+                        resources: resources,
+                        ...props
+                    });
+                }
+            } else if (params.edges.length > 0) {
+                const edgeId = params.edges[0];
+                const edge = edges.find(e => e.id === edgeId);
+                if (edge) {
+                    openInfoPanel({
+                        name: `Связь: ${edge.label}`,
+                        desc_en: `Тип: ${edge.caption || edge.label}\nОт: ${edge.from}\nК: ${edge.to}`,
+                        info: `Тип связи: ${edge.caption || edge.label}`,
+                        links: [],
+                        resources: []
+                    });
+                }
+            }
+        });
+    }
+
     // ===== АУТЕНТИФИКАЦИЯ =====
 
     function getCookie(name) {
@@ -159,6 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
             usernameDisplay.textContent = `Вы вошли как: ${username}`;
             userInfo.style.display = 'flex';
         }
+        loadHistory(); // Загружаем историю при входе
     }
 
     function hideUserInfo() {
@@ -531,8 +614,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             console.log('Граф обновлен');
             
-            // Обновляем обработчики фокуса после обновления графа
             setupInputFocusTracking();
+            
+            setupNetworkClickHandler(data, edges);
             
             if (existingNodeIds.size === 0 && nodes.length > 0) {
                 setTimeout(() => {
@@ -575,10 +659,11 @@ document.addEventListener('DOMContentLoaded', () => {
             from: rel.from,
             to: rel.to,
             label: rel.caption || rel.properties?.type || 'связь',
+            caption: rel.caption,
             arrows: 'to',
             font: { size: 12, align: 'middle' }
         }));
-        
+
         console.log('Создание графа:', { nodesCount: nodes.length, edgesCount: edges.length });
         
         const nodesDataSet = new vis.DataSet(nodes);
@@ -612,40 +697,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 hover: true,
                 tooltipDelay: 200,
                 navigationButtons: true,
-                keyboard: true  // Клавиатура включена по умолчанию
+                keyboard: true
             }
         };
         
         network = new vis.Network(graphContainer, { nodes: nodesDataSet, edges: edgesDataSet }, options);
         
-        // Настраиваем отслеживание фокуса на полях ввода
         setupInputFocusTracking();
         
-        network.on('click', function(params) {
-            if (params.nodes.length > 0) {
-                const nodeId = params.nodes[0];
-                const originalNode = data.nodes.find(n => n.id === nodeId);
-                if (originalNode) {
-                    openInfoPanel({
-                        name: originalNode.properties?.label_en || originalNode.caption || nodeId,
-                        info: originalNode.properties?.desc_en || originalNode.properties?.info || 'Нет дополнительной информации',
-                        links: originalNode.properties?.links || [],
-                        resources: originalNode.properties?.resources || []
-                    });
-                }
-            } else if (params.edges.length > 0) {
-                const edgeId = params.edges[0];
-                const edge = edges.find(e => e.id === edgeId);
-                if (edge) {
-                    openInfoPanel({
-                        name: `Связь: ${edge.label}`,
-                        info: `Связь между узлами`,
-                        links: [],
-                        resources: []
-                    });
-                }
-            }
-        });
+        setupNetworkClickHandler(data, edges);
         
         setTimeout(() => {
             if (network) network.fit();
@@ -836,36 +896,101 @@ document.addEventListener('DOMContentLoaded', () => {
         const linksList = document.getElementById('entityLinks');
         const resourcesList = document.getElementById('entityResources');
 
-        if (entityName) entityName.textContent = entityData.name || 'Название не указано';
-        if (entityInfo) entityInfo.textContent = entityData.info || 'Информация отсутствует';
+        // Название
+        if (entityName) {
+            entityName.textContent = entityData.name || 
+                                    entityData.label_en || 
+                                    entityData.caption || 
+                                    'Название не указано';
+        }
 
+        // Информация
+        if (entityInfo) {
+            let infoText = entityData.desc_en || entityData.info || entityData.abstract || 'Нет дополнительной информации';
+            entityInfo.textContent = infoText;
+            entityInfo.style.maxHeight = '200px';
+            entityInfo.style.overflowY = 'auto';
+            entityInfo.style.whiteSpace = 'normal';
+            entityInfo.style.wordWrap = 'break-word';
+        }
+
+        // Связи
         if (linksList) {
             linksList.innerHTML = '';
-            if (entityData.links && entityData.links.length > 0) {
-                entityData.links.forEach(link => {
+            const links = entityData.links || [];
+            
+            if (links.length > 0) {
+                linksList.style.maxHeight = '150px';
+                linksList.style.overflowY = 'auto';
+                
+                links.forEach(link => {
                     const li = document.createElement('li');
-                    li.textContent = link;
+                    if (typeof link === 'string') {
+                        li.textContent = link;
+                    } else if (link.type && link.target) {
+                        li.textContent = `${link.type}: ${link.target}`;
+                    } else if (link.name) {
+                        li.textContent = link.name;
+                    } else {
+                        li.textContent = JSON.stringify(link);
+                    }
                     linksList.appendChild(li);
                 });
             } else {
                 linksList.innerHTML = '<li>Нет связей</li>';
+                linksList.style.maxHeight = '';
             }
         }
 
+        // Ресурсы (ссылки)
         if (resourcesList) {
             resourcesList.innerHTML = '';
-            if (entityData.resources && entityData.resources.length > 0) {
-                entityData.resources.forEach(resource => {
+            const resources = entityData.resources || [];
+            const uniqueResources = [];
+            const seenUrls = new Set();
+            
+            for (const resource of resources) {
+                const url = resource.url || resource;
+                if (url && !seenUrls.has(url)) {
+                    seenUrls.add(url);
+                    uniqueResources.push(resource);
+                }
+            }
+            
+            if (uniqueResources.length > 0) {
+                resourcesList.style.maxHeight = '150px';
+                resourcesList.style.overflowY = 'auto';
+                
+                uniqueResources.forEach(resource => {
                     const li = document.createElement('li');
                     const a = document.createElement('a');
-                    a.href = resource.url || '#';
-                    a.textContent = resource.name || resource;
+                    
+                    if (typeof resource === 'string') {
+                        a.href = resource;
+                        a.textContent = resource;
+                    } else if (resource.url) {
+                        a.href = resource.url;
+                        a.textContent = resource.name || resource.url;
+                    } else if (resource.wiki_url) {
+                        a.href = resource.wiki_url;
+                        a.textContent = resource.label_en || resource.label_ru || 'Википедия';
+                    } else {
+                        a.href = '#';
+                        a.textContent = resource.name || 'Ссылка';
+                    }
+                    
                     a.target = '_blank';
+                    a.style.color = '#4CAF50';
+                    a.style.textDecoration = 'none';
+                    a.onmouseover = () => a.style.textDecoration = 'underline';
+                    a.onmouseout = () => a.style.textDecoration = 'none';
+                    
                     li.appendChild(a);
                     resourcesList.appendChild(li);
                 });
             } else {
                 resourcesList.innerHTML = '<li>Нет ссылок</li>';
+                resourcesList.style.maxHeight = '';
             }
         }
 
@@ -982,11 +1107,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    checkAuthStatus();
-
-    console.log('Приложение полностью инициализировано');
-
-// ===== ИСТОРИЯ ЗАПРОСОВ =====
+    // ===== ИСТОРИЯ ЗАПРОСОВ =====
     const showHistoryBtn = document.getElementById('showHistoryBtn');
     const historyPanel = document.getElementById('historyPanel');
     const closeHistoryBtn = document.getElementById('closeHistoryBtn');
@@ -1075,4 +1196,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    checkAuthStatus();
+
+    console.log('Приложение полностью инициализировано');
 });
