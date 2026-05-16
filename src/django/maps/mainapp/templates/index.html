@@ -202,7 +202,43 @@
     <form id="logoutForm" method="post" action="{% url 'logout' %}" style="display: none;">
         {% csrf_token %}
     </form>
+        <!-- Контекстное меню -->
+    <div id="contextMenu" class="context-menu" style="display: none;">
+        <div class="context-menu-item" id="addNodeMenuItem">Добавить узел</div>
+    </div>
 
+    <!-- Модальное окно добавления узла -->
+    <div id="addNodeModal" class="add-node-modal" style="display: none;">
+        <div class="add-node-modal-content">
+            <div class="add-node-modal-header">
+                <h2>Добавление узла</h2>
+                <button class="add-node-modal-close" id="closeAddNodeModal">&times;</button>
+            </div>
+            <div class="add-node-modal-body">
+                <div class="form-group">
+                    <label for="newNodeName">Название узла:</label>
+                    <input type="text" id="newNodeName" placeholder="Введите название" required>
+                </div>
+                <div class="form-group">
+                    <label>Связи с существующими узлами:</label>
+                    <div id="edgesList">
+                        <div class="edge-row">
+                            <select class="edge-target-select">
+                                <option value="">-- Выберите узел --</option>
+                            </select>
+                            <input type="text" class="edge-type-input" placeholder="Тип связи" value="связан с">
+                            <button class="remove-edge-btn" style="display: none;">✕</button>
+                        </div>
+                    </div>
+                    <button type="button" id="addEdgeBtn" class="add-edge-btn">+ Добавить связь</button>
+                </div>
+            </div>
+            <div class="add-node-modal-footer">
+                <button type="button" id="cancelAddNodeBtn" class="cancel-btn">Отмена</button>
+                <button type="button" id="saveNodeBtn" class="save-btn">Сохранить</button>
+            </div>
+        </div>
+    </div>
     <script src="{% static 'libs/vis-network.min.js' %}"></script>
     <script type="module" src="{% static 'js/script.js' %}"></script>
 </body>
