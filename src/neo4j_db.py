@@ -138,6 +138,7 @@ from datetime import datetime
 
 def create_nodes(tx, nodes, query):
     uid_map = {}
+    query = query.strip().lower()
     current_time = datetime.now().isoformat()
 
     for node in nodes:
@@ -191,6 +192,7 @@ def create_nodes(tx, nodes, query):
 
 
 def create_relationships(tx, relationships, uid_map, query):
+    query =  query.strip().lower()
     for rel in relationships:
         from_uid = uid_map.get(rel["from_uid"], rel["from_uid"])
         to_uid = uid_map.get(rel["to_uid"], rel["to_uid"])
@@ -357,7 +359,8 @@ def get_from_neo4j(driver, db_name, query):
 
 
 def add_node(driver, db_name, query, nodes=None, relationships=None):
-
+    
+    query = query.strip().lower()
     result = {}
 
     def _execute(tx):
@@ -385,7 +388,7 @@ def add_node(driver, db_name, query, nodes=None, relationships=None):
 
 
 def delete_node(driver, db_name, query, uid):
-
+    query = query.strip().lower()
     def _execute(tx):
         result = tx.run(
             "MATCH (n {uid: $uid, query: $q}) RETURN count(n) AS cnt",
@@ -456,8 +459,8 @@ def get_history(driver, user_id):
 
 
 def update_node(driver, db_name, query, node_uid, new_properties=None, new_labels=None):
-
-    if not query or not query.strip():
+    query = query.strip().lower()
+    if not query:
         raise ValueError("query не может быть пустым")
     if not node_uid or not node_uid.strip():
         raise ValueError("node_uid не может быть пустым")
