@@ -133,112 +133,8 @@ def create_user_and_db(driver, user_id, neo4j_password):
     return db_name, neo4j_username
 
 
-def wait_for_db_online(session, db_name, timeout=30, interval=1):
-    start = time.time()
-    while True:
-        result = session.run(
-            f"SHOW DATABASE {db_name} YIELD name, currentStatus "
-            f"WHERE name = '{db_name}' RETURN currentStatus"
-        )
-        record = result.single()
-
-        if record and record["currentStatus"] == "online":
-            return True
-
-        if time.time() - start > timeout:
-            raise TimeoutError(f"База {db_name} не перешла в ONLINE за {timeout} сек")
-
-        time.sleep(interval)
-
-
-def create_user_and_db(driver, user_id, neo4j_password):
-    if not user_id:
-        raise ValueError("user_id не может быть пустым")
-
-    if not neo4j_password:
-        raise ValueError("neo4j_password не может быть пустым")
-
-    neo4j_username = f"user{user_id}"
-    db_name = f"{neo4j_username}db"
-    role_name = f"{neo4j_username}_role"
-
-    user_created = False
-    role_created = False
-    db_created = False
-
-    try:
-        with driver.session() as session:
-            existing_users = session.run("SHOW USERS").data()
-            if neo4j_username in [u["user"] for u in existing_users]:
-                raise ValueError(f"Пользователь {neo4j_username} уже существует")
-
-            session.run(
-                f"CREATE USER {neo4j_username} "
-                "SET PASSWORD $password CHANGE NOT REQUIRED",
-                password=neo4j_password,
-            )
-            user_created = True
-
-            existing_roles = session.run("SHOW ROLES").data()
-            if role_name in [r["role"] for r in existing_roles]:
-                raise ValueError(f"Роль {role_name} уже существует")
-
-            session.run(f"CREATE ROLE {role_name}")
-            role_created = True
-
-            existing_dbs = session.run("SHOW DATABASES").data()
-            if db_name in [d["name"] for d in existing_dbs]:
-                raise ValueError(f"База {db_name} уже существует")
-
-            session.run(f"CREATE DATABASE {db_name}")
-            db_created = True
-
-            wait_for_db_online(session, db_name)
-
-            session.run(f"GRANT ROLE {role_name} TO {neo4j_username}")
-            session.run(f"GRANT ACCESS ON DATABASE {db_name} TO {role_name}")
-            session.run(f"GRANT READ {{*}} ON GRAPH {db_name} TO {role_name}")
-            session.run(f"GRANT TRAVERSE ON GRAPH {db_name} TO {role_name}")
-            session.run(f"GRANT WRITE ON GRAPH {db_name} TO {role_name}")
-            session.run(
-                f"GRANT CREATE NEW NODE LABEL ON DATABASE {db_name} TO {role_name}"
-            )
-            session.run(
-                f"GRANT CREATE NEW RELATIONSHIP TYPE ON DATABASE {db_name} TO {role_name}"
-            )
-            session.run(
-                f"GRANT CREATE NEW PROPERTY NAME ON DATABASE {db_name} TO {role_name}"
-            )
-
-    except ServiceUnavailable as e:
-        raise ConnectionError(f"Neo4j сервер недоступен: {e}") from e
-
-    except AuthError as e:
-        raise PermissionError(f"Ошибка авторизации: {e}") from e
-
-    except TransientError as e:
-        raise TimeoutError(f"Временная ошибка, попробуйте позже: {e}") from e
-
-    except ValueError:
-        raise
-
-    except Exception as e:
-        try:
-            with driver.session() as session:
-                if db_created:
-                    session.run(f"DROP DATABASE {db_name} IF EXISTS")
-                if role_created:
-                    session.run(f"DROP ROLE {role_name} IF EXISTS")
-                if user_created:
-                    session.run(f"DROP USER {neo4j_username} IF EXISTS")
-        except Exception as rollback_error:
-            logger.error(f"Ошибка отката: {rollback_error}")
-        raise RuntimeError(f"Не удалось создать пользователя: {e}") from e
-
-    return db_name, neo4j_username
-
-
 def create_nodes(tx, nodes, query):
+
     uid_map = {}
 
     for node in nodes:
@@ -331,6 +227,7 @@ def create_relationships(tx, relationships, uid_map, query):
 
 
 def set_to_neo4j(driver, db_name, data):
+
     if "query" not in data:
         raise ValueError("data должна содержать поле query")
     if "nodes" not in data or "relationships" not in data:
@@ -402,7 +299,7 @@ def set_to_neo4j(driver, db_name, data):
 
 
 def get_from_neo4j(driver, db_name, query):
-    query = query.strip().lower()
+
     try:
         with driver.session(database=db_name) as session:
             result = session.run(
@@ -457,6 +354,7 @@ def get_from_neo4j(driver, db_name, query):
 
 
 def add_node(driver, db_name, query, nodes=None, relationships=None):
+
     result = {}
 
     def _execute(tx):
@@ -484,46 +382,7 @@ def add_node(driver, db_name, query, nodes=None, relationships=None):
 
 
 def delete_node(driver, db_name, query, uid):
-    def _execute(tx):
-        result = tx.run(
-            "MATCH (n {uid: $uid, query: $q}) RETURN count(n) AS cnt",
-            uid=uid,
-            q=query,
-        )
-        record = result.single()
-        if not record or record["cnt"] == 0:
-            raise ValueError(f"Узел с uid='{uid}' не найден в графе '{query}'")
-        tx.run(
-            "MATCH (n {uid: $uid, query: $q}) DETACH DELETE n",
-            uid=uid,
-            q=query,
-        )
 
-    def _execute(tx):
-        uid_map = {}
-        if nodes:
-            uid_map = create_nodes(tx, nodes, query)
-            result.update(uid_map)
-
-        if relationships:
-            create_relationships(tx, relationships, uid_map, query)
-
-    try:
-        with driver.session(database=db_name) as session:
-            session.execute_write(_execute)
-            return result
-
-    except (ServiceUnavailable, SessionExpired, TransientError) as e:
-        raise ConnectionError(f"Neo4j не доступен: {e}") from e
-    except AuthError as e:
-        raise PermissionError(f"Ошибка авторизации: {e}") from e
-    except ValueError:
-        raise
-    except Exception as e:
-        raise RuntimeError(f"Ошибка при создании элементов графа: {e}") from e
-
-
-def delete_node(driver, db_name, query, uid):
     def _execute(tx):
         result = tx.run(
             "MATCH (n {uid: $uid, query: $q}) RETURN count(n) AS cnt",
@@ -552,7 +411,45 @@ def delete_node(driver, db_name, query, uid):
         raise RuntimeError(f"Ошибка при удалении узла '{uid}': {e}") from e
 
 
+def get_history(driver, user_id):
+
+    db_name = f"user{user_id}db"
+
+    def db_exists():
+        try:
+            with driver.session() as session:
+                result = session.run("SHOW DATABASES")
+                dbs = [record["name"] for record in result]
+                return db_name in dbs
+        except Exception as e:
+            raise RuntimeError(f"Не удалось проверить существование БД: {e}") from e
+
+    if not db_exists():
+        return []
+
+    try:
+        with driver.session(database=db_name) as session:
+            result = session.run("MATCH (n) RETURN DISTINCT n.query AS query")
+            queries = [record["query"] for record in result]
+
+            history = []
+            for query in queries:
+                item = {"query": query}
+                graph = get_from_neo4j(driver, db_name, query)
+                item["graph"] = graph
+                history.append(item)
+            return history
+
+    except ServiceUnavailable as e:
+        raise ConnectionError(f"Neo4j сервер недоступен: {e}") from e
+    except AuthError as e:
+        raise PermissionError(f"Ошибка авторизации: {e}") from e
+    except Exception as e:
+        raise RuntimeError(f"Ошибка при получении истории: {e}") from e
+
+
 def update_node(driver, db_name, query, node_uid, new_properties=None, new_labels=None):
+
     if not query or not query.strip():
         raise ValueError("query не может быть пустым")
     if not node_uid or not node_uid.strip():
