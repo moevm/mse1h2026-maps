@@ -273,6 +273,7 @@ def set_to_neo4j(driver, db_name, data):
         raise RuntimeError(f"Ошибка при записи графа '{query}': {e}") from e
 
 def get_from_neo4j(driver, db_name, query):
+    query =  query.strip().lower()
 
     try:
         with driver.session(database=db_name) as session:
@@ -324,7 +325,7 @@ def get_from_neo4j(driver, db_name, query):
 
 
 def add_node(driver, db_name, query, nodes=None, relationships=None):
-    
+
     query = query.strip().lower()
     result = {}
 
