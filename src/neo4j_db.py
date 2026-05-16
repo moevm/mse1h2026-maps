@@ -38,7 +38,7 @@ def wait_for_db_online(session, db_name, timeout=30, interval=1):
         time.sleep(interval)
 
 
-def create_user_and_db(driver, user_id,neo4j_password):
+def create_user_and_db(driver, user_id, neo4j_password):
     if not user_id:
         raise ValueError("user_id не может быть пустым")
 
@@ -121,6 +121,7 @@ def create_user_and_db(driver, user_id,neo4j_password):
 def create_nodes(tx, nodes, query):
 
     uid_map = {}
+    current_time = time.time()
 
     for node in nodes:
         try:
@@ -149,6 +150,7 @@ def create_nodes(tx, nodes, query):
 
             props["source_uid"] = old_uid
             props["query"] = query
+            props["created_at"] = current_time
             new_uid = f"{old_uid}::{semantic_part}"
             uid_map[old_uid] = new_uid
             tx.run(
@@ -378,33 +380,42 @@ def delete_node(driver, db_name, query, uid):
     except Exception as e:
         raise RuntimeError(f"Ошибка при удалении узла '{uid}': {e}") from e
 
+
 def get_history(driver, user_id):
-    
     db_name = f"user{user_id}db"
+
     def db_exists():
         try:
             with driver.session() as session:
                 result = session.run("SHOW DATABASES")
                 dbs = [record["name"] for record in result]
                 return db_name in dbs
-        except Exception as e:
-            raise RuntimeError(f"Не удалось проверить существование БД: {e}") from e
+        except Exception:
+            return False
 
     if not db_exists():
-        return []
+        return {"history": []}
 
     try:
         with driver.session(database=db_name) as session:
-            result = session.run("MATCH (n) RETURN DISTINCT n.query AS query")
-            queries = [record["query"] for record in result]
+            result = session.run(
+                """
+                MATCH (n)
+                WHERE n.query IS NOT NULL
+                RETURN n.query AS query, 
+                       min(n.created_at) AS created_at
+                ORDER BY created_at DESC
+                """
+            )
 
             history = []
-            for query in queries:
-                item = {"query": query}
-                graph = get_from_neo4j(driver, db_name, query)
-                item["graph"] = graph
-                history.append(item)
-            return history
+            for record in result:
+                history.append({
+                    "query": record["query"],
+                    "created_at": record["created_at"]
+                })
+
+            return {"history": history}
 
     except ServiceUnavailable as e:
         raise ConnectionError(f"Neo4j сервер недоступен: {e}") from e
