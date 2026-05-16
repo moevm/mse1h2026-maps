@@ -75,9 +75,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isAuthenticated) {
                     hideLoginModal();
                     showUserInfo(data.username);
+                    console.log('Пользователь уже авторизован:', data.username);
                 } else {
                     showLoginModal();
                     hideUserInfo();
+                    console.log('Пользователь не авторизован');
                 }
             } else {
                 showLoginModal();
@@ -220,10 +222,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: formData
             });
             
-            if (response.ok || response.redirected) {
+            await new Promise(resolve => setTimeout(resolve, 200));
+            
+            const statusResponse = await fetch('/accounts/user-status/');
+            const statusData = await statusResponse.json();
+            
+            if (statusData.is_authenticated) {
                 isAuthenticated = true;
                 hideLoginModal();
-                showUserInfo(username);
+                showUserInfo(statusData.username);
                 if (network) {
                     network.destroy();
                     network = null;
@@ -231,8 +238,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (graphPlaceholder) {
                     graphPlaceholder.innerHTML = 'Введите запрос для поиска';
                 }
-                // Включаем клавиатуру графа после входа
                 setTimeout(() => enableGraphKeyboard(), 100);
+                console.log('Вход выполнен успешно');
             } else {
                 showLoginError('Неверный логин или пароль');
             }
@@ -979,3 +986,114 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log('Приложение полностью инициализировано');
 });
+
+
+const showHistoryBtn = document.getElementById('showHistoryBtn');
+const historyPanel = document.getElementById('historyPanel');
+const closeHistoryBtn = document.getElementById('closeHistoryBtn');
+const historyList = document.getElementById('historyList');
+
+let historyData = [];
+
+async function loadHistory() {
+    if (!isAuthenticated) return;
+    
+    try {
+        const response = await fetch('/api/get-history/');
+        if (response.ok) {
+            historyData = await response.json();
+            renderHistory();
+        } else {
+            console.error('Ошибка загрузки истории');
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки истории:', error);
+    }
+}
+
+function formatDate(item) {
+    const dateStr = item.date || item.created_at || item.timestamp;
+    
+    if (!dateStr) {
+        return 'Дата неизвестна';
+    }
+    
+    try {
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) {
+            return 'Дата неизвестна';
+        }
+        return date.toLocaleString();
+    } catch (e) {
+        return 'Дата неизвестна';
+    }
+}
+
+function renderHistory() {
+    if (!historyList) return;
+    
+    if (historyData.length === 0) {
+        historyList.innerHTML = '<div class="history-empty">История пуста</div>';
+        return;
+    }
+    
+    historyList.innerHTML = historyData.map(item => `
+        <div class="history-item" data-query="${escapeHtml(item.query)}">
+            <div class="history-item-query">${escapeHtml(item.query)}</div>
+            <div class="history-item-date">${formatDate(item)}</div>
+        </div>
+    `).join('');
+    
+    // Добавляем обработчики кликов
+    document.querySelectorAll('.history-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const query = item.dataset.query;
+            if (query) {
+                searchField.value = query;
+                drawGraph(query, getOptions());
+                hideHistoryPanel();
+            }
+        });
+    });
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showHistoryPanel() {
+    if (historyPanel) {
+        loadHistory(); // Загружаем свежие данные
+        historyPanel.style.display = 'block';
+    }
+}
+
+function hideHistoryPanel() {
+    if (historyPanel) {
+        historyPanel.style.display = 'none';
+    }
+}
+
+if (showHistoryBtn) {
+    showHistoryBtn.addEventListener('click', showHistoryPanel);
+}
+
+if (closeHistoryBtn) {
+    closeHistoryBtn.addEventListener('click', hideHistoryPanel);
+}
+
+document.addEventListener('click', function(event) {
+    if (historyPanel && historyPanel.style.display === 'block') {
+        if (!historyPanel.contains(event.target) && event.target !== showHistoryBtn) {
+            hideHistoryPanel();
+        }
+    }
+});
+
+const originalShowUserInfo = window.showUserInfo || function() {};
+window.showUserInfo = function(username) {
+    originalShowUserInfo(username);
+    loadHistory();
+};

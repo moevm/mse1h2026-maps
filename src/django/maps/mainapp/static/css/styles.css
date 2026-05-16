@@ -645,3 +645,98 @@ html, body {
 .progress-toast-sources li.pending {
     color: #999;
 }
+
+.history-section {
+    margin-top: 20px;
+    position: relative;
+}
+
+.history-btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #e0f0ff;
+    color: #1e4a7a;
+    border: 1px solid #b0e0ff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.history-btn:hover {
+    background-color: #87cefa;
+    color: white;
+}
+
+.history-panel {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    max-height: 300px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: #e0f0ff;
+    border-bottom: 1px solid #b0e0ff;
+    font-weight: bold;
+    color: #1e4a7a;
+}
+
+.history-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #999;
+    transition: color 0.2s;
+}
+
+.history-close:hover {
+    color: #ff4444;
+}
+
+.history-list {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.history-item {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.history-item:hover {
+    background-color: #f0faff;
+}
+
+.history-item-query {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.history-item-date {
+    font-size: 11px;
+    color: #999;
+}
+
+.history-empty {
+    padding: 20px;
+    text-align: center;
+    color: #999;
+}
