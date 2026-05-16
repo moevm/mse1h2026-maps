@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let statusPollInterval = null;
     let network = null;
+    let currentGraphData = null;
     let isAuthenticated = false;
     let currentRequestId = null;
     let lastInfoState = {};
@@ -1198,6 +1199,145 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     checkAuthStatus();
+    // ===== ДОБАВЛЕНИЕ УЗЛА (НОВЫЙ ФУНКЦИОНАЛ) =====
+    const contextMenu = document.getElementById('contextMenu');
+    const addNodeMenuItem = document.getElementById('addNodeMenuItem');
+    const addNodeModal = document.getElementById('addNodeModal');
+    const closeAddNodeModalBtn = document.getElementById('closeAddNodeModal');
+    const cancelAddNodeBtn = document.getElementById('cancelAddNodeBtn');
+    const saveNodeBtn = document.getElementById('saveNodeBtn');
+    const addEdgeBtn = document.getElementById('addEdgeBtn');
+    const edgesListDiv = document.getElementById('edgesList');
+    const newNodeName = document.getElementById('newNodeName');
 
+    function setupNodeContextMenu() {
+        if (!network) return;
+        const canvas = document.querySelector('#graph-container canvas');
+        if (!canvas) return;
+        
+        canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            const pointer = network.DOMtoCanvas({ x: e.clientX, y: e.clientY });
+            const nodeId = network.getNodeAt(pointer);
+            
+            if (!nodeId && contextMenu) {
+                contextMenu.style.display = 'block';
+                contextMenu.style.left = e.clientX + 'px';
+                contextMenu.style.top = e.clientY + 'px';
+            }
+        });
+        
+        document.addEventListener('click', () => { 
+            if (contextMenu) contextMenu.style.display = 'none'; 
+        });
+    }
+
+    function openAddNodeModal() {
+        if (!network) { alert('Сначала загрузите граф'); return; }
+        if (newNodeName) newNodeName.value = '';
+        if (edgesListDiv) {
+            edgesListDiv.innerHTML = `<div class="edge-row">
+                <select class="edge-target-select"><option value="">-- Выберите узел --</option></select>
+                <input type="text" class="edge-type-input" placeholder="Тип связи" value="связан с">
+                <button class="remove-edge-btn" style="display: none;">✕</button>
+            </div>`;
+        }
+        updateEdgeSelects();
+        if (addNodeModal && modalOverlay) { addNodeModal.style.display = 'flex'; modalOverlay.style.display = 'block'; }
+        if (contextMenu) contextMenu.style.display = 'none';
+    }
+
+    function closeAddNodeModalWindow() {
+        if (addNodeModal) addNodeModal.style.display = 'none';
+        if (modalOverlay) modalOverlay.style.display = 'none';
+    }
+
+    function updateEdgeSelects() {
+        if (!window.currentGraphData) return;
+        const selects = document.querySelectorAll('.edge-target-select');
+        const existingNodes = window.currentGraphData.nodes.map(node => ({ id: node.id, label: node.properties?.label_en || node.caption || node.id }));
+        selects.forEach(select => {
+            const curVal = select.value;
+            select.innerHTML = '<option value="">-- Выберите узел --</option>';
+            existingNodes.forEach(node => {
+                const opt = document.createElement('option');
+                opt.value = node.id;
+                opt.textContent = node.label;
+                select.appendChild(opt);
+            });
+            if (curVal && existingNodes.some(n => n.id === curVal)) select.value = curVal;
+        });
+    }
+
+    function addNewEdgeRow() {
+        if (!edgesListDiv) return;
+        const row = document.createElement('div');
+        row.className = 'edge-row';
+        row.innerHTML = `<select class="edge-target-select"><option value="">-- Выберите узел --</option></select>
+            <input type="text" class="edge-type-input" placeholder="Тип связи" value="связан с">
+            <button class="remove-edge-btn">✕</button>`;
+        edgesListDiv.appendChild(row);
+        updateEdgeSelects();
+        const rmBtn = row.querySelector('.remove-edge-btn');
+        if (rmBtn) { rmBtn.addEventListener('click', () => row.remove()); rmBtn.style.display = 'inline-block'; }
+    }
+
+    function genId() { return 'user_node_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9); }
+
+    async function saveNewUserNode() {
+        const name = newNodeName ? newNodeName.value.trim() : '';
+        if (!name) { alert('Введите название узла'); return; }
+        const edges = [];
+        document.querySelectorAll('.edge-row').forEach(row => {
+            const target = row.querySelector('.edge-target-select')?.value;
+            const type = row.querySelector('.edge-type-input')?.value.trim() || 'связан с';
+            if (target) edges.push({ target, type });
+        });
+        const newId = genId();
+        const newNodeData = {
+            id: newId, caption: name, labels: ['Entity', 'UserAdded'],
+            properties: { label_en: name, desc_en: 'Узел добавлен пользователем', created_at: new Date().toISOString(), user_added: true }
+        };
+        const newRels = edges.map(e => ({
+            id: `user_rel_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+            from: newId, to: e.target, caption: e.type, properties: { type: e.type, user_added: true }
+        }));
+        if (window.currentGraphData) {
+            window.currentGraphData.nodes.push(newNodeData);
+            window.currentGraphData.relationships.push(...newRels);
+            if (network) {
+                const nds = network.body.data.nodes;
+                const eds = network.body.data.edges;
+                nds.add({ id: newNodeData.id, label: newNodeData.properties.label_en, title: newNodeData.properties.desc_en, group: 'UserAdded', font: { size: 14, color: '#000000' } });
+                newRels.forEach(r => { eds.add({ id: r.id, from: r.from, to: r.to, label: r.caption, arrows: 'to', font: { size: 12, align: 'middle' } }); });
+                setupNetworkClickHandler(window.currentGraphData, window.currentGraphData.relationships);
+            }
+            try { await fetch('/api/add-node/', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') }, body: JSON.stringify({ nodes: [newNodeData], relationships: newRels }) }); } catch(e) { console.error(e); }
+        }
+        closeAddNodeModalWindow();
+    }
+
+    if (addNodeMenuItem) addNodeMenuItem.addEventListener('click', openAddNodeModal);
+    if (closeAddNodeModalBtn) closeAddNodeModalBtn.addEventListener('click', closeAddNodeModalWindow);
+    if (cancelAddNodeBtn) cancelAddNodeBtn.addEventListener('click', closeAddNodeModalWindow);
+    if (saveNodeBtn) saveNodeBtn.addEventListener('click', saveNewUserNode);
+    if (addEdgeBtn) addEdgeBtn.addEventListener('click', addNewEdgeRow);
+
+    // Сохраняем оригинальные функции
+    const originalCreateFn = createNewGraph;
+    const originalUpdateFn = updateGraph;
+
+    // Переопределяем функции
+    createNewGraph = function(data) {
+        window.currentGraphData = data;
+        originalCreateFn(data);
+        setupNodeContextMenu();
+    };
+
+    updateGraph = function(data) {
+        window.currentGraphData = data;
+        originalUpdateFn(data);
+        setupNodeContextMenu();
+    };
     console.log('Приложение полностью инициализировано');
 });
