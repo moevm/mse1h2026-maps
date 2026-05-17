@@ -202,9 +202,11 @@
     <form id="logoutForm" method="post" action="{% url 'logout' %}" style="display: none;">
         {% csrf_token %}
     </form>
-        <!-- Контекстное меню -->
+
+    <!-- Контекстное меню -->
     <div id="contextMenu" class="context-menu" style="display: none;">
         <div class="context-menu-item" id="addNodeMenuItem">Добавить узел</div>
+        <div class="context-menu-item" id="deleteNodeMenuItem" style="display: none;">Удалить узел</div>
     </div>
 
     <!-- Модальное окно добавления узла -->
@@ -236,6 +238,24 @@
             <div class="add-node-modal-footer">
                 <button type="button" id="cancelAddNodeBtn" class="cancel-btn">Отмена</button>
                 <button type="button" id="saveNodeBtn" class="save-btn">Сохранить</button>
+            </div>
+        </div>
+    </div>
+    <!-- Модальное окно подтверждения удаления -->
+    <div id="confirmDeleteModal" class="confirm-modal" style="display: none;">
+        <div class="confirm-modal-content">
+            <div class="confirm-modal-header">
+                <h2>Подтверждение удаления</h2>
+                <button class="confirm-modal-close" id="closeConfirmModal">&times;</button>
+            </div>
+            <div class="confirm-modal-body">
+                <div class="confirm-icon"></div>
+                <p id="confirmDeleteMessage">Вы уверены, что хотите удалить этот узел?</p>
+                <div class="confirm-details" id="confirmDeleteDetails"></div>
+            </div>
+            <div class="confirm-modal-footer">
+                <button type="button" id="cancelDeleteBtn" class="cancel-btn">Отмена</button>
+                <button type="button" id="confirmDeleteBtn" class="delete-btn">Удалить</button>
             </div>
         </div>
     </div>
