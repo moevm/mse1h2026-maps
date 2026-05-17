@@ -23,6 +23,27 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentRequestId = null;
     let lastInfoState = {};
 
+    // Элементы для контекстного меню
+    const contextMenu = document.getElementById('contextMenu');
+    const addNodeMenuItem = document.getElementById('addNodeMenuItem');
+    const deleteNodeMenuItem = document.getElementById('deleteNodeMenuItem');
+    const addNodeModal = document.getElementById('addNodeModal');
+    const closeAddNodeModalBtn = document.getElementById('closeAddNodeModal');
+    const cancelAddNodeBtn = document.getElementById('cancelAddNodeBtn');
+    const saveNodeBtn = document.getElementById('saveNodeBtn');
+    const addEdgeBtn = document.getElementById('addEdgeBtn');
+    const edgesListDiv = document.getElementById('edgesList');
+    const newNodeName = document.getElementById('newNodeName');
+    const modalOverlay = document.getElementById('modalOverlay');
+
+    let currentContextMenuNodeId = null;
+    const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+    const confirmDeleteMessage = document.getElementById('confirmDeleteMessage');
+    const confirmDeleteDetails = document.getElementById('confirmDeleteDetails');
+    const closeConfirmModal = document.getElementById('closeConfirmModal');
+    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    let pendingDeleteNodeId = null;
     // Функции для управления клавиатурой графа
     function enableGraphKeyboard() {
         if (network && network.setOptions) {
@@ -130,6 +151,342 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+    }
+
+    // ===== КОНТЕКСТНОЕ МЕНЮ (ДОБАВЛЕНИЕ И УДАЛЕНИЕ) =====
+    function setupContextMenu() {
+        if (!network) return;
+        
+        const canvas = document.querySelector('#graph-container canvas');
+        if (!canvas) {
+            console.error('Canvas не найден');
+            return;
+        }
+        
+        // Удаляем старые обработчики
+        if (canvas._contextMenuHandler) {
+            canvas.removeEventListener('contextmenu', canvas._contextMenuHandler);
+        }
+        
+        const contextMenuHandler = (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const nodeId = network.getNodeAt({x: x, y: y});
+            
+            console.log('Правый клик - координаты:', {x, y}, 'узел:', nodeId);
+            
+            if (contextMenu) {
+                currentContextMenuNodeId = nodeId;
+                
+                contextMenu.style.display = 'block';
+                contextMenu.style.left = e.clientX + 'px';
+                contextMenu.style.top = e.clientY + 'px';
+                
+                if (nodeId) {
+                    addNodeMenuItem.style.display = 'none';
+                    deleteNodeMenuItem.style.display = 'block';
+                } else {
+                    addNodeMenuItem.style.display = 'block';
+                    deleteNodeMenuItem.style.display = 'none';
+                }
+            }
+        };
+        
+        const closeMenuHandler = (e) => {
+            if (contextMenu && contextMenu.style.display === 'block') {
+                if (!contextMenu.contains(e.target)) {
+                    contextMenu.style.display = 'none';
+                    currentContextMenuNodeId = null;
+                }
+            }
+        };
+        
+        canvas.addEventListener('contextmenu', contextMenuHandler);
+        document.addEventListener('click', closeMenuHandler);
+        
+        canvas._contextMenuHandler = contextMenuHandler;
+        canvas._closeMenuHandler = closeMenuHandler;
+        
+        console.log('Контекстное меню настроено (простой метод)');
+    }
+
+    // ===== ДОБАВЛЕНИЕ УЗЛА =====
+    function openAddNodeModal() {
+        if (!network) { alert('Сначала загрузите граф'); return; }
+        if (newNodeName) newNodeName.value = '';
+        if (edgesListDiv) {
+            edgesListDiv.innerHTML = `<div class="edge-row">
+                <select class="edge-target-select"><option value="">-- Выберите узел --</option></select>
+                <input type="text" class="edge-type-input" placeholder="Тип связи" value="связан с">
+                <button class="remove-edge-btn" style="display: none;">✕</button>
+            </div>`;
+        }
+        updateEdgeSelects();
+        if (addNodeModal && modalOverlay) { 
+            addNodeModal.style.display = 'flex'; 
+            modalOverlay.style.display = 'block'; 
+        }
+        if (contextMenu) contextMenu.style.display = 'none';
+    }
+
+    function closeAddNodeModalWindow() {
+        if (addNodeModal) addNodeModal.style.display = 'none';
+        if (modalOverlay) modalOverlay.style.display = 'none';
+    }
+
+    function updateEdgeSelects() {
+        if (!currentGraphData) return;
+        const selects = document.querySelectorAll('.edge-target-select');
+        const existingNodes = currentGraphData.nodes.map(node => ({ 
+            id: node.id, 
+            label: node.properties?.label_en || node.caption || node.id 
+        }));
+        selects.forEach(select => {
+            const curVal = select.value;
+            select.innerHTML = '<option value="">-- Выберите узел --</option>';
+            existingNodes.forEach(node => {
+                const opt = document.createElement('option');
+                opt.value = node.id;
+                opt.textContent = node.label;
+                select.appendChild(opt);
+            });
+            if (curVal && existingNodes.some(n => n.id === curVal)) select.value = curVal;
+        });
+    }
+
+    function addNewEdgeRow() {
+        if (!edgesListDiv) return;
+        const row = document.createElement('div');
+        row.className = 'edge-row';
+        row.innerHTML = `<select class="edge-target-select"><option value="">-- Выберите узел --</option></select>
+            <input type="text" class="edge-type-input" placeholder="Тип связи" value="связан с">
+            <button class="remove-edge-btn">✕</button>`;
+        edgesListDiv.appendChild(row);
+        updateEdgeSelects();
+        const rmBtn = row.querySelector('.remove-edge-btn');
+        if (rmBtn) { 
+            rmBtn.addEventListener('click', () => row.remove()); 
+            rmBtn.style.display = 'inline-block'; 
+        }
+    }
+
+    function genId() { 
+        return 'user_node_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9); 
+    }
+
+    async function saveNewUserNode() {
+        const name = newNodeName ? newNodeName.value.trim() : '';
+        if (!name) { alert('Введите название узла'); return; }
+        
+        const edges = [];
+        document.querySelectorAll('.edge-row').forEach(row => {
+            const target = row.querySelector('.edge-target-select')?.value;
+            const type = row.querySelector('.edge-type-input')?.value.trim() || 'связан с';
+            if (target) edges.push({ target, type });
+        });
+        
+        const newId = genId();
+        const newNodeData = {
+            id: newId, 
+            caption: name, 
+            labels: ['Entity', 'UserAdded'],
+            properties: { 
+                label_en: name, 
+                desc_en: 'Узел добавлен пользователем', 
+                created_at: new Date().toISOString(), 
+                user_added: true 
+            }
+        };
+        
+        const newRels = edges.map(e => ({
+            id: `user_rel_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+            from: newId, 
+            to: e.target, 
+            caption: e.type, 
+            properties: { type: e.type, user_added: true }
+        }));
+        
+        if (currentGraphData) {
+            currentGraphData.nodes.push(newNodeData);
+            currentGraphData.relationships.push(...newRels);
+            
+            if (network) {
+                const nds = network.body.data.nodes;
+                const eds = network.body.data.edges;
+                nds.add({ 
+                    id: newNodeData.id, 
+                    label: newNodeData.properties.label_en, 
+                    title: newNodeData.properties.desc_en, 
+                    group: 'UserAdded', 
+                    font: { size: 14, color: '#000000' } 
+                });
+                newRels.forEach(r => { 
+                    eds.add({ 
+                        id: r.id, 
+                        from: r.from, 
+                        to: r.to, 
+                        label: r.caption, 
+                        arrows: 'to', 
+                        font: { size: 12, align: 'middle' } 
+                    }); 
+                });
+                setupNetworkClickHandler(currentGraphData, currentGraphData.relationships);
+            }
+            
+            try { 
+                await fetch('/api/add-node/', { 
+                    method: 'POST', 
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'X-CSRFToken': getCookie('csrftoken') 
+                    }, 
+                    body: JSON.stringify({ nodes: [newNodeData], relationships: newRels }) 
+                }); 
+            } catch(e) { console.error(e); }
+        }
+        closeAddNodeModalWindow();
+    }
+    // ===== МОДАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ =====
+    function openConfirmDeleteModal(nodeId) {
+        const nodeToDelete = currentGraphData?.nodes.find(n => n.id === nodeId);
+        if (!nodeToDelete) return;
+        
+        const nodeName = nodeToDelete.properties?.label_en || nodeToDelete.caption || nodeId;
+        
+        const connectedRelationships = currentGraphData?.relationships.filter(rel => 
+            rel.from === nodeId || rel.to === nodeId
+        ) || [];
+        
+        if (confirmDeleteMessage) {
+            confirmDeleteMessage.textContent = `Вы уверены, что хотите удалить узел "${nodeName}"?`;
+        }
+        
+        if (confirmDeleteDetails) {
+            const details = [];
+            details.push(`<div class="detail-item"><span class="detail-label">Узел:</span> ${nodeName}</div>`);
+            
+            if (nodeToDelete.labels && nodeToDelete.labels.length > 0) {
+                details.push(`<div class="detail-item"><span class="detail-label">Тип:</span> ${nodeToDelete.labels.join(', ')}</div>`);
+            }
+            
+            if (connectedRelationships.length > 0) {
+                details.push(`<div class="detail-item"><span class="detail-label">Связей будет удалено:</span> ${connectedRelationships.length}</div>`);
+                
+                const previewRelationships = connectedRelationships.slice(0, 3);
+                previewRelationships.forEach(rel => {
+                    const targetId = rel.from === nodeId ? rel.to : rel.from;
+                    const targetNode = currentGraphData?.nodes.find(n => n.id === targetId);
+                    const targetName = targetNode?.properties?.label_en || targetNode?.caption || targetId;
+                    const relType = rel.caption || rel.properties?.type || 'связь';
+                    details.push(`<div class="detail-item" style="padding-left: 15px; font-size: 12px;">
+                        • ${relType} → ${targetName}
+                    </div>`);
+                });
+                
+                if (connectedRelationships.length > 3) {
+                    details.push(`<div class="detail-item" style="padding-left: 15px; font-size: 12px; color: #999;">
+                        ... и еще ${connectedRelationships.length - 3} связей
+                    </div>`);
+                }
+            } else {
+                details.push(`<div class="detail-item"><span class="detail-label">Связей:</span> нет</div>`);
+            }
+            
+            confirmDeleteDetails.innerHTML = details.join('');
+        }
+        
+        pendingDeleteNodeId = nodeId;
+        
+        if (confirmDeleteModal && modalOverlay) {
+            confirmDeleteModal.style.display = 'block';
+            modalOverlay.style.display = 'block';
+        }
+    }
+
+    function closeConfirmDeleteModal() {
+        if (confirmDeleteModal) {
+            confirmDeleteModal.style.display = 'none';
+        }
+        if (modalOverlay && !addNodeModal.style.display === 'flex' && !loginModal.style.display === 'block') {
+            modalOverlay.style.display = 'none';
+        }
+        pendingDeleteNodeId = null;
+    }
+
+    async function executeDeleteNode() {
+        if (!pendingDeleteNodeId) return;
+        
+        const nodeId = pendingDeleteNodeId;
+        const nodeToDelete = currentGraphData?.nodes.find(n => n.id === nodeId);
+        
+        if (!nodeToDelete) {
+            alert('Узел не найден');
+            closeConfirmDeleteModal();
+            return;
+        }
+        
+        const connectedRelationships = currentGraphData?.relationships.filter(rel => 
+            rel.from === nodeId || rel.to === nodeId
+        ) || [];
+        
+        if (currentGraphData) {
+            currentGraphData.nodes = currentGraphData.nodes.filter(n => n.id !== nodeId);
+            currentGraphData.relationships = currentGraphData.relationships.filter(rel => 
+                rel.from !== nodeId && rel.to !== nodeId
+            );
+        }
+        
+        if (network) {
+            const nodesDataSet = network.body.data.nodes;
+            const edgesDataSet = network.body.data.edges;
+            
+            nodesDataSet.remove(nodeId);
+            connectedRelationships.forEach(rel => {
+                edgesDataSet.remove(rel.id);
+            });
+            
+            setupNetworkClickHandler(currentGraphData, currentGraphData?.relationships || []);
+        }
+        
+        try {
+            const payload = { node_id: nodeId };
+            const response = await fetch('/api/delete-node/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            if (!response.ok) {
+                console.error('Ошибка при удалении узла на сервере');
+            } else {
+                console.log('Узел успешно удален на сервере');
+            }
+        } catch (error) {
+            console.error('Ошибка отправки запроса на удаление:', error);
+        }
+        
+        closeConfirmDeleteModal();
+        if (contextMenu) contextMenu.style.display = 'none';
+        currentContextMenuNodeId = null;
+    }
+    // ===== УДАЛЕНИЕ УЗЛА =====
+    async function deleteNode() {
+        if (!currentContextMenuNodeId) {
+            alert('Не выбран узел для удаления');
+            return;
+        }
+        
+        // Закрываем контекстное меню
+        if (contextMenu) contextMenu.style.display = 'none';
+        
+        // Открываем модальное окно подтверждения
+        openConfirmDeleteModal(currentContextMenuNodeId);
     }
 
     // ===== АУТЕНТИФИКАЦИЯ =====
@@ -242,7 +599,7 @@ document.addEventListener('DOMContentLoaded', () => {
             usernameDisplay.textContent = `Вы вошли как: ${username}`;
             userInfo.style.display = 'flex';
         }
-        loadHistory(); // Загружаем историю при входе
+        loadHistory();
     }
 
     function hideUserInfo() {
@@ -568,6 +925,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
+        currentGraphData = data;
+        
         try {
             const nodesDataSet = network.body.data.nodes;
             const edgesDataSet = network.body.data.edges;
@@ -616,8 +975,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Граф обновлен');
             
             setupInputFocusTracking();
-            
             setupNetworkClickHandler(data, edges);
+            setupContextMenu();
             
             if (existingNodeIds.size === 0 && nodes.length > 0) {
                 setTimeout(() => {
@@ -634,6 +993,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function createNewGraph(data) {
         if (!graphPlaceholder) return;
         
+        currentGraphData = data;
         graphPlaceholder.innerHTML = '';
         
         const graphContainer = document.createElement('div');
@@ -698,15 +1058,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 hover: true,
                 tooltipDelay: 200,
                 navigationButtons: true,
-                keyboard: true
+                keyboard: true,
+                selectable: true,
+                dragNodes: true,
+                dragView: true,
+                zoomView: true
             }
         };
         
         network = new vis.Network(graphContainer, { nodes: nodesDataSet, edges: edgesDataSet }, options);
         
         setupInputFocusTracking();
-        
         setupNetworkClickHandler(data, edges);
+        
+        setTimeout(() => {
+            setupContextMenu();
+        }, 1000);
         
         setTimeout(() => {
             if (network) network.fit();
@@ -897,7 +1264,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const linksList = document.getElementById('entityLinks');
         const resourcesList = document.getElementById('entityResources');
 
-        // Название
         if (entityName) {
             entityName.textContent = entityData.name || 
                                     entityData.label_en || 
@@ -905,7 +1271,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                     'Название не указано';
         }
 
-        // Информация
         if (entityInfo) {
             let infoText = entityData.desc_en || entityData.info || entityData.abstract || 'Нет дополнительной информации';
             entityInfo.textContent = infoText;
@@ -915,7 +1280,6 @@ document.addEventListener('DOMContentLoaded', () => {
             entityInfo.style.wordWrap = 'break-word';
         }
 
-        // Связи
         if (linksList) {
             linksList.innerHTML = '';
             const links = entityData.links || [];
@@ -943,7 +1307,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Ресурсы (ссылки)
         if (resourcesList) {
             resourcesList.innerHTML = '';
             const resources = entityData.resources || [];
@@ -1100,11 +1463,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const modalOverlay = document.getElementById('modalOverlay');
     if (modalOverlay) {
         modalOverlay.addEventListener('click', () => {
             hideLoginModal();
             hideRegisterModal();
+            closeAddNodeModalWindow();
         });
     }
 
@@ -1197,147 +1560,35 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+    if (closeConfirmModal) {
+        closeConfirmModal.addEventListener('click', closeConfirmDeleteModal);
+    }
 
-    checkAuthStatus();
-    // ===== ДОБАВЛЕНИЕ УЗЛА (НОВЫЙ ФУНКЦИОНАЛ) =====
-    const contextMenu = document.getElementById('contextMenu');
-    const addNodeMenuItem = document.getElementById('addNodeMenuItem');
-    const addNodeModal = document.getElementById('addNodeModal');
-    const closeAddNodeModalBtn = document.getElementById('closeAddNodeModal');
-    const cancelAddNodeBtn = document.getElementById('cancelAddNodeBtn');
-    const saveNodeBtn = document.getElementById('saveNodeBtn');
-    const addEdgeBtn = document.getElementById('addEdgeBtn');
-    const edgesListDiv = document.getElementById('edgesList');
-    const newNodeName = document.getElementById('newNodeName');
+    if (cancelDeleteBtn) {
+        cancelDeleteBtn.addEventListener('click', closeConfirmDeleteModal);
+    }
 
-    function setupNodeContextMenu() {
-        if (!network) return;
-        const canvas = document.querySelector('#graph-container canvas');
-        if (!canvas) return;
-        
-        canvas.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            const pointer = network.DOMtoCanvas({ x: e.clientX, y: e.clientY });
-            const nodeId = network.getNodeAt(pointer);
-            
-            if (!nodeId && contextMenu) {
-                contextMenu.style.display = 'block';
-                contextMenu.style.left = e.clientX + 'px';
-                contextMenu.style.top = e.clientY + 'px';
-            }
-        });
-        
-        document.addEventListener('click', () => { 
-            if (contextMenu) contextMenu.style.display = 'none'; 
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', executeDeleteNode);
+    }
+
+    if (modalOverlay) {
+        modalOverlay.addEventListener('click', () => {
+            hideLoginModal();
+            hideRegisterModal();
+            closeAddNodeModalWindow();
+            closeConfirmDeleteModal();
         });
     }
-
-    function openAddNodeModal() {
-        if (!network) { alert('Сначала загрузите граф'); return; }
-        if (newNodeName) newNodeName.value = '';
-        if (edgesListDiv) {
-            edgesListDiv.innerHTML = `<div class="edge-row">
-                <select class="edge-target-select"><option value="">-- Выберите узел --</option></select>
-                <input type="text" class="edge-type-input" placeholder="Тип связи" value="связан с">
-                <button class="remove-edge-btn" style="display: none;">✕</button>
-            </div>`;
-        }
-        updateEdgeSelects();
-        if (addNodeModal && modalOverlay) { addNodeModal.style.display = 'flex'; modalOverlay.style.display = 'block'; }
-        if (contextMenu) contextMenu.style.display = 'none';
-    }
-
-    function closeAddNodeModalWindow() {
-        if (addNodeModal) addNodeModal.style.display = 'none';
-        if (modalOverlay) modalOverlay.style.display = 'none';
-    }
-
-    function updateEdgeSelects() {
-        if (!window.currentGraphData) return;
-        const selects = document.querySelectorAll('.edge-target-select');
-        const existingNodes = window.currentGraphData.nodes.map(node => ({ id: node.id, label: node.properties?.label_en || node.caption || node.id }));
-        selects.forEach(select => {
-            const curVal = select.value;
-            select.innerHTML = '<option value="">-- Выберите узел --</option>';
-            existingNodes.forEach(node => {
-                const opt = document.createElement('option');
-                opt.value = node.id;
-                opt.textContent = node.label;
-                select.appendChild(opt);
-            });
-            if (curVal && existingNodes.some(n => n.id === curVal)) select.value = curVal;
-        });
-    }
-
-    function addNewEdgeRow() {
-        if (!edgesListDiv) return;
-        const row = document.createElement('div');
-        row.className = 'edge-row';
-        row.innerHTML = `<select class="edge-target-select"><option value="">-- Выберите узел --</option></select>
-            <input type="text" class="edge-type-input" placeholder="Тип связи" value="связан с">
-            <button class="remove-edge-btn">✕</button>`;
-        edgesListDiv.appendChild(row);
-        updateEdgeSelects();
-        const rmBtn = row.querySelector('.remove-edge-btn');
-        if (rmBtn) { rmBtn.addEventListener('click', () => row.remove()); rmBtn.style.display = 'inline-block'; }
-    }
-
-    function genId() { return 'user_node_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9); }
-
-    async function saveNewUserNode() {
-        const name = newNodeName ? newNodeName.value.trim() : '';
-        if (!name) { alert('Введите название узла'); return; }
-        const edges = [];
-        document.querySelectorAll('.edge-row').forEach(row => {
-            const target = row.querySelector('.edge-target-select')?.value;
-            const type = row.querySelector('.edge-type-input')?.value.trim() || 'связан с';
-            if (target) edges.push({ target, type });
-        });
-        const newId = genId();
-        const newNodeData = {
-            id: newId, caption: name, labels: ['Entity', 'UserAdded'],
-            properties: { label_en: name, desc_en: 'Узел добавлен пользователем', created_at: new Date().toISOString(), user_added: true }
-        };
-        const newRels = edges.map(e => ({
-            id: `user_rel_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
-            from: newId, to: e.target, caption: e.type, properties: { type: e.type, user_added: true }
-        }));
-        if (window.currentGraphData) {
-            window.currentGraphData.nodes.push(newNodeData);
-            window.currentGraphData.relationships.push(...newRels);
-            if (network) {
-                const nds = network.body.data.nodes;
-                const eds = network.body.data.edges;
-                nds.add({ id: newNodeData.id, label: newNodeData.properties.label_en, title: newNodeData.properties.desc_en, group: 'UserAdded', font: { size: 14, color: '#000000' } });
-                newRels.forEach(r => { eds.add({ id: r.id, from: r.from, to: r.to, label: r.caption, arrows: 'to', font: { size: 12, align: 'middle' } }); });
-                setupNetworkClickHandler(window.currentGraphData, window.currentGraphData.relationships);
-            }
-            try { await fetch('/api/add-node/', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') }, body: JSON.stringify({ nodes: [newNodeData], relationships: newRels }) }); } catch(e) { console.error(e); }
-        }
-        closeAddNodeModalWindow();
-    }
-
+    // ===== ОБРАБОТЧИКИ КНОПОК =====
     if (addNodeMenuItem) addNodeMenuItem.addEventListener('click', openAddNodeModal);
+    if (deleteNodeMenuItem) deleteNodeMenuItem.addEventListener('click', deleteNode);
     if (closeAddNodeModalBtn) closeAddNodeModalBtn.addEventListener('click', closeAddNodeModalWindow);
     if (cancelAddNodeBtn) cancelAddNodeBtn.addEventListener('click', closeAddNodeModalWindow);
     if (saveNodeBtn) saveNodeBtn.addEventListener('click', saveNewUserNode);
     if (addEdgeBtn) addEdgeBtn.addEventListener('click', addNewEdgeRow);
 
-    // Сохраняем оригинальные функции
-    const originalCreateFn = createNewGraph;
-    const originalUpdateFn = updateGraph;
+    checkAuthStatus();
 
-    // Переопределяем функции
-    createNewGraph = function(data) {
-        window.currentGraphData = data;
-        originalCreateFn(data);
-        setupNodeContextMenu();
-    };
-
-    updateGraph = function(data) {
-        window.currentGraphData = data;
-        originalUpdateFn(data);
-        setupNodeContextMenu();
-    };
     console.log('Приложение полностью инициализировано');
 });
