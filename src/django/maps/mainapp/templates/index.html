@@ -35,15 +35,19 @@
                     <ul>
                         <li>
                             <input type="checkbox" id="source1">
-                            <label for="source1">Источник 1</label>
+                            <label for="source1">github</label>
                         </li>
                         <li>
                             <input type="checkbox" id="source2">
-                            <label for="source2">Источник 2</label>
+                            <label for="source2">openalex</label>
                         </li>
                         <li>
                             <input type="checkbox" id="source3">
-                            <label for="source3">Источник 3</label>
+                            <label for="source3">wikipedia</label>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="source4">
+                            <label for="source4">wikidata</label>
                         </li>
                     </ul>
                     <h4>Опции поиска</h4>
@@ -206,7 +210,8 @@
     <!-- Контекстное меню -->
     <div id="contextMenu" class="context-menu" style="display: none;">
         <div class="context-menu-item" id="addNodeMenuItem">Добавить узел</div>
-        <div class="context-menu-item" id="deleteNodeMenuItem" style="display: none;">Удалить узел</div>
+        <div class="context-menu-item edit" id="editNodeMenuItem" style="display: none;">Редактировать узел</div>
+        <div class="context-menu-item danger" id="deleteNodeMenuItem" style="display: none;">Удалить узел</div>
     </div>
 
     <!-- Модальное окно добавления узла -->
@@ -256,6 +261,40 @@
             <div class="confirm-modal-footer">
                 <button type="button" id="cancelDeleteBtn" class="cancel-btn">Отмена</button>
                 <button type="button" id="confirmDeleteBtn" class="delete-btn">Удалить</button>
+            </div>
+        </div>
+    </div>
+    <!-- Модальное окно редактирования узла -->
+    <div id="editNodeModal" class="edit-node-modal" style="display: none;">
+        <div class="edit-node-modal-content">
+            <div class="edit-node-modal-header">
+                <h2>Редактирование узла</h2>
+                <button class="edit-node-modal-close" id="closeEditNodeModal">&times;</button>
+            </div>
+            <div class="edit-node-modal-body">
+                <!-- Название узла -->
+                <div class="form-group">
+                    <label for="editNodeName">Название узла:</label>
+                    <input type="text" id="editNodeName" class="edit-node-input">
+                </div>
+                
+                <!-- Характеристики -->
+                <div class="form-group">
+                    <label>Характеристики:</label>
+                    <div id="editNodeAttributes"></div>
+                    <button type="button" id="addAttributeBtn" class="add-edge-btn">+ Добавить характеристику</button>
+                </div>
+                
+                <!-- Связи -->
+                <div class="form-group">
+                    <label>Связи с другими узлами:</label>
+                    <div id="editEdgesList"></div>
+                    <button type="button" id="editAddEdgeBtn" class="add-edge-btn">+ Добавить связь</button>
+                </div>
+            </div>
+            <div class="edit-node-modal-footer">
+                <button type="button" id="cancelEditNodeBtn" class="cancel-btn">Отмена</button>
+                <button type="button" id="saveEditNodeBtn" class="save-btn">Сохранить изменения</button>
             </div>
         </div>
     </div>
