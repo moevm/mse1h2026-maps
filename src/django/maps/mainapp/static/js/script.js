@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Элементы для контекстного меню
     const contextMenu = document.getElementById('contextMenu');
     const addNodeMenuItem = document.getElementById('addNodeMenuItem');
+    const editNodeMenuItem = document.getElementById('editNodeMenuItem');
     const deleteNodeMenuItem = document.getElementById('deleteNodeMenuItem');
     const addNodeModal = document.getElementById('addNodeModal');
     const closeAddNodeModalBtn = document.getElementById('closeAddNodeModal');
@@ -37,6 +38,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalOverlay = document.getElementById('modalOverlay');
 
     let currentContextMenuNodeId = null;
+    
+    // Элементы для модального окна редактирования узла
+    const editNodeModal = document.getElementById('editNodeModal');
+    const closeEditNodeModalBtn = document.getElementById('closeEditNodeModal');
+    const cancelEditNodeBtn = document.getElementById('cancelEditNodeBtn');
+    const saveEditNodeBtn = document.getElementById('saveEditNodeBtn');
+    const editNodeName = document.getElementById('editNodeName');
+    const editNodeAttributes = document.getElementById('editNodeAttributes');
+    const addAttributeBtn = document.getElementById('addAttributeBtn');
+    const editEdgesList = document.getElementById('editEdgesList');
+    const editAddEdgeBtn = document.getElementById('editAddEdgeBtn');
+    let editingNodeId = null;
+
+    // Элементы для подтверждения удаления
     const confirmDeleteModal = document.getElementById('confirmDeleteModal');
     const confirmDeleteMessage = document.getElementById('confirmDeleteMessage');
     const confirmDeleteDetails = document.getElementById('confirmDeleteDetails');
@@ -44,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
     const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
     let pendingDeleteNodeId = null;
+
     // Функции для управления клавиатурой графа
     function enableGraphKeyboard() {
         if (network && network.setOptions) {
@@ -69,6 +85,12 @@ document.addEventListener('DOMContentLoaded', () => {
             input.addEventListener('focus', disableGraphKeyboard);
             input.addEventListener('blur', enableGraphKeyboard);
         });
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     // ===== НАСТРОЙКА ОБРАБОТЧИКА КЛИКА =====
@@ -130,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     openInfoPanel({
                         name: props.label_en || originalNode.caption || nodeId,
-                        desc_en: props.desc_en || props.description || props.abstract || 'Нет описания',
+                        desc_en: props.desc_en || props.description || props.descriptions || props.abstract || 'Нет описания',
                         info: props.info,
                         links: connectedNodes,
                         resources: resources,
@@ -153,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ===== КОНТЕКСТНОЕ МЕНЮ (ДОБАВЛЕНИЕ И УДАЛЕНИЕ) =====
+    // ===== КОНТЕКСТНОЕ МЕНЮ =====
     function setupContextMenu() {
         if (!network) return;
         
@@ -163,7 +185,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        // Удаляем старые обработчики
         if (canvas._contextMenuHandler) {
             canvas.removeEventListener('contextmenu', canvas._contextMenuHandler);
         }
@@ -187,9 +208,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (nodeId) {
                     addNodeMenuItem.style.display = 'none';
+                    editNodeMenuItem.style.display = 'block';
                     deleteNodeMenuItem.style.display = 'block';
                 } else {
                     addNodeMenuItem.style.display = 'block';
+                    editNodeMenuItem.style.display = 'none';
                     deleteNodeMenuItem.style.display = 'none';
                 }
             }
@@ -210,7 +233,16 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas._contextMenuHandler = contextMenuHandler;
         canvas._closeMenuHandler = closeMenuHandler;
         
-        console.log('Контекстное меню настроено (простой метод)');
+        console.log('Контекстное меню настроено');
+    }
+
+    // ===== ЗАКРЫТИЕ ВСЕХ МОДАЛЬНЫХ ОКОН =====
+    function closeAllModals() {
+        hideLoginModal();
+        hideRegisterModal();
+        closeAddNodeModalWindow();
+        closeConfirmDeleteModal();
+        closeEditNodeModalWindow();
     }
 
     // ===== ДОБАВЛЕНИЕ УЗЛА =====
@@ -349,6 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         closeAddNodeModalWindow();
     }
+
     // ===== МОДАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ =====
     function openConfirmDeleteModal(nodeId) {
         const nodeToDelete = currentGraphData?.nodes.find(n => n.id === nodeId);
@@ -409,9 +442,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeConfirmDeleteModal() {
         if (confirmDeleteModal) {
             confirmDeleteModal.style.display = 'none';
-        }
-        if (modalOverlay && !addNodeModal.style.display === 'flex' && !loginModal.style.display === 'block') {
-            modalOverlay.style.display = 'none';
         }
         pendingDeleteNodeId = null;
     }
@@ -475,6 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (contextMenu) contextMenu.style.display = 'none';
         currentContextMenuNodeId = null;
     }
+
     // ===== УДАЛЕНИЕ УЗЛА =====
     async function deleteNode() {
         if (!currentContextMenuNodeId) {
@@ -482,15 +513,418 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        // Закрываем контекстное меню
         if (contextMenu) contextMenu.style.display = 'none';
-        
-        // Открываем модальное окно подтверждения
         openConfirmDeleteModal(currentContextMenuNodeId);
     }
 
-    // ===== АУТЕНТИФИКАЦИЯ =====
+    function openEditNodeModal() {
+        if (!currentContextMenuNodeId) {
+            alert('Не выбран узел для редактирования');
+            return;
+        }
+        
+        const nodeId = currentContextMenuNodeId;
+        const node = currentGraphData?.nodes.find(n => n.id === nodeId);
+        
+        if (!node) {
+            alert('Узел не найден');
+            return;
+        }
+        
+        editingNodeId = nodeId;
+        const props = node.properties || {};
+        
+        // Заполняем название (Сущность)
+        if (editNodeName) {
+            editNodeName.value = props.label_en || node.caption || '';
+        }
+        
+        // Заполняем характеристики
+        if (editNodeAttributes) {
+            editNodeAttributes.innerHTML = '';
+            
+            // === СЕКЦИЯ: Информация ===
+            const infoHeader = document.createElement('div');
+            infoHeader.style.cssText = 'margin: 0 0 10px 0; font-weight: bold; color: #1565C0; font-size: 14px;';
+            infoHeader.textContent = '📝 Информация об узле:';
+            editNodeAttributes.appendChild(infoHeader);
+            
+            // Поля информации (все возможные варианты)
+            const infoFields = ['desc_en', 'description', 'descriptions', 'abstract', 'info'];
+            infoFields.forEach(key => {
+                if (props[key]) {
+                    const label = key === 'desc_en' ? 'Описание (desc_en)' :
+                                key === 'description' ? 'Описание (description)' :
+                                key === 'descriptions' ? 'Описание (descriptions)' :
+                                key === 'abstract' ? 'Аннотация' :
+                                key === 'info' ? 'Информация' : key;
+                    addAttributeRow(key, props[key], true, label);
+                }
+            });
+            
+            // === СЕКЦИЯ: Ссылки на ресурсы ===
+            const resourcesHeader = document.createElement('div');
+            resourcesHeader.style.cssText = 'margin: 15px 0 10px 0; padding-top: 10px; border-top: 2px solid #4CAF50; font-weight: bold; color: #2E7D32; font-size: 14px;';
+            resourcesHeader.textContent = '🔗 Ссылки на ресурсы:';
+            editNodeAttributes.appendChild(resourcesHeader);
+            
+            // Поля для ссылок
+            if (props.url) {
+                addAttributeRow('url', props.url, true, 'Википедия (url)');
+            }
+            if (props.wiki_url) {
+                addAttributeRow('wiki_url', props.wiki_url, true, 'Wikidata (wiki_url)');
+            }
+            if (props.uid && props.uid.startsWith('wikidata:')) {
+                addAttributeRow('uid', props.uid, true, 'Wikidata ID (uid)');
+            }
+            if (props.paperId) {
+                addAttributeRow('paperId', props.paperId, true, 'ID статьи (paperId)');
+            }
+            
+            // === СЕКЦИЯ: Пользовательские характеристики ===
+            const userHeader = document.createElement('div');
+            userHeader.style.cssText = 'margin: 15px 0 10px 0; padding-top: 10px; border-top: 2px solid #FF9800; font-weight: bold; color: #E65100; font-size: 14px;';
+            userHeader.textContent = '📋 Пользовательские характеристики:';
+            editNodeAttributes.appendChild(userHeader);
+            
+            const userAttrs = props.createdByUser || {};
+            if (Object.keys(userAttrs).length > 0) {
+                for (const [key, value] of Object.entries(userAttrs)) {
+                    addAttributeRow(key, value, false);
+                }
+            }
+            // Всегда добавляем пустую строку для новой характеристики
+            addAttributeRow('', '', false);
+        }
+        
+        // Заполняем связи
+        if (editEdgesList) {
+            editEdgesList.innerHTML = '';
+            const nodeRelationships = currentGraphData?.relationships.filter(rel => 
+                rel.from === nodeId || rel.to === nodeId
+            ) || [];
+            
+            if (nodeRelationships.length > 0) {
+                nodeRelationships.forEach(rel => {
+                    addEditEdgeRow(rel);
+                });
+            } else {
+                addEditEdgeRow(null);
+            }
+        }
+        
+        // Показываем модальное окно
+        if (editNodeModal && modalOverlay) {
+            editNodeModal.style.display = 'block';
+            modalOverlay.style.display = 'block';
+        }
+        
+        // Закрываем контекстное меню
+        if (contextMenu) contextMenu.style.display = 'none';
+    }
 
+    function addAttributeRow(key = '', value = '', isSystem = false, label = '') {
+        if (!editNodeAttributes) return;
+        
+        const displayLabel = label || key;
+        
+        const row = document.createElement('div');
+        row.className = 'attribute-row';
+        
+        if (isSystem) {
+            // Для системных полей показываем label и value, key скрыт
+            row.innerHTML = `
+                <input type="hidden" class="attr-key-input" value="${escapeHtml(key)}">
+                <div class="attr-label" style="flex: 0 0 40%; max-width: 40%; padding: 8px 12px; font-size: 13px; color: #555; background: #f5f5f5; border-radius: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(displayLabel)}</div>
+                <input type="text" class="attr-value-input" placeholder="Значение" value="${escapeHtml(value)}" style="flex: 0 0 55%; max-width: 55%;">
+            `;
+        } else {
+            row.innerHTML = `
+                <input type="text" class="attr-key-input" placeholder="Название" value="${escapeHtml(key)}">
+                <input type="text" class="attr-value-input" placeholder="Значение" value="${escapeHtml(value)}">
+                <button class="remove-attr-btn">✕</button>
+            `;
+            
+            const removeBtn = row.querySelector('.remove-attr-btn');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', () => {
+                    row.remove();
+                });
+            }
+        }
+        
+        editNodeAttributes.appendChild(row);
+    }
+
+    function addEditEdgeRow(rel = null) {
+        if (!editEdgesList) return;
+        
+        const row = document.createElement('div');
+        row.className = 'edge-row';
+        
+        let targetId = '';
+        let edgeType = 'связан с';
+        let relId = '';
+        
+        if (rel) {
+            targetId = rel.from === editingNodeId ? rel.to : rel.from;
+            edgeType = rel.caption || rel.properties?.type || 'связан с';
+            relId = rel.id;
+        }
+        
+        row.innerHTML = `
+            <select class="edge-target-select">
+                <option value="">-- Выберите узел --</option>
+            </select>
+            <input type="text" class="edge-type-input" placeholder="Тип связи" value="${escapeHtml(edgeType)}">
+            <button class="remove-edge-btn" ${relId ? '' : 'style="display: none;"'}>✕</button>
+        `;
+        
+        if (relId) {
+            row.dataset.relId = relId;
+        }
+        
+        editEdgesList.appendChild(row);
+        updateEditEdgeSelects(row.querySelector('.edge-target-select'), targetId);
+        
+        const rmBtn = row.querySelector('.remove-edge-btn');
+        if (rmBtn) { 
+            rmBtn.addEventListener('click', () => row.remove()); 
+            rmBtn.style.display = 'inline-block'; 
+        }
+    }
+
+    function updateEditEdgeSelects(selectElement = null, selectedValue = '') {
+        if (!currentGraphData) return;
+        
+        const selects = selectElement ? [selectElement] : document.querySelectorAll('#editEdgesList .edge-target-select');
+        const existingNodes = currentGraphData.nodes.map(node => ({ 
+            id: node.id, 
+            label: node.properties?.label_en || node.caption || node.id 
+        }));
+        
+        selects.forEach(select => {
+            const curVal = selectedValue || select.value;
+            select.innerHTML = '<option value="">-- Выберите узел --</option>';
+            existingNodes.forEach(node => {
+                if (node.id !== editingNodeId) {
+                    const opt = document.createElement('option');
+                    opt.value = node.id;
+                    opt.textContent = node.label;
+                    select.appendChild(opt);
+                }
+            });
+            if (curVal && existingNodes.some(n => n.id === curVal)) select.value = curVal;
+        });
+    }
+
+    function closeEditNodeModalWindow() {
+        if (editNodeModal) editNodeModal.style.display = 'none';
+        editingNodeId = null;
+    }
+
+    async function saveEditedNode() {
+        if (!editingNodeId) return;
+        
+        const node = currentGraphData?.nodes.find(n => n.id === editingNodeId);
+        if (!node) {
+            alert('Узел не найден');
+            return;
+        }
+        
+        // Системные атрибуты (из правой панели)
+        const systemAttrs = {};
+        // Пользовательские атрибуты (только новые)
+        const userAttrs = {};
+        
+        // Все возможные ключи для информации и ресурсов
+        const allSystemKeys = ['desc_en', 'description', 'descriptions', 'abstract', 'info',
+                            'url', 'wiki_url', 'uid', 'paperId'];
+        
+        if (editNodeAttributes) {
+            const attrRows = editNodeAttributes.querySelectorAll('.attribute-row');
+            attrRows.forEach(row => {
+                const keyInput = row.querySelector('.attr-key-input');
+                const valueInput = row.querySelector('.attr-value-input');
+                
+                if (!keyInput || !valueInput) return;
+                
+                const key = keyInput.value.trim();
+                const value = valueInput.value.trim();
+                
+                if (!key || !value) return;
+                
+                // Определяем тип поля
+                const isHidden = keyInput.type === 'hidden';
+                const isReadonly = keyInput.hasAttribute('readonly');
+                
+                if (isHidden || isReadonly || allSystemKeys.includes(key)) {
+                    // Системное поле
+                    systemAttrs[key] = value;
+                } else {
+                    // Пользовательская характеристика
+                    userAttrs[key] = value;
+                }
+            });
+        }
+        
+        // Обновляем название
+        const newName = editNodeName?.value.trim() || '';
+        if (newName) {
+            systemAttrs['label_en'] = newName;
+        }
+        
+        // Обработка связей
+        const currentRels = currentGraphData?.relationships.filter(rel => 
+            rel.from === editingNodeId || rel.to === editingNodeId
+        ) || [];
+        
+        const deletedRelIds = [];
+        const addedRels = [];
+        
+        if (editEdgesList) {
+            const edgeRows = editEdgesList.querySelectorAll('.edge-row');
+            const processedRelIds = new Set();
+            
+            edgeRows.forEach(row => {
+                const target = row.querySelector('.edge-target-select')?.value;
+                const type = row.querySelector('.edge-type-input')?.value.trim() || 'связан с';
+                const relId = row.dataset.relId;
+                
+                if (target) {
+                    if (relId) {
+                        processedRelIds.add(relId);
+                        const existingRel = currentRels.find(r => r.id === relId);
+                        if (existingRel && (existingRel.caption !== type || 
+                            (existingRel.from === editingNodeId ? existingRel.to : existingRel.from) !== target)) {
+                            deletedRelIds.push(relId);
+                            const newRel = {
+                                id: `user_rel_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+                                from: editingNodeId,
+                                to: target,
+                                caption: type,
+                                properties: { type: type, user_added: true }
+                            };
+                            addedRels.push(newRel);
+                        }
+                    } else {
+                        const newRel = {
+                            id: `user_rel_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+                            from: editingNodeId,
+                            to: target,
+                            caption: type,
+                            properties: { type: type, user_added: true }
+                        };
+                        addedRels.push(newRel);
+                    }
+                }
+            });
+            
+            currentRels.forEach(rel => {
+                if (!processedRelIds.has(rel.id)) {
+                    deletedRelIds.push(rel.id);
+                }
+            });
+        }
+        
+        // Обновляем данные на фронте
+        if (node.properties) {
+            // Обновляем системные характеристики
+            Object.assign(node.properties, systemAttrs);
+            
+            // Обновляем ТОЛЬКО пользовательские характеристики
+            if (Object.keys(userAttrs).length > 0) {
+                if (!node.properties.createdByUser) {
+                    node.properties.createdByUser = {};
+                }
+                // Очищаем старые и записываем новые
+                node.properties.createdByUser = userAttrs;
+            } else {
+                // Если пользователь удалил все свои атрибуты
+                delete node.properties.createdByUser;
+            }
+            
+            if (newName) {
+                node.caption = newName;
+            }
+        }
+        
+        // Обновляем связи
+        if (deletedRelIds.length > 0) {
+            currentGraphData.relationships = currentGraphData.relationships.filter(rel => 
+                !deletedRelIds.includes(rel.id)
+            );
+        }
+        
+        if (addedRels.length > 0) {
+            currentGraphData.relationships.push(...addedRels);
+        }
+        
+        // Обновляем визуализацию
+        if (network) {
+            const nodesDataSet = network.body.data.nodes;
+            const edgesDataSet = network.body.data.edges;
+            
+            nodesDataSet.update({
+                id: editingNodeId,
+                label: newName || node.properties?.label_en || node.caption,
+                title: node.properties?.desc_en || node.properties?.description || ''
+            });
+            
+            deletedRelIds.forEach(relId => edgesDataSet.remove(relId));
+            
+            addedRels.forEach(rel => {
+                edgesDataSet.add({
+                    id: rel.id,
+                    from: rel.from,
+                    to: rel.to,
+                    label: rel.caption,
+                    arrows: 'to',
+                    font: { size: 12, align: 'middle' }
+                });
+            });
+            
+            setupNetworkClickHandler(currentGraphData, currentGraphData?.relationships || []);
+        }
+        
+        // Отправляем на сервер
+        try {
+            const payload = {
+                node_id: editingNodeId,
+                attrs: {
+                    ...systemAttrs,
+                    ...(Object.keys(userAttrs).length > 0 ? { createdByUser: userAttrs } : {})
+                },
+                deletedRelationships: deletedRelIds,
+                addedRelationships: addedRels
+            };
+            
+            console.log('Отправка на сервер:', JSON.stringify(payload, null, 2));
+            
+            const response = await fetch('/api/edit-node/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            if (!response.ok) {
+                console.error('Ошибка при сохранении изменений на сервере');
+            } else {
+                const result = await response.json();
+                console.log('Изменения успешно сохранены на сервере:', result);
+            }
+        } catch (error) {
+            console.error('Ошибка отправки изменений на сервер:', error);
+        }
+        
+        closeEditNodeModalWindow();
+    }
+
+    // ===== АУТЕНТИФИКАЦИЯ =====
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -1168,7 +1602,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const response = await fetch(`/api/start/?${params.toString()}`);
-
+            console.log("на сервер отправлен зарос:",  params.toString());
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
             }
@@ -1206,15 +1640,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getOptions() {
-        const checkboxes = document.querySelectorAll('.sidebar-content input[type="checkbox"]');
         const options = {};
-
+        
+        // Получаем все чекбоксы из сайдбара
+        const checkboxes = document.querySelectorAll('.sidebar-content input[type="checkbox"]');
+        
+        console.log('Найдено чекбоксов:', checkboxes.length);
+        
         checkboxes.forEach(checkbox => {
-            const label = document.querySelector(`label[for="${checkbox.id}"]`);
-            const key = label ? label.textContent.trim() : checkbox.id;
-            options[key] = checkbox.checked;
+            console.log('Чекбокс:', {
+                id: checkbox.id,
+                checked: checkbox.checked,
+                label: document.querySelector(`label[for="${checkbox.id}"]`)?.textContent
+            });
+            
+            if (checkbox.checked) {
+                const label = document.querySelector(`label[for="${checkbox.id}"]`);
+                const key = label ? label.textContent.trim() : checkbox.id;
+                options[key] = true;
+            }
         });
-
+        
+        console.log('Итоговые опции:', options);
+        console.log('Тип опций:', typeof options);
+        console.log('Ключей в опциях:', Object.keys(options).length);
+        
         return options;
     }
 
@@ -1273,10 +1723,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (entityInfo) {
             let infoText = entityData.desc_en || entityData.info || entityData.abstract || 'Нет дополнительной информации';
+            
+            const userAttrs = entityData.createdByUser || {};
+            if (Object.keys(userAttrs).length > 0) {
+                infoText += '\n\n  Пользовательские характеристики:\n';
+                for (const [key, value] of Object.entries(userAttrs)) {
+                    infoText += `• ${key}: ${value}\n`;
+                }
+            }
+            
             entityInfo.textContent = infoText;
             entityInfo.style.maxHeight = '200px';
             entityInfo.style.overflowY = 'auto';
-            entityInfo.style.whiteSpace = 'normal';
+            entityInfo.style.whiteSpace = 'pre-wrap';
             entityInfo.style.wordWrap = 'break-word';
         }
 
@@ -1387,90 +1846,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ===== ИНИЦИАЛИЗАЦИЯ ОБРАБОТЧИКОВ =====
-    
-    if (typeof vis === 'undefined') {
-        console.error('vis.js не загружена!');
-        if (graphPlaceholder) {
-            graphPlaceholder.innerHTML = `
-                <div style="padding: 20px; text-align: center; color: #f44336;">
-                    <div>Ошибка: vis.js библиотека не загружена</div>
-                    <div>Проверьте файл static/libs/vis-network.min.js</div>
-                </div>
-            `;
-        }
-        return;
-    }
-
-    console.log('vis.js загружена успешно, версия:', vis.version);
-
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', function() {
-            sidebar.classList.toggle('collapsed');
-            if (sidebar.classList.contains('collapsed')) {
-                toggleBtn.textContent = '▶';
-                mainContent.classList.add('expanded');
-            } else {
-                toggleBtn.textContent = '◀';
-                mainContent.classList.remove('expanded');
-            }
-        });
-    }
-
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', handleLogin);
-    }
-
-    const registerForm = document.getElementById('registerForm');
-    if (registerForm) {
-        registerForm.addEventListener('submit', handleRegister);
-    }
-
-    const closeModalBtn = document.getElementById('closeLoginModal');
-    if (closeModalBtn) {
-        closeModalBtn.addEventListener('click', () => {
-            hideLoginModal();
-        });
-    }
-
-    const closeRegisterModal = document.getElementById('closeRegisterModal');
-    if (closeRegisterModal) {
-        closeRegisterModal.addEventListener('click', () => {
-            hideRegisterModal();
-        });
-    }
-
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', handleLogout);
-    }
-
-    const showRegisterBtn = document.getElementById('showRegisterBtn');
-    if (showRegisterBtn) {
-        showRegisterBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            showRegisterModal();
-        });
-    }
-
-    const showLoginBtn = document.getElementById('showLoginBtn');
-    if (showLoginBtn) {
-        showLoginBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            hideRegisterModal();
-            showLoginModal();
-        });
-    }
-
-    if (modalOverlay) {
-        modalOverlay.addEventListener('click', () => {
-            hideLoginModal();
-            hideRegisterModal();
-            closeAddNodeModalWindow();
-        });
-    }
-
     // ===== ИСТОРИЯ ЗАПРОСОВ =====
     const showHistoryBtn = document.getElementById('showHistoryBtn');
     const historyPanel = document.getElementById('historyPanel');
@@ -1533,12 +1908,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
     function showHistoryPanel() {
         if (historyPanel) {
             loadHistory();
@@ -1560,34 +1929,123 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-    if (closeConfirmModal) {
-        closeConfirmModal.addEventListener('click', closeConfirmDeleteModal);
+
+    // ===== ВСЕ ОБРАБОТЧИКИ В ОДНОМ МЕСТЕ =====
+    
+    // Проверка vis.js
+    if (typeof vis === 'undefined') {
+        console.error('vis.js не загружена!');
+        if (graphPlaceholder) {
+            graphPlaceholder.innerHTML = `
+                <div style="padding: 20px; text-align: center; color: #f44336;">
+                    <div>Ошибка: vis.js библиотека не загружена</div>
+                    <div>Проверьте файл static/libs/vis-network.min.js</div>
+                </div>
+            `;
+        }
+        return;
     }
 
-    if (cancelDeleteBtn) {
-        cancelDeleteBtn.addEventListener('click', closeConfirmDeleteModal);
-    }
+    console.log('vis.js загружена успешно, версия:', vis.version);
 
-    if (confirmDeleteBtn) {
-        confirmDeleteBtn.addEventListener('click', executeDeleteNode);
-    }
-
-    if (modalOverlay) {
-        modalOverlay.addEventListener('click', () => {
-            hideLoginModal();
-            hideRegisterModal();
-            closeAddNodeModalWindow();
-            closeConfirmDeleteModal();
+    // Сайдбар
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function() {
+            sidebar.classList.toggle('collapsed');
+            if (sidebar.classList.contains('collapsed')) {
+                toggleBtn.textContent = '▶';
+                mainContent.classList.add('expanded');
+            } else {
+                toggleBtn.textContent = '◀';
+                mainContent.classList.remove('expanded');
+            }
         });
     }
-    // ===== ОБРАБОТЧИКИ КНОПОК =====
+
+    // Формы аутентификации
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleRegister);
+    }
+
+    // Кнопки модальных окон
+    const closeModalBtn = document.getElementById('closeLoginModal');
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', hideLoginModal);
+    }
+
+    const closeRegisterModalBtn = document.getElementById('closeRegisterModal');
+    if (closeRegisterModalBtn) {
+        closeRegisterModalBtn.addEventListener('click', hideRegisterModal);
+    }
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
+
+    const showRegisterBtn = document.getElementById('showRegisterBtn');
+    if (showRegisterBtn) {
+        showRegisterBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showRegisterModal();
+        });
+    }
+
+    const showLoginBtn = document.getElementById('showLoginBtn');
+    if (showLoginBtn) {
+        showLoginBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            hideRegisterModal();
+            showLoginModal();
+        });
+    }
+
+    // Оверлей (один обработчик для всех модальных окон)
+    if (modalOverlay) {
+        modalOverlay.addEventListener('click', closeAllModals);
+    }
+
+    // Контекстное меню
     if (addNodeMenuItem) addNodeMenuItem.addEventListener('click', openAddNodeModal);
+    if (editNodeMenuItem) editNodeMenuItem.addEventListener('click', openEditNodeModal);
     if (deleteNodeMenuItem) deleteNodeMenuItem.addEventListener('click', deleteNode);
+    
+    // Добавление узла
     if (closeAddNodeModalBtn) closeAddNodeModalBtn.addEventListener('click', closeAddNodeModalWindow);
     if (cancelAddNodeBtn) cancelAddNodeBtn.addEventListener('click', closeAddNodeModalWindow);
     if (saveNodeBtn) saveNodeBtn.addEventListener('click', saveNewUserNode);
     if (addEdgeBtn) addEdgeBtn.addEventListener('click', addNewEdgeRow);
 
+    // Подтверждение удаления
+    if (closeConfirmModal) closeConfirmModal.addEventListener('click', closeConfirmDeleteModal);
+    if (cancelDeleteBtn) cancelDeleteBtn.addEventListener('click', closeConfirmDeleteModal);
+    if (confirmDeleteBtn) confirmDeleteBtn.addEventListener('click', executeDeleteNode);
+
+    // Редактирование узла
+    if (closeEditNodeModalBtn) closeEditNodeModalBtn.addEventListener('click', closeEditNodeModalWindow);
+    if (cancelEditNodeBtn) cancelEditNodeBtn.addEventListener('click', closeEditNodeModalWindow);
+    if (saveEditNodeBtn) saveEditNodeBtn.addEventListener('click', saveEditedNode);
+    if (addAttributeBtn) {
+        addAttributeBtn.addEventListener('click', () => {
+            const separator = editNodeAttributes.querySelector('div[style*="border-top: 2px solid #2196F3"]');
+            if (!separator) {
+                const newSeparator = document.createElement('div');
+                newSeparator.style.cssText = 'margin: 15px 0 10px 0; padding-top: 10px; border-top: 2px solid #2196F3; font-weight: bold; color: #1565C0;';
+                newSeparator.textContent = ' Пользовательские характеристики:';
+                editNodeAttributes.appendChild(newSeparator);
+            }
+            addAttributeRow('', '', false);
+        });
+    }
+    if (editAddEdgeBtn) editAddEdgeBtn.addEventListener('click', () => addEditEdgeRow(null));
+
+    // Запуск проверки авторизации
     checkAuthStatus();
 
     console.log('Приложение полностью инициализировано');
