@@ -1134,3 +1134,274 @@ html, body {
 .delete-btn:hover {
     background: #d32f2f;
 }
+
+/* ===== МОДАЛЬНОЕ ОКНО РЕДАКТИРОВАНИЯ УЗЛА ===== */
+.edit-node-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 10001;
+    width: 600px;
+    max-width: 90%;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.edit-node-modal-content {
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+}
+
+.edit-node-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: #e3f2fd;
+    border-bottom: 2px solid #2196F3;
+    border-radius: 12px 12px 0 0;
+    flex-shrink: 0;
+}
+
+.edit-node-modal-header h2 {
+    margin: 0;
+    color: #1565C0;
+    font-size: 20px;
+}
+
+.edit-node-modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: #666;
+    transition: color 0.2s;
+    padding: 0;
+    line-height: 1;
+}
+
+.edit-node-modal-close:hover {
+    color: #ff4444;
+}
+
+.edit-node-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.edit-node-modal-body .form-group {
+    margin-bottom: 20px;
+}
+
+.edit-node-modal-body label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+}
+
+.edit-node-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+.edit-node-input:focus {
+    outline: none;
+    border-color: #2196F3;
+    box-shadow: 0 0 5px rgba(33, 150, 243, 0.3);
+}
+
+/* Стили для характеристик */
+.attribute-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: flex-start;
+}
+
+.attribute-row input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.attribute-row input:focus {
+    outline: none;
+    border-color: #2196F3;
+    box-shadow: 0 0 5px rgba(33, 150, 243, 0.3);
+}
+
+.attribute-row .remove-attr-btn {
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 8px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.attribute-row .remove-attr-btn:hover {
+    background: #ff4444;
+}
+
+/* Стили для связей в режиме редактирования */
+.edge-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+.edge-row select {
+    flex: 2;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.edge-row input {
+    flex: 2;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.edge-row .remove-edge-btn {
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 6px 10px;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.edge-row .remove-edge-btn:hover {
+    background: #ff4444;
+}
+
+.add-edge-btn {
+    background: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-top: 5px;
+    transition: background 0.2s;
+}
+
+.add-edge-btn:hover {
+    background: #1976D2;
+}
+
+.edit-node-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 15px 20px;
+    border-top: 1px solid #e0e0e0;
+    background: #fafafa;
+    border-radius: 0 0 12px 12px;
+    flex-shrink: 0;
+}
+
+/* Добавляем пункт в контекстное меню */
+.context-menu-item.edit {
+    color: #2196F3;
+}
+
+.context-menu-item.edit:hover {
+    background-color: #e3f2fd;
+}
+
+/* Фиксированная ширина для полей в модальном окне редактирования */
+.edit-node-modal .edge-row select {
+    flex: 0 0 45%;
+    max-width: 45%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.edit-node-modal .edge-row input {
+    flex: 0 0 40%;
+    max-width: 40%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.edit-node-modal .edge-row .remove-edge-btn {
+    flex: 0 0 auto;
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+.edit-node-modal .edge-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+/* Ограничение максимальной ширины модального окна */
+.edit-node-modal {
+    max-width: 650px;
+    width: 90%;
+}
+
+/* Стили для полей характеристик */
+.edit-node-modal .attribute-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+.edit-node-modal .attribute-row input {
+    flex: 0 0 40%;
+    max-width: 40%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.edit-node-modal .attribute-row .remove-attr-btn {
+    flex: 0 0 auto;
+}
